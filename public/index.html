@@ -368,6 +368,41 @@
     }
 
     /* Dropdown Menu */
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    .search-box input {
+      border: none;
+      background: transparent;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      width: 200px;
+      outline: none;
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-btn {
+      background: transparent;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .search-btn:hover {
+      color: var(--primary);
+    }
+
     .nav-dropdown {
       position: relative;
     }
@@ -453,6 +488,14 @@
       <a href="#about">關於我們</a>
     </nav>
       <div class="header-actions">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="搜尋產品..." onkeyup="searchProducts(this.value)">
+          <button class="search-btn" onclick="searchProducts(document.getElementById('search-input').value)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </button>
+        </div>
         <button class="btn btn-secondary" onclick="location.href='/login.html'">登入</button>
         <button class="btn btn-primary" onclick="location.href='/register.html'">註冊</button>
         <button class="cart-btn" onclick="location.href='/cart.html'">
@@ -547,39 +590,71 @@
   </footer>
 
   <script>
+    let allProducts = [];
+
     // Load products from API
     async function loadProducts() {
       try {
         const response = await fetch('/api/products');
         const products = await response.json();
-        
-        const container = document.getElementById('product-list');
-        
-        if (!products || products.length === 0) {
-          container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">暫無產品</p>';
-          return;
-        }
-        
-        container.innerHTML = products.slice(0, 12).map(product => `
-          <div class="product-card">
-            <img src="${product.image_url || '/images/placeholder.jpg'}" alt="${product.name}" class="product-image" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 280 280%22><rect fill=%22%23f3f4f6%22 width=%22280%22 height=%22280%22/><text fill=%22%239ca3af%22 x=%22140%22 y=%22150%22 text-anchor=%22middle%22 dy=%22.3em%22>No Image</text></svg>'">
-            <div class="product-info">
-              <div class="product-code">${product.product_code || ''}</div>
-              <div class="product-name">${product.name || '未命名產品'}</div>
-              <div class="product-price">
-                ¥${product.price?.toLocaleString() || '0'}
-                ${product.normalPrice ? `<span class="original">¥${product.normalPrice.toLocaleString()}</span>` : ''}
-              </div>
-              <div class="product-stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
-                ${product.stock > 0 ? '✓ 有貨' : '✗ 缺貨'}
-              </div>
-            </div>
-          </div>
-        `).join('');
+        allProducts = products || [];
+        displayProducts(allProducts);
       } catch (error) {
         console.error('Error loading products:', error);
         document.getElementById('product-list').innerHTML = 
           '<p style="text-align: center; color: #ef4444; padding: 2rem;">載入失敗，請稍後再試</p>';
+      }
+    }
+
+    // Display products
+    function displayProducts(products) {
+      const container = document.getElementById('product-list');
+      
+      if (!products || products.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">暫無產品</p>';
+        return;
+      }
+      
+      container.innerHTML = products.slice(0, 50).map(product => `
+        <div class="product-card">
+          <img src="${product.image_url || '/images/placeholder.jpg'}" alt="${product.name}" class="product-image" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 280 280%22><rect fill=%22%23f3f4f6%22 width=%22280%22 height=%22280%22/><text fill=%22%239ca3af%22 x=%22140%22 y=%22150%22 text-anchor=%22middle%22 dy=%22.3em%22>No Image</text></svg>'">
+          <div class="product-info">
+            <div class="product-code">${product.code || product.product_code || ''}</div>
+            <div class="product-name">${product.name || '未命名產品'}</div>
+            <div class="product-price">
+              ¥${product.price || product.shopPrice?.replace(/[^\d]/g, '') || '0'}
+            </div>
+            <div class="product-stock ${product.stock === '有貨' || product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
+              ${product.stock === '有貨' || product.stock > 0 ? '✓ 有貨' : '✗ 缺貨'}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Search products
+    function searchProducts(query) {
+      query = query.toLowerCase().trim();
+      
+      if (!query) {
+        displayProducts(allProducts);
+        return;
+      }
+      
+      const filtered = allProducts.filter(product => {
+        const code = (product.code || product.product_code || '').toLowerCase();
+        const barcode = (product.barcode || '').toLowerCase();
+        const name = (product.name || '').toLowerCase();
+        
+        return code.includes(query) || barcode.includes(query) || name.includes(query);
+      });
+      
+      displayProducts(filtered);
+      
+      // Show result count
+      const container = document.getElementById('product-list');
+      if (filtered.length > 0) {
+        container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 1rem;">找到 ${filtered.length} 件產品</p>` + container.innerHTML;
       }
     }
 
