@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - OHYA2.0</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-main">
+        <a href="/" class="logo">OHYA2.0</a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/#products">Products</a>
+        </nav>
+        <div class="header-actions">
+          <a href="/cart.html" class="cart-btn">
+            Cart <span class="cart-badge" style="display:none">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Register Form -->
+  <div class="container">
+    <div class="form-container">
+      <h1 class="form-title">Create Account</h1>
+      
+      <form id="register-form">
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password *</label>
+          <input type="password" id="password" name="password" required minlength="6">
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password *</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          Register
+        </button>
+      </form>
+
+      <p style="text-align: center; margin-top: 20px;">
+        Already have an account? <a href="/login.html" style="color: var(--primary);">Login here</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        window.ohya2.showToast('Passwords do not match', 'error');
+        return;
+      }
+
+      if (password.length < 6) {
+        window.ohya2.showToast('Password must be at least 6 characters', 'error');
+        return;
+      }
+
+      const success = await window.ohya2.register(email, password, name, phone);
+      
+      if (success) {
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 1500);
+      }
+    });
+  </script>
+</body>
+</html>

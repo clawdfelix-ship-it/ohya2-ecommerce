@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart - OHYA2.0</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-main">
+        <a href="/" class="logo">OHYA2.0</a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/#products">Products</a>
+          <a href="/cart.html">Cart</a>
+        </nav>
+        <div class="header-actions">
+          <a href="/cart.html" class="cart-btn">
+            Cart <span class="cart-badge" style="display:none">0</span>
+          </a>
+          <div id="user-menu" class="user-menu">
+            <a href="/login.html" class="btn btn-login">Login</a>
+            <a href="/register.html" class="btn btn-register">Register</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Cart Page -->
+  <section class="cart-page">
+    <div class="container">
+      <h1 class="section-title">Shopping Cart</h1>
+      
+      <!-- Empty Cart -->
+      <div id="cart-empty" class="cart-container" style="padding: 60px; text-align: center;">
+        <h2>Your cart is empty</h2>
+        <p style="margin: 20px 0; color: #888;">Looks like you haven't added any products yet.</p>
+        <a href="/" class="btn btn-primary">Continue Shopping</a>
+      </div>
+
+      <!-- Cart Content -->
+      <div id="cart-content" class="cart-container hidden">
+        <div class="cart-header">
+          <div>Product</div>
+          <div>Quantity</div>
+          <div>Subtotal</div>
+          <div>Action</div>
+        </div>
+        
+        <div id="cart-items">
+          <!-- Cart items rendered here -->
+        </div>
+
+        <div class="cart-total">
+          <h2>Total: <span id="cart-total-amount">$0.00</span></h2>
+          <button class="btn btn-primary" onclick="proceedToCheckout()" style="margin-top: 20px; padding: 15px 40px;">
+            Proceed to Checkout
+          </button>
+          <a href="/" class="btn btn-outline" style="display: inline-block; margin-left: 10px; padding: 15px 40px;">
+            Continue Shopping
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+</body>
+</html>

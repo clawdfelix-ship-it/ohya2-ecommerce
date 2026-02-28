@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - OHYA2.0</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .admin-login {
+      max-width: 400px;
+      margin: 100px auto;
+      background: var(--white);
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    }
+    .product-image-thumb {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .action-btns {
+      display: flex;
+      gap: 5px;
+    }
+    .action-btns button {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    .status-select {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+    .order-proof-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Admin Login (shown if not authenticated) -->
+  <div id="admin-login-screen" class="admin-login" style="display: none;">
+    <h1 style="text-align: center; margin-bottom: 30px;">Admin Login</h1>
+    <form id="admin-login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="admin-email" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="admin-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+    </form>
+    <p style="text-align: center; margin-top: 20px;">
+      <a href="/" style="color: var(--primary);">← Back to Store</a>
+    </p>
+  </div>
+
+  <!-- Admin Panel (shown if authenticated) -->
+  <div id="admin-panel" class="admin-container" style="display: none;">
+    <aside class="admin-sidebar">
+      <h2>OHYA2.0 Admin</h2>
+      <ul class="admin-menu">
+        <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
+        <li><a href="#" data-section="products">Products</a></li>
+        <li><a href="#" data-section="orders">Orders</a></li>
+        <li><a href="/" style="margin-top: 30px;">← Back to Store</a></li>
+        <li><a href="#" onclick="adminLogout()">Logout</a></li>
+      </ul>
+    </aside>
+
+    <main class="admin-content">
+      <!-- Dashboard Section -->
+      <section id="section-dashboard">
+        <div class="admin-header">
+          <h1>Dashboard</h1>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Products</h3>
+            <div class="value" id="stat-products">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Orders</h3>
+            <div class="value" id="stat-orders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="value" id="stat-revenue">$0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Pending Orders</h3>
+            <div class="value" id="stat-pending">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Products Section -->
+      <section id="section-products" class="hidden">
+        <div class="admin-header">
+          <h1>Products Management</h1>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-success" onclick="exportProducts()">📥 Export CSV</button>
+            <button class="btn btn-warning" onclick="showImportModal()">📤 Import CSV</button>
+            <button class="btn btn-primary" onclick="showProductModal()">+ Add Product</button>
+          </div>
+        </div>
+
+        <div class="admin-table">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Code</th>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body">
+              <!-- Products loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Orders Section -->
+      <section id="section-orders" class="hidden">
+        <div class="admin-header">
+          <h1>Orders Management</h1>
+        </div>
+
+        <div class="admin-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Proof</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body">
+              <!-- Orders loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Product Modal -->
+  <div class="modal" id="product-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="product-modal-title">Add Product</h2>
+        <button class="modal-close" onclick="closeProductModal()">&times;</button>
+      </div>
+      <form id="product-form">
+        <input type="hidden" id="product-id">
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="product-name" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="product-description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Price *</label>
+          <input type="number" id="product-price" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" id="product-category" placeholder="e.g., Vibrators, Lingerie">
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" id="product-stock" value="0">
+        </div>
+        <div class="form-group">
+          <label>Product Image</label>
+          <input type="file" id="product-image" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="product-active" checked> Active
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Product</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div class="modal" id="import-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Import Products from CSV</h2>
+        <button class="modal-close" onclick="closeImportModal()">&times;</button>
+      </div>
+      <div style="padding: 20px 0;">
+        <p style="margin-bottom: 15px; color: #666;">
+          Upload a CSV file with the following columns:<br>
+          <small>product_code, name, price, description, barcode, category, stock, active, image_url</small>
+        </p>
+        <div class="form-group">
+          <label>Select CSV File *</label>
+          <input type="file" id="import-file" accept=".csv">
+        </div>
+        <button class="btn btn-primary" onclick="importProducts()" style="width: 100%;">Import Products</button>
+        <div id="import-result" style="margin-top: 15px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isAdmin = false;
+    let products = [];
+    let orders = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkAdminAuth();
+      setupMenu();
+    });
+
+    async function checkAdminAuth() {
+      try {
+        const response = await fetch('/api/auth/me');
+        const data = await response.json();
+        
+        if (data.user && data.user.isAdmin) {
+          isAdmin = true;
+          showAdminPanel();
+          loadDashboard();
+        } else {
+          showLoginScreen();
+        }
+      } catch (error) {
+        showLoginScreen();
+      }
+    }
+
+    function showLoginScreen() {
+      document.getElementById('admin-login-screen').style.display = 'block';
+      document.getElementById('admin-panel').style.display = 'none';
+    }
+
+    function showAdminPanel() {
+      document.getElementById('admin-login-screen').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'flex';
+    }
+
+    // Admin Login
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('admin-email').value;
+      const password = document.getElementById('admin-password').value;
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.user.isAdmin) {
+          showAdminPanel();
+          loadDashboard();
+        } else {
+          alert('Invalid admin credentials');
+        }
+      } catch (error) {
+        alert('Login failed');
+      }
+    });
+
+    async function adminLogout() {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.reload();
+    }
+
+    // Menu Navigation
+    function setupMenu() {
+      document.querySelectorAll('.admin-menu a[data-section]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const section = link.dataset.section;
+          showSection(section);
+          
+          document.querySelectorAll('.admin-menu a').forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+        });
+      });
+    }
+
+    function showSection(section) {
+      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+      document.getElementById(`section-${section}`).classList.remove('hidden');
+      
+      if (section === 'products') loadProducts();
+      if (section === 'orders') loadOrders();
+    }
+
+    // Dashboard
+    async function loadDashboard() {
+      try {
+        const response = await fetch('/api/admin/stats');
+        const stats = await response.json();
+        
+        document.getElementById('stat-products').textContent = stats.totalProducts;
+        document.getElementById('stat-orders').textContent = stats.totalOrders;
+        document.getElementById('stat-revenue').textContent = `$${stats.totalRevenue.toFixed(2)}`;
+        document.getElementById('stat-pending').textContent = stats.pendingOrders;
+      } catch (error) {
+        console.error('Failed to load dashboard:', error);
+      }
+    }
+
+    // Products
+    async function loadProducts() {
+      try {
+        const response = await fetch('/api/products?active=false');
+        products = await response.json();
+        renderProducts();
+      } catch (error) {
+        console.error('Failed to load products:', error);
+      }
+    }
+
+    function renderProducts() {
+      const tbody = document.getElementById('products-table-body');
+      tbody.innerHTML = products.map(p => `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.product_code || '-'}</td>
+          <td>
+            ${p.image 
+              ? `<img src="${p.image}" class="product-image-thumb">`
+              : '<div class="product-image-thumb" style="background:#eee;display:flex;align-items:center;justify-content:center;">-</div>'
+            }
+          </td>
+          <td>${p.name}</td>
+          <td>${p.category || '-'}</td>
+          <td>$${p.price.toFixed(2)}</td>
+          <td>${p.stock}</td>
+          <td>
+            <span class="status-badge ${p.active ? 'status-completed' : 'status-cancelled'}">
+              ${p.active ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+          <td class="action-btns">
+            <button class="btn btn-primary" onclick="editProduct(${p.id})">Edit</button>
+            <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function showProductModal(product = null) {
+      const modal = document.getElementById('product-modal');
+      const title = document.getElementById('product-modal-title');
+      const form = document.getElementById('product-form');
+      
+      form.reset();
+      
+      if (product) {
+        title.textContent = 'Edit Product';
+        document.getElementById('product-id').value = product.id;
+        document.getElementById('product-name').value = product.name;
+        document.getElementById('product-description').value = product.description || '';
+        document.getElementById('product-price').value = product.price;
+        document.getElementById('product-category').value = product.category || '';
+        document.getElementById('product-stock').value = product.stock;
+        document.getElementById('product-active').checked = product.active === 1;
+      } else {
+        title.textContent = 'Add Product';
+        document.getElementById('product-id').value = '';
+      }
+      
+      modal.classList.add('active');
+    }
+
+    function closeProductModal() {
+      document.getElementById('product-modal').classList.remove('active');
+    }
+
+    function editProduct(id) {
+      const product = products.find(p => p.id === id);
+      if (product) showProductModal(product);
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+      
+      try {
+        const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('Product deleted');
+          loadProducts();
+        } else {
+          alert('Failed to delete product');
+        }
+      } catch (error) {
+        alert('Failed to delete product');
+      }
+    }
+
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id = document.getElementById('product-id').value;
+      const formData = new FormData();
+      
+      formData.append('name', document.getElementById('product-name').value);
+      formData.append('description', document.getElementById('product-description').value);
+      formData.append('price', document.getElementById('product-price').value);
+      formData.append('category', document.getElementById('product-category').value);
+      formData.append('stock', document.getElementById('product-stock').value);
+      formData.append('active', document.getElementById('product-active').checked ? '1' : '0');
+      
+      const imageFile = document.getElementById('product-image').files[0];
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      try {
+        const url = id ? `/api/products/${id}` : '/api/products';
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, { method, body: formData });
+        const data = await response.json();
+        
+        if (data.success) {
+          closeProductModal();
+          loadProducts();
+          alert(id ? 'Product updated!' : 'Product added!');
+        } else {
+          alert(data.error || 'Failed to save product');
+        }
+      } catch (error) {
+        alert('Failed to save product');
+      }
+    });
+
+    // Orders
+    async function loadOrders() {
+      try {
+        const response = await fetch('/api/orders');
+        orders = await response.json();
+        renderOrders();
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+      }
+    }
+
+    function renderOrders() {
+      const tbody = document.getElementById('orders-table-body');
+      tbody.innerHTML = orders.map(o => `
+        <tr>
+          <td>${o.order_number}</td>
+          <td>
+            ${o.user_name || 'Guest'}<br>
+            <small>${o.user_email || ''}</small>
+          </td>
+          <td>
+            ${o.items ? o.items.length : 0} items<br>
+            <small>${o.shipping_name}</small>
+          </td>
+          <td>$${o.total.toFixed(2)}</td>
+          <td>
+            <select class="status-select" onchange="updateOrderStatus(${o.id}, this.value)">
+              <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+              <option value="confirmed" ${o.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+              <option value="shipped" ${o.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+              <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Completed</option>
+              <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
+          </td>
+          <td>
+            ${o.bank_proof 
+              ? `<img src="${o.bank_proof}" class="order-proof-img" onclick="window.open('${o.bank_proof}')" title="Click to view">`
+              : '-'
+            }
+          </td>
+          <td>${new Date(o.created_at).toLocaleDateString()}</td>
+          <td>
+            <button class="btn btn-primary" onclick="viewOrderDetails(${o.id})">View</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateOrderStatus(orderId, status) {
+      try {
+        const response = await fetch(`/api/orders/${orderId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          alert('Order status updated');
+          loadOrders();
+          loadDashboard();
+        }
+      } catch (error) {
+        alert('Failed to update status');
+      }
+    }
+
+    function viewOrderDetails(orderId) {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      
+      const itemsList = order.items.map(i => `${i.product_name} x ${i.quantity} - $${(i.price * i.quantity).toFixed(2)}`).join('\n');
+      
+      alert(`Order: ${order.order_number}\n\nItems:\n${itemsList}\n\nTotal: $${order.total.toFixed(2)}\n\nShipping:\n${order.shipping_name}\n${order.shipping_phone}\n${order.shipping_address}\n\nStatus: ${order.status}`);
+    }
+
+    // CSV Export
+    function exportProducts() {
+      window.location.href = '/api/products/export';
+    }
+
+    // CSV Import
+    function showImportModal() {
+      document.getElementById('import-modal').classList.add('active');
+      document.getElementById('import-result').innerHTML = '';
+      document.getElementById('import-file').value = '';
+    }
+
+    function closeImportModal() {
+      document.getElementById('import-modal').classList.remove('active');
+    }
+
+    async function importProducts() {
+      const fileInput = document.getElementById('import-file');
+      const resultDiv = document.getElementById('import-result');
+      
+      if (!fileInput.files.length) {
+        resultDiv.innerHTML = '<p style="color: red;">Please select a CSV file</p>';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      resultDiv.innerHTML = '<p>Importing...</p>';
+
+      try {
+        const response = await fetch('/api/products/import', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          resultDiv.innerHTML = `<p style="color: green;">${data.message}</p>`;
+          if (data.errors && data.errors.length > 0) {
+            resultDiv.innerHTML += `<p style="color: orange;">Warnings: ${data.errors.join(', ')}</p>`;
+          }
+          loadProducts(); // Refresh the products list
+        } else {
+          resultDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<p style="color: red;">Import failed: ${error.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - OHYA2.0</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-main">
+        <a href="/" class="logo">OHYA2.0</a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/#products">Products</a>
+        </nav>
+        <div class="header-actions">
+          <a href="/cart.html" class="cart-btn">
+            Cart <span class="cart-badge" style="display:none">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login Form -->
+  <div class="container">
+    <div class="form-container">
+      <h1 class="form-title">Login</h1>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          Login
+        </button>
+      </form>
+
+      <p style="text-align: center; margin-top: 20px;">
+        Don't have an account? <a href="/register.html" style="color: var(--primary);">Register here</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const success = await window.ohya2.login(email, password);
+      
+      if (success) {
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect') || '/';
+        window.location.href = redirect;
+      }
+    });
+  </script>
+</body>
+</html>

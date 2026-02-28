@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product - OHYA2.0</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-main">
+        <a href="/" class="logo">OHYA2.0</a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/#products">Products</a>
+          <a href="/cart.html">Cart</a>
+        </nav>
+        <div class="header-actions">
+          <a href="/cart.html" class="cart-btn">
+            Cart <span class="cart-badge" style="display:none">0</span>
+          </a>
+          <div id="user-menu" class="user-menu">
+            <a href="/login.html" class="btn btn-login">Login</a>
+            <a href="/register.html" class="btn btn-register">Register</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Detail -->
+  <section class="product-detail">
+    <div class="container">
+      <div class="product-detail-container" id="product-detail-content">
+        <img src="" alt="Product" class="product-detail-image" id="product-image">
+        <div class="product-detail-info">
+          <div class="product-detail-category" id="product-category">Category</div>
+          <h1 class="product-detail-name" id="product-name">Loading...</h1>
+          <p class="product-detail-description" id="product-description">Loading...</p>
+          <div class="product-detail-price" id="product-price">$0.00</div>
+          <div class="product-detail-stock" id="product-stock">Stock: 0</div>
+          
+          <div class="quantity-selector">
+            <span>Quantity:</span>
+            <button class="quantity-btn" onclick="changeDetailQty(-1)">-</button>
+            <input type="number" class="quantity-input" id="detail-qty" value="1" min="1">
+            <button class="quantity-btn" onclick="changeDetailQty(1)">+</button>
+          </div>
+
+          <button class="btn btn-primary" id="add-to-cart-btn" style="width: 100%; padding: 15px; font-size: 16px;">
+            Add to Cart
+          </button>
+          
+          <a href="/" class="btn btn-outline" style="display: block; margin-top: 15px; text-align: center;">
+            ← Back to Products
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="/js/main.js"></script>
+  <script>
+    let currentQty = 1;
+    let currentProduct = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProductDetail();
+    });
+
+    async function loadProductDetail() {
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get('id');
+      
+      if (!productId) {
+        window.location.href = '/';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/products/${productId}`);
+        currentProduct = await response.json();
+        
+        if (!currentProduct.id) {
+          window.location.href = '/';
+          return;
+        }
+
+        renderProductDetail(currentProduct);
+      } catch (error) {
+        window.ohya2.showToast('Failed to load product', 'error');
+      }
+    }
+
+    function renderProductDetail(product) {
+      const imgEl = document.getElementById('product-image');
+      if (product.image) {
+        imgEl.src = product.image;
+        imgEl.alt = product.name;
+      } else {
+        imgEl.style.display = 'flex';
+        imgEl.style.alignItems = 'center';
+        imgEl.style.justifyContent = 'center';
+        imgEl.style.color = '#888';
+        imgEl.textContent = 'No Image';
+      }
+      
+      document.getElementById('product-name').textContent = product.name;
+      document.getElementById('product-category').textContent = product.category || 'General';
+      document.getElementById('product-description').textContent = product.description || 'No description available';
+      document.getElementById('product-price').textContent = `$${product.price.toFixed(2)}`;
+      document.getElementById('product-stock').textContent = product.stock > 0 ? `In Stock (${product.stock} available)` : 'Out of Stock';
+      
+      const btn = document.getElementById('add-to-cart-btn');
+      btn.disabled = product.stock <= 0;
+      btn.onclick = () => addToCartFromDetail();
+    }
+
+    function changeDetailQty(delta) {
+      const input = document.getElementById('detail-qty');
+      let newQty = parseInt(input.value) + delta;
+      if (newQty < 1) newQty = 1;
+      if (currentProduct && newQty > currentProduct.stock) newQty = currentProduct.stock;
+      input.value = newQty;
+      currentQty = newQty;
+    }
+
+    async function addToCartFromDetail() {
+      if (!currentProduct) return;
+      
+      const qty = parseInt(document.getElementById('detail-qty').value);
+      
+      // Add to cart (handle multiple quantity)
+      for (let i = 0; i < qty; i++) {
+        window.ohya2.addToCart(currentProduct.id);
+      }
+      
+      window.ohya2.showToast(`Added ${qty} item(s) to cart!`, 'success');
+    }
+  </script>
+</body>
+</html>

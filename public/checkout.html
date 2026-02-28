@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - OHYA2.0</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-main">
+        <a href="/" class="logo">OHYA2.0</a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/cart.html">Cart</a>
+        </nav>
+        <div class="header-actions">
+          <a href="/cart.html" class="cart-btn">
+            Cart <span class="cart-badge" style="display:none">0</span>
+          </a>
+          <div id="user-menu" class="user-menu">
+            <a href="/login.html" class="btn btn-login">Login</a>
+            <a href="/register.html" class="btn btn-register">Register</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Checkout Page -->
+  <section class="checkout-page">
+    <div class="container">
+      <h1 class="section-title">Checkout</h1>
+      
+      <div class="checkout-container">
+        <!-- Order Summary -->
+        <div class="checkout-section">
+          <h3>Order Summary</h3>
+          <div id="checkout-items">
+            <!-- Items rendered here -->
+          </div>
+          <div style="text-align: right; margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+            <h3>Total: <span id="checkout-total" style="color: var(--primary);">$0.00</span></h3>
+          </div>
+        </div>
+
+        <!-- Shipping Info -->
+        <div class="checkout-section">
+          <h3>Shipping Information</h3>
+          <form id="checkout-form">
+            <div class="form-group">
+              <label for="shippingName">Full Name *</label>
+              <input type="text" id="shippingName" name="shippingName" required>
+            </div>
+            <div class="form-group">
+              <label for="shippingPhone">Phone Number *</label>
+              <input type="tel" id="shippingPhone" name="shippingPhone" required>
+            </div>
+            <div class="form-group">
+              <label for="shippingAddress">Delivery Address *</label>
+              <textarea id="shippingAddress" name="shippingAddress" rows="3" required></textarea>
+            </div>
+          </form>
+        </div>
+
+        <!-- Bank Transfer -->
+        <div class="checkout-section">
+          <h3>Payment - Bank Transfer</h3>
+          
+          <div class="bank-info">
+            <p><strong>Bank:</strong> HSBC</p>
+            <p><strong>Account Number:</strong> 123-456-789</p>
+            <p><strong>Account Name:</strong> OHYA2.0</p>
+            <p style="margin-top: 15px; color: #666;">Please transfer the total amount and upload your payment proof below.</p>
+          </div>
+
+          <div class="form-group">
+            <label>Upload Payment Proof *</label>
+            <div class="upload-area" id="upload-area">
+              <p>Click to upload or drag and drop</p>
+              <p style="font-size: 12px; color: #888;">Supported: JPG, PNG, GIF (Max 10MB)</p>
+              <input type="file" id="bank-proof" accept="image/*" style="display: none;">
+              <img id="proof-preview" class="upload-preview hidden">
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button class="btn btn-primary" onclick="submitOrder()" style="width: 100%; padding: 15px; font-size: 18px;">
+          Place Order
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <script src="/js/main.js"></script>
+  <script>
+    let proofFile = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkAuthAndLoad();
+      renderCheckoutSummary();
+      setupUpload();
+    });
+
+    async function checkAuthAndLoad() {
+      await window.ohya2.checkAuth();
+      if (!window.ohya2.currentUser()) {
+        window.location.href = '/login.html?redirect=/checkout.html';
+        return;
+      }
+      
+      const cartItems = window.ohya2.getCartItems();
+      if (cartItems.length === 0) {
+        window.location.href = '/cart.html';
+      }
+    }
+
+    function renderCheckoutSummary() {
+      const items = window.ohya2.getCartItems();
+      const container = document.getElementById('checkout-items');
+      
+      container.innerHTML = items.map(item => `
+        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+          <span>${item.name} x ${item.quantity}</span>
+          <span>$${(item.price * item.quantity).toFixed(2)}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('checkout-total').textContent = `$${window.ohya2.getCartTotal().toFixed(2)}`;
+    }
+
+    function setupUpload() {
+      const uploadArea = document.getElementById('upload-area');
+      const fileInput = document.getElementById('bank-proof');
+      const preview = document.getElementById('proof-preview');
+
+      uploadArea.addEventListener('click', () => fileInput.click());
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+          handleFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+          handleFile(e.target.files[0]);
+        }
+      });
+
+      function handleFile(file) {
+        if (!file.type.startsWith('image/')) {
+          window.ohya2.showToast('Please upload an image file', 'error');
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          window.ohya2.showToast('File size must be less than 10MB', 'error');
+          return;
+        }
+        proofFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          preview.src = e.target.result;
+          preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+        
+        window.ohya2.showToast('Proof uploaded!', 'success');
+      }
+    }
+
+    async function submitOrder() {
+      const name = document.getElementById('shippingName').value.trim();
+      const phone = document.getElementById('shippingPhone').value.trim();
+      const address = document.getElementById('shippingAddress').value.trim();
+
+      if (!name || !phone || !address) {
+        window.ohya2.showToast('Please fill in all shipping information', 'error');
+        return;
+      }
+
+      if (!proofFile) {
+        window.ohya2.showToast('Please upload payment proof', 'error');
+        return;
+      }
+
+      const items = window.ohya2.getCartItems();
+      const total = window.ohya2.getCartTotal();
+
+      const formData = new FormData();
+      formData.append('items', JSON.stringify(items));
+      formData.append('total', total);
+      formData.append('shippingName', name);
+      formData.append('shippingPhone', phone);
+      formData.append('shippingAddress', address);
+      formData.append('bankProof', proofFile);
+
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Clear cart
+          localStorage.removeItem('ohya2_cart');
+          window.ohya2.showToast('Order placed successfully!', 'success');
+          
+          // Show order number and redirect
+          setTimeout(() => {
+            alert(`Order placed! Your order number is: ${data.orderNumber}`);
+            window.location.href = '/';
+          }, 500);
+        } else {
+          window.ohya2.showToast(data.error || 'Failed to place order', 'error');
+        }
+      } catch (error) {
+        window.ohya2.showToast('Failed to place order', 'error');
+      }
+    }
+  </script>
+</body>
+</html>
