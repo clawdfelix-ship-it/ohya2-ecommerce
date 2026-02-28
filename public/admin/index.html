@@ -4,101 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - OHYA2.0</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #ec4899; --background: #f3f4f6; --surface: #ffffff; --text: #1f2937; --text-muted: #6b7280; --border: #e5e7eb; --success: #10b981; --error: #ef4444; --warning: #f59e0b; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--background); color: var(--text); }
-    .admin-layout { display: flex; min-height: 100vh; }
-    .sidebar { width: 260px; background: var(--text); color: white; padding: 1.5rem 0; position: fixed; height: 100vh; overflow-y: auto; }
-    .sidebar-header { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .logo { font-size: 1.5rem; font-weight: 700; }
-    .logo span { color: var(--secondary); }
-    .sidebar-nav { padding: 1rem 0; }
-    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.2s; cursor: pointer; }
-    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
-    .nav-item svg { width: 20px; height: 20px; }
-    .main { flex: 1; margin-left: 260px; padding: 2rem; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .page-title { font-size: 1.75rem; font-weight: 700; }
-    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-size: 0.9375rem; transition: all 0.2s; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-    .btn-danger { background: var(--error); color: white; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-    .stat-card { background: var(--surface); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border); }
-    .stat-label { font-size: 0.875rem; color: var(--text-muted); }
-    .stat-value { font-size: 2rem; font-weight: 700; margin-top: 0.5rem; }
-    .data-table { background: var(--surface); border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: var(--background); font-weight: 600; font-size: 0.875rem; }
-    .status { padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-completed { background: #d1fae5; color: #065f46; }
-    .status-cancelled { background: #fee2e2; color: #991b1b; }
-    .form-container { background: var(--surface); padding: 2rem; border-radius: 0.75rem; border: 1px solid var(--border); max-width: 600px; }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 1rem; }
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; }
+    .sidebar { width: 200px; background: #1f2937; color: white; position: fixed; height: 100%; padding: 15px; }
+    .sidebar h2 { margin-bottom: 15px; font-size: 18px; color: #ec4899; }
+    .nav { display: flex; flex-direction: column; gap: 5px; }
+    .nav a { color: #9ca3af; padding: 10px; text-decoration: none; border-radius: 6px; }
+    .nav a:hover, .nav a.active { background: #374151; color: white; }
+    .main { margin-left: 200px; padding: 20px; }
+    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat { font-size: 28px; font-weight: bold; color: #1f2937; }
+    .stat-label { color: #6b7280; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background: #f9fafb; font-weight: 600; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #6366f1; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; margin-bottom: 4px; font-weight: 500; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
     .modal.active { display: flex; }
-    .modal-content { background: var(--surface); padding: 2rem; border-radius: 1rem; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; margin-bottom: 1.5rem; }
-    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
-    .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
-    .tab { padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); cursor: pointer; }
-    .tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -2px; }
-    @media (max-width: 768px) {
-      .admin-layout { flex-direction: column; }
-      .sidebar { width: 100%; height: auto; position: relative; }
-      .main { margin-left: 0; }
-    }
+    .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+    .actions { display: flex; gap: 5px; }
   </style>
 </head>
 <body>
-  <div class="admin-layout">
-    <aside class="sidebar">
-      <div class="sidebar-header"><div class="logo">OHYA<span>2.0</span> Admin</div></div>
-      <nav class="sidebar-nav">
-        <a href="javascript:void(0)" class="nav-item active" data-page="dashboard">📊 Dashboard</a>
-        <a href="javascript:void(0)" class="nav-item" data-page="products">📦 產品管理</a>
-        <a href="javascript:void(0)" class="nav-item" data-page="categories">🏷️ 分類管理</a>
-        <a href="javascript:void(0)" class="nav-item" data-page="orders">🛒 訂單管理</a>
-        <a href="javascript:void(0)" class="nav-item" data-page="customers">👥 客戶管理</a>
-        <a href="javascript:void(0)" class="nav-item" data-page="marketing">🎟️ 營銷推廣</a>
-        <a href="javascript:void(0)" class="nav-item" data-page="analytics">📈 數據分析</a>
-        <a href="javascript:void(0)" class="nav-item" data-page="settings">⚙️ 系統設定</a>
-        <a href="javascript:void(0)" class="nav-item" data-page="import">📥 匯入/匯出</a>
-        <a href="/" class="nav-item">🏠 返回網站</a>
-      </nav>
-
-      <script>
-        // Bind nav clicks
-        document.querySelectorAll('.nav-item[data-page]').forEach(function(el) {
-          el.addEventListener('click', function(e) {
-            e.preventDefault();
-            var page = this.getAttribute('data-page');
-            showPage(page);
-          });
-        });
-      </script>
-    </aside>
-    <main class="main">
-      <div class="page-header">
-        <h1 class="page-title" id="page-title">Dashboard</h1>
-        <button class="btn btn-secondary" onclick="logout()">登出</button>
-      </div>
-      <div id="page-content"></div>
-    </main>
+  <div class="sidebar">
+    <h2>OHYA2.0 Admin</h2>
+    <div class="nav">
+      <a href="#" class="active" onclick="show('dashboard')">📊 Dashboard</a>
+      <a href="#" onclick="show('products')">📦 產品</a>
+      <a href="#" onclick="show('orders')">🛒 訂單</a>
+      <a href="#" onclick="show('customers')">👥 客戶</a>
+      <a href="#" onclick="show('marketing')">🎟️ 營銷</a>
+      <a href="#" onclick="show('settings')">⚙️ 設定</a>
+    </div>
+  </div>
+  <div class="main">
+    <div class="header">
+      <h1 id="title">Dashboard</h1>
+      <button class="btn btn-primary" onclick="logout()">登出</button>
+    </div>
+    <div id="content">
+      <p>Loading...</p>
+    </div>
   </div>
 
-  <!-- Product Modal -->
+  <!-- Product Edit Modal -->
   <div class="modal" id="product-modal">
     <div class="modal-content">
       <div class="modal-header">
         <h2>產品資料</h2>
-        <button class="modal-close" onclick="closeModal('product-modal')">&times;</button>
+        <button onclick="closeModal()">&times;</button>
       </div>
       <form id="product-form">
         <input type="hidden" id="p-id">
@@ -127,144 +89,95 @@
             <option value="性感クッション">性感クッション</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>圖片 URL</label>
-          <input type="text" id="p-image">
-        </div>
-        <div class="form-group">
-          <label>描述</label>
-          <textarea id="p-desc" rows="4"></textarea>
-        </div>
         <button type="submit" class="btn btn-primary">儲存</button>
       </form>
     </div>
   </div>
 
   <script>
-    let products = [];
-    let orders = [];
-    let customers = [];
-    let coupons = [];
-    let currentPage = 'dashboard';
-
-    // Auto-load dashboard on page load
-    window.addEventListener('DOMContentLoaded', function() {
-      console.log('Page loaded, auto-loading dashboard...');
-      showPage('dashboard');
+    // Load all data immediately
+    Promise.all([
+      fetch('/api/products').then(r => r.json()),
+      fetch('/api/orders').then(r => r.json()),
+      fetch('/api/customers').then(r => r.json())
+    ]).then(([p, o, c]) => {
+      window.products = p;
+      window.orders = o;
+      window.customers = c;
+      renderDashboard();
+    }).catch(e => {
+      document.getElementById('content').innerHTML = '<div style="color:red">Error: ' + e.message + '</div>';
     });
-
-    async function loadData() {
-      try {
-        const [pRes, oRes, cRes] = await Promise.all([
-          fetch('/api/products'),
-          fetch('/api/orders'),
-          fetch('/api/customers')
-        ]);
-        products = await pRes.json();
-        orders = await oRes.json();
-        customers = await cRes.json();
-      } catch (e) {
-        console.error('Error loading data:', e);
-      }
-    }
-
-    async function showPage(page) {
-      currentPage = page;
-      // Update active nav state
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.querySelector('.nav-item[data-page="' + page + '"]')?.classList.add('active');
-      
-      const content = document.getElementById('page-content');
-      const titles = {
-        dashboard: 'Dashboard', products: '產品管理', categories: '分類管理',
-        orders: '訂單管理', customers: '客戶管理', marketing: '營銷推廣',
-        analytics: '數據分析', settings: '系統設定', import: '匯入/匯出'
-      };
-      document.getElementById('page-title').textContent = titles[page] || page;
-      
-      // Show loading
-      content.innerHTML = '<div style="padding:2rem;text-align:center;"><p>載入緊...</p></div>';
-      
-      try {
-        await loadData();
-
-        if (page === 'dashboard') renderDashboard();
-        else if (page === 'products') renderProducts();
-        else if (page === 'categories') renderCategories();
-        else if (page === 'orders') renderOrders();
-        else if (page === 'customers') renderCustomers();
-        else if (page === 'marketing') renderMarketing();
-        else if (page === 'analytics') renderAnalytics();
-        else if (page === 'settings') renderSettings();
-        else if (page === 'import') renderImport();
-      } catch (e) {
-        content.innerHTML = '<p style="color:red">Error: ' + e.message + '</p>';
-        console.error(e);
-      }
-    }
-
+    
     function renderDashboard() {
-      document.getElementById('page-content').innerHTML = `
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">總產品</div><div class="stat-value">${products.length}</div></div>
-          <div class="stat-card"><div class="stat-label">總訂單</div><div class="stat-value">${orders.length}</div></div>
-          <div class="stat-card"><div class="stat-label">總客戶</div><div class="stat-value">${customers.length}</div></div>
-          <div class="stat-card"><div class="stat-label">優惠碼</div><div class="stat-value">${coupons.length}</div></div>
-        </div>
-        <h2 style="margin: 1.5rem 0 1rem;">最新訂單</h2>
-        <div class="data-table"><table><thead><tr><th>ID</th><th>客戶</th><th>總額</th><th>狀態</th></tr></thead><tbody>${orders.slice(0,5).map(o => `<tr><td>#${o.id}</td><td>${o.customer_name || 'Guest'}</td><td>$${o.total}</td><td><span class="status status-${o.status}">${o.status}</span></td></tr>`).join('')}</tbody></table></div>
-      `;
+      document.getElementById('title').innerText = 'Dashboard';
+      document.getElementById('content').innerHTML = 
+        '<div class="card"><div class="stat-label">總產品</div><div class="stat">' + window.products.length + '</div></div>' +
+        '<div class="card"><div class="stat-label">總訂單</div><div class="stat">' + window.orders.length + '</div></div>' +
+        '<div class="card"><div class="stat-label">總客戶</div><div class="stat">' + window.customers.length + '</div></div>';
     }
-
-    function renderProducts() {
-      document.getElementById('page-content').innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:1rem;">
-          <input type="text" placeholder="搜尋產品..." onkeyup="filterProducts(this.value)" style="padding:0.5rem;border:1px solid var(--border);border-radius:0.5rem;">
-          <button class="btn btn-primary" onclick="openProductModal()">➕ 新增產品</button>
-        </div>
-        <div class="data-table"><table><thead><tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody id="product-list"></tbody></table></div>
-      `;
-      renderProductList();
+    
+    function show(page) {
+      document.getElementById('title').innerText = page.charAt(0).toUpperCase() + page.slice(1);
+      
+      if (page === 'dashboard') {
+        renderDashboard();
+      } else if (page === 'products') {
+        let html = '<div class="card"><button class="btn btn-primary" onclick="openProductModal()">➕ 新增產品</button></div>';
+        html += '<table><thead><tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>';
+        window.products.slice(0,50).forEach(p => {
+          html += '<tr><td>' + (p.product_code||'') + '</td><td>' + (p.name||'').substring(0,20) + '</td><td>$' + (p.price||0) + '</td><td>' + (p.stock||0) + '</td><td class="actions"><button class="btn btn-primary" style="padding:4px 8px;font-size:12px" onclick="editProduct(' + p.id + ')">編輯</button></td></tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('content').innerHTML = html;
+      } else if (page === 'orders') {
+        let html = '<table><thead><tr><th>ID</th><th>總額</th><th>狀態</th></tr></thead><tbody>';
+        if (window.orders.length === 0) {
+          html += '<tr><td colspan="3">暫無訂單</td></tr>';
+        } else {
+          window.orders.forEach(o => {
+            html += '<tr><td>#' + o.id + '</td><td>$' + (o.total||0) + '</td><td>' + (o.status||'pending') + '</td></tr>';
+          });
+        }
+        html += '</tbody></table>';
+        document.getElementById('content').innerHTML = html;
+      } else if (page === 'customers') {
+        let html = '<table><thead><tr><th>姓名</th><th>Email</th><th>電話</th></tr></thead><tbody>';
+        if (window.customers.length === 0) {
+          html += '<tr><td colspan="3">暫無客戶</td></tr>';
+        } else {
+          window.customers.slice(0,20).forEach(c => {
+            html += '<tr><td>' + (c.name||'') + '</td><td>' + (c.email||'') + '</td><td>' + (c.phone||'-') + '</td></tr>';
+          });
+        }
+        html += '</tbody></table>';
+        document.getElementById('content').innerHTML = html;
+      } else if (page === 'marketing') {
+        document.getElementById('content').innerHTML = '<div class="card"><p>營銷功能即將推出</p></div>';
+      } else if (page === 'settings') {
+        document.getElementById('content').innerHTML = '<div class="card"><h3>💳 付款設定</h3><p>恆生銀行 123-456789-001</p></div><div class="card"><h3>🚚 運費設定</h3><p>免運: $300 | 運費: $30</p></div>';
+      }
+      
+      // Update active nav
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      event.target.classList.add('active');
     }
-
-    function renderProductList() {
-      document.getElementById('product-list').innerHTML = products.map(p => `
-        <tr>
-          <td>${p.product_code || '-'}</td>
-          <td>${p.name || '-'}</td>
-          <td>$${p.price || 0}</td>
-          <td>${p.stock || 0}</td>
-          <td>
-            <button class="btn btn-primary" style="padding:0.25rem 0.5rem;font-size:0.75rem" onclick="editProduct(${p.id})">編輯</button>
-            <button class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">刪除</button>
-          </td>
-        </tr>
-      `).join('') || '<tr><td colspan="5">暫無產品</td></tr>';
-    }
-
-    function openProductModal(id = null) {
+    
+    // Product editing
+    function openProductModal(id) {
+      const p = id ? window.products.find(x => x.id === id) : null;
       document.getElementById('p-id').value = id || '';
-      document.getElementById('p-code').value = id ? products.find(p=>p.id===id)?.product_code || '' : '';
-      document.getElementById('p-name').value = id ? products.find(p=>p.id===id)?.name || '' : '';
-      document.getElementById('p-price').value = id ? products.find(p=>p.id===id)?.price || '' : '';
-      document.getElementById('p-stock').value = id ? products.find(p=>p.id===id)?.stock || '' : '';
-      document.getElementById('p-category').value = id ? products.find(p=>p.id===id)?.category || '' : 'オナホール';
-      document.getElementById('p-desc').value = id ? products.find(p=>p.id===id)?.description || '' : '';
-      document.getElementById('p-image').value = id ? products.find(p=>p.id===id)?.image_url || '' : '';
+      document.getElementById('p-code').value = p ? p.product_code : '';
+      document.getElementById('p-name').value = p ? p.name : '';
+      document.getElementById('p-price').value = p ? p.price : '';
+      document.getElementById('p-stock').value = p ? p.stock : '';
+      document.getElementById('p-category').value = p ? p.category : 'オナホール';
       document.getElementById('product-modal').classList.add('active');
     }
-
-    function editProduct(id) { openProductModal(id); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     
-    async function deleteProduct(id) {
-      if (confirm('確定要刪除?')) {
-        await fetch(\`/api/products/\${id}\`, { method: 'DELETE' });
-        await loadData();
-        renderProductList();
-      }
-    }
-
+    function editProduct(id) { openProductModal(id); }
+    function closeModal() { document.getElementById('product-modal').classList.remove('active'); }
+    
     document.getElementById('product-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('p-id').value;
@@ -273,180 +186,19 @@
         name: document.getElementById('p-name').value,
         price: parseInt(document.getElementById('p-price').value) || 0,
         stock: parseInt(document.getElementById('p-stock').value) || 0,
-        category: document.getElementById('p-category').value,
-        description: document.getElementById('p-desc').value,
-        image_url: document.getElementById('p-image').value
+        category: document.getElementById('p-category').value
       };
       
       const method = id ? 'PUT' : 'POST';
-      const url = id ? \`/api/products/\${id}\` : '/api/products';
+      const url = id ? '/api/products/' + id : '/api/products';
       
-      await fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      closeModal('product-modal');
-      await loadData();
-      renderProductList();
+      await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      closeModal();
+      // Reload
+      location.reload();
     });
-
-    function renderOrders() {
-      document.getElementById('page-content').innerHTML = `
-        <div class="data-table"><table><thead><tr><th>訂單ID</th><th>客戶</th><th>產品</th><th>總額</th><th>狀態</th><th>操作</th></tr></thead><tbody>${orders.map(o => `<tr><td>#${o.id}</td><td>${o.customer_name || 'Guest'}</td><td>${o.items?.length || 0}件</td><td>$${o.total}</td><td><span class="status status-${o.status}">${o.status}</span></td><td><button class="btn btn-primary" style="padding:0.25rem 0.5rem;font-size:0.75rem" onclick="updateOrderStatus(${o.id}, '${o.status === 'pending' ? 'completed' : 'pending'}')">${o.status === 'pending' ? '完成' : '重置'}訂單</button></td></tr>`).join('') || '<tr><td colspan="6">暫無訂單</td></tr>'}</tbody></table></div>
-      `;
-    }
-
-    async function updateOrderStatus(id, status) {
-      await fetch(\`/api/orders/\${id}\`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      await loadData();
-      renderOrders();
-    }
-
-    function renderCustomers() {
-      document.getElementById('page-content').innerHTML = `
-        <div class="data-table"><table><thead><tr><th>姓名</th><th>Email</th><th>電話</th><th>訂單數</th><th>消費總額</th></tr></thead><tbody>${customers.map(c => `<tr><td>${c.name}</td><td>${c.email}</td><td>${c.phone || '-'}</td><td>${c.orders || 0}</td><td>$${c.total || 0}</td></tr>`).join('') || '<tr><td colspan="5">暫無客戶</td></tr>'}</tbody></table></div>
-      `;
-    }
-
-    function renderMarketing() {
-      // Coupon logic remains local for now as backend doesn't have coupon endpoint yet
-      document.getElementById('page-content').innerHTML = `
-        <div class="tabs">
-          <div class="tab active">優惠碼</div>
-          <div class="tab">閃購</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:1rem;">
-          <input type="text" id="coupon-code" placeholder="優惠碼" style="padding:0.5rem;border:1px solid var(--border);border-radius:0.5rem;">
-          <input type="text" id="coupon-value" placeholder="折扣 (%)" style="padding:0.5rem;border:1px solid var(--border);border-radius:0.5rem;">
-          <button class="btn btn-primary" onclick="addCoupon()">新增優惠碼</button>
-        </div>
-        <div class="data-table"><table><thead><tr><th>優惠碼</th><th>折扣</th><th>狀態</th><th>操作</th></tr></thead><tbody>${coupons.map(c => `<tr><td>${c.code}</td><td>${c.discount}%</td><td><span class="status status-completed">啟用</span></td><td><button class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.75rem" onclick="deleteCoupon('${c.code}')">刪除</button></td></tr>`).join('') || '<tr><td colspan="4">暫無優惠碼</td></tr>'}</tbody></table></div>
-      `;
-    }
-
-    function addCoupon() {
-      const code = document.getElementById('coupon-code').value;
-      const discount = document.getElementById('coupon-value').value;
-      if (code && discount) {
-        coupons.push({ code, discount: parseInt(discount) });
-        renderMarketing();
-      }
-    }
-
-    function deleteCoupon(code) {
-      coupons = coupons.filter(c => c.code !== code);
-      renderMarketing();
-    }
-
-    function renderCategories() {
-      // Get unique categories from products
-      const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
-      document.getElementById('page-content').innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:1rem;">
-          <input type="text" id="new-category" placeholder="新分類名稱" style="padding:0.5rem;border:1px solid var(--border);border-radius:0.5rem;">
-          <button class="btn btn-primary" onclick="alert('分類功能即將推出')">新增分類</button>
-        </div>
-        <div class="data-table"><table><thead><tr><th>分類名稱</th><th>產品數量</th><th>操作</th></tr></thead><tbody>
-          ${categories.map(cat => `<tr><td>${cat}</td><td>${products.filter(p => p.category === cat).length}</td><td><button class="btn btn-secondary" style="padding:0.25rem 0.5rem;font-size:0.75rem">編輯</button></td></tr>`).join('')}
-        </tbody></table></div>
-      `;
-    }
-
-    function renderAnalytics() {
-      const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
-      const avgOrder = orders.length ? Math.round(totalRevenue / orders.length) : 0;
-      document.getElementById('page-content').innerHTML = `
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">總銷售額</div><div class="stat-value">$${totalRevenue}</div></div>
-          <div class="stat-card"><div class="stat-label">平均訂單</div><div class="stat-value">$${avgOrder}</div></div>
-          <div class="stat-card"><div class="stat-label">總產品</div><div class="stat-value">${products.length}</div></div>
-          <div class="stat-card"><div class="stat-label">總客戶</div><div class="stat-value">${customers.length}</div></div>
-        </div>
-        <h3 style="margin:1.5rem 0 1rem;">暢銷產品 (Top 10)</h3>
-        <div class="data-table"><table><thead><tr><th>產品</th><th>價格</th><th>庫存</th></tr></thead><tbody>
-          ${products.slice(0,10).map(p => `<tr><td>${p.name}</td><td>$${p.price}</td><td>${p.stock}</td></tr>`).join('')}
-        </tbody></table></div>
-      `;
-    }
-
-    function renderImport() {
-      document.getElementById('page-content').innerHTML = `
-        <div class="form-container">
-          <h3>📥 匯入產品</h3>
-          <p style="color:var(--text-muted);margin-bottom:1rem;">從 JSON 檔案匯入產品數據</p>
-          <button class="btn btn-primary" onclick="alert('請使用 API: POST /api/admin/import-products')">執行匯入</button>
-        </div>
-        <div class="form-container" style="margin-top:1.5rem;">
-          <h3>📤 匯出數據</h3>
-          <div style="display:flex;gap:1rem;margin-top:1rem;">
-            <button class="btn btn-secondary" onclick="window.open('/api/products','_blank')">匯出產品</button>
-            <button class="btn btn-secondary" onclick="window.open('/api/orders','_blank')">匯出訂單</button>
-            <button class="btn btn-secondary" onclick="window.open('/api/customers','_blank')">匯出客戶</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderSettings() {
-      document.getElementById('page-content').innerHTML = `
-        <div class="form-container">
-          <h3>💳 付款設定</h3>
-          <div class="form-group">
-            <label>銀行名稱</label>
-            <input type="text" value="恆生銀行">
-          </div>
-          <div class="form-group">
-            <label>帳戶號碼</label>
-            <input type="text" value="123-456789-001">
-          </div>
-          <div class="form-group">
-            <label>帳戶名稱</label>
-            <input type="text" value="OHYA2 COMPANY LIMITED">
-          </div>
-          <button class="btn btn-primary" onclick="alert('設定已儲存')">儲存設定</button>
-        </div>
-        <div class="form-container" style="margin-top:1.5rem;">
-          <h3>🚚 運費設定</h3>
-          <div class="form-group">
-            <label>免運門檻 (HK$)</label>
-            <input type="number" value="300">
-          </div>
-          <div class="form-group">
-            <label>運費 (HK$)</label>
-            <input type="number" value="30">
-          </div>
-          <button class="btn btn-primary" onclick="alert('設定已儲存')">儲存設定</button>
-        </div>
-      `;
-    }
-
-    function renderImport() {
-      document.getElementById('page-content').innerHTML = `
-        <div class="form-container">
-          <h3>📥 匯入產品 (CSV)</h3>
-          <div class="form-group">
-            <label>選擇CSV檔案</label>
-            <input type="file" accept=".csv">
-          </div>
-          <button class="btn btn-primary">匯入</button>
-        </div>
-        <div class="form-container" style="margin-top:1.5rem;">
-          <h3>📤 匯出產品</h3>
-          <button class="btn btn-primary">匯出CSV</button>
-        </div>
-      `;
-    }
-
+    
     function logout() { location.href = '/'; }
-
-    // Init
-    showPage('dashboard');
   </script>
 </body>
 </html>
