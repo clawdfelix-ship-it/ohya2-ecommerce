@@ -352,13 +352,62 @@
       font-size: 0.875rem;
     }
 
-    /* Responsive */
+    /* Mobile Menu Button */
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .mobile-menu-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      z-index: 300;
+    }
+
+    .mobile-nav.active {
+      display: block;
+    }
+
+    .mobile-nav a {
+      display: block;
+      padding: 0.75rem 0;
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mobile-nav a:last-child {
+      border-bottom: none;
+    }
+
     @media (max-width: 768px) {
       .hero h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
       }
       
-      .nav-dropdown:hover .dropdown-menu {
+      nav {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: block;
+      }
+
+      .search-box {
         display: none;
       }
       
@@ -469,6 +518,11 @@
   <header>
     <div class="header-inner">
       <a href="/" class="logo">OHYA<span>2.0</span></a>
+      <button class="mobile-menu-btn" onclick="document.getElementById('mobile-nav').classList.toggle('active')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
       <nav>
       <div class="nav-dropdown">
         <a href="#categories" class="nav-link">產品分類 ▾</a>
@@ -506,6 +560,16 @@
           <span class="cart-badge" id="cart-count">0</span>
         </button>
       </div>
+    </div>
+
+    <!-- Mobile Nav -->
+    <div class="mobile-nav" id="mobile-nav">
+      <a href="#categories" onclick="document.getElementById('mobile-nav').classList.remove('active')">產品分類</a>
+      <a href="#products" onclick="document.getElementById('mobile-nav').classList.remove('active')">熱門產品</a>
+      <a href="#about" onclick="document.getElementById('mobile-nav').classList.remove('active')">關於我們</a>
+      <a href="/login.html" onclick="document.getElementById('mobile-nav').classList.remove('active')">登入</a>
+      <a href="/register.html" onclick="document.getElementById('mobile-nav').classList.remove('active')">註冊</a>
+      <a href="/cart.html" onclick="document.getElementById('mobile-nav').classList.remove('active')">購物車</a>
     </div>
   </header>
 
