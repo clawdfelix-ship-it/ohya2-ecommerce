@@ -1,10 +1,42 @@
-const { sql } = require('@vercel/postgres');
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
+
+// Create connection pool from POSTGRES_URL environment variable
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+const sql = async (strings, ...values) => {
+  // Convert tagged template literal to query
+  let query = '';
+  const params = [];
+  let paramIndex = 1;
+  
+  for (let i = 0; i < strings.length; i++) {
+    query += strings[i];
+    if (i < values.length) {
+      query += `$${paramIndex}`;
+      params.push(values[i]);
+      paramIndex++;
+    }
+  }
+  
+  // Handle SELECT queries
+  if (query.trim().toUpperCase().startsWith('SELECT')) {
+    const result = await pool.query(query, params);
+    return result.rows;
+  }
+  
+  // Handle INSERT/UPDATE/DELETE
+  await pool.query(query, params);
+  return [];
+};
 
 async function initDatabase() {
   try {
     // Create tables if they don't exist
-    await sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
@@ -15,9 +47,9 @@ async function initDatabase() {
         is_admin INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `;
+    `);
 
-    await sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
         product_code TEXT UNIQUE,
@@ -31,9 +63,9 @@ async function initDatabase() {
         image_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `;
+    `);
 
-    await sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS orders (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id),
@@ -42,9 +74,9 @@ async function initDatabase() {
         bank_transfer_proof TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `;
+    `);
 
-    await sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS order_items (
         id SERIAL PRIMARY KEY,
         order_id INTEGER REFERENCES orders(id),
@@ -52,18 +84,18 @@ async function initDatabase() {
         quantity INTEGER NOT NULL,
         price INTEGER NOT NULL
       )
-    `;
+    `);
 
     // Create admin user if not exists
     try {
       const hashedPassword = await bcrypt.hash('admin123', 10);
-      await sql`
+      await pool.query(`
         INSERT INTO users (email, password, name, is_admin)
-        VALUES ('admin@ohya2.com', ${hashedPassword}, 'Admin', 1)
+        VALUES ('admin@ohya2.com', $1, 'Admin', 1)
         ON CONFLICT (email) DO NOTHING
-      `;
+      `, [hashedPassword]);
     } catch (e) {
-      console.log('Admin might already exist:', e.message);
+      console.log('Admin might already exist');
     }
 
     console.log('Database initialized!');
@@ -74,4 +106,4 @@ async function initDatabase() {
   }
 }
 
-module.exports = { initDatabase, sql };
+module.exports = { initDatabase, sql, pool };
