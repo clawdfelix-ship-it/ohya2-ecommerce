@@ -1043,6 +1043,28 @@ OHYA2.0 團隊</textarea>
     ];
     let currentCustomerFilter = 'all';
     let selectedCustomer = null;
+    let selectedOrderIds = new Set();
+    let currentOrderFilter = 'all';
+
+    // Sample order data with enhanced fields
+    const sampleOrders = [
+      { id: 1001, user_id: 1, user_name: '王小明', user_phone: '9123 4567', user_email: 'wang@example.com', user_address: '九龍旺角太子道西123號5樓C室', total: 2580, status: 'completed', payment_status: 'paid', created_at: '2026-02-28T10:30:00', paid_at: '2026-02-28T10:35:00', shipped_at: '2026-02-27T14:00:00', completed_at: '2026-02-28T16:00:00', tracking_number: '', 
+        items: [{ code: 'OH-001', name: 'Premium オナホール Pro', price: 1280, qty: 1, subtotal: 1280 }, { code: 'VB-002', name: '靜音震動器旗艦版', price: 1300, qty: 1, subtotal: 1300 }] },
+      { id: 1002, user_id: 2, user_name: '李小華', user_phone: '9876 5432', user_email: 'lee@example.com', user_address: '香港島中環德輔道中88號8樓', total: 4500, status: 'shipped', payment_status: 'paid', created_at: '2026-02-27T15:20:00', paid_at: '2026-02-27T15:25:00', shipped_at: '2026-02-28T09:00:00', completed_at: null, tracking_number: 'SF1234567890', 
+        items: [{ code: 'DW-001', name: '超進化ダッチワイフ', price: 4500, qty: 1, subtotal: 4500 }] },
+      { id: 1003, user_id: 3, user_name: '張美美', user_phone: '9234 5678', user_email: 'zhang@example.com', user_address: '新界沙田沙田圍路45號3樓', total: 890, status: 'pending', payment_status: 'pending', created_at: '2026-02-28T11:00:00', paid_at: null, shipped_at: null, completed_at: null, tracking_number: '', 
+        items: [{ code: 'OH-002', name: '智能飛機杯旗艦', price: 890, qty: 1, subtotal: 890 }] },
+      { id: 1004, user_id: 4, user_name: '陳大文', user_phone: '9456 7890', user_email: 'chen@example.com', user_address: '九龍紅磡黃埔花園12座8樓B室', total: 6800, status: 'processing', payment_status: 'paid', created_at: '2026-02-26T18:30:00', paid_at: '2026-02-26T18:35:00', shipped_at: null, completed_at: null, tracking_number: '', 
+        items: [{ code: 'VR-001', name: 'VR沉浸式體驗套件', price: 3800, qty: 1, subtotal: 3800 }, { code: 'PP-001', name: '極上のおっぱい套裝', price: 3000, qty: 1, subtotal: 3000 }] },
+      { id: 1005, user_id: 5, user_name: '林怡君', user_phone: '9789 0123', user_email: 'lin@example.com', user_address: '香港島灣仔軒尼詩道250號6樓', total: 1560, status: 'cancelled', payment_status: 'refunded', created_at: '2026-02-25T09:15:00', paid_at: '2026-02-25T09:20:00', shipped_at: null, completed_at: null, tracking_number: '', 
+        items: [{ code: 'OH-003', name: '雙人共震按摩器', price: 1560, qty: 1, subtotal: 1560 }] },
+      { id: 1006, user_id: 6, user_name: '黃志強', user_phone: '9123 0987', user_email: 'huang@example.com', user_address: '新界屯門青山公路150號', total: 3200, status: 'shipped', payment_status: 'paid', created_at: '2026-02-24T14:00:00', paid_at: '2026-02-24T14:05:00', shipped_at: '2026-02-25T11:00:00', completed_at: null, tracking_number: 'HKPOST9876543210', 
+        items: [{ code: 'DW-002', name: '靜音版ダッチワイフ', price: 3200, qty: 1, subtotal: 3200 }] },
+      { id: 1007, user_id: 1, user_name: '王小明', user_phone: '9123 4567', user_email: 'wang@example.com', user_address: '九龍旺角太子道西123號5樓C室', total: 980, status: 'paid', payment_status: 'paid', created_at: '2026-02-28T12:00:00', paid_at: '2026-02-28T12:05:00', shipped_at: null, completed_at: null, tracking_number: '', 
+        items: [{ code: 'VB-001', name: '靜音震動器入門版', price: 980, qty: 1, subtotal: 980 }] },
+      { id: 1008, user_id: 7, user_name: '周杰倫', user_phone: '9345 6789', user_email: 'jay@example.com', user_address: '九龍尖沙咀彌敦道100號', total: 5600, status: 'pending', payment_status: 'failed', created_at: '2026-02-28T13:00:00', paid_at: null, shipped_at: null, completed_at: null, tracking_number: '', 
+        items: [{ code: 'OH-001', name: 'Premium オナホール Pro', price: 1280, qty: 2, subtotal: 2560 }, { code: 'PP-002', name: '升級版おっぱい套裝', price: 3040, qty: 1, subtotal: 3040 }] }
+    ];
 
     // Sample data for analytics
     const mockAnalytics = {
@@ -1237,10 +1259,14 @@ OHYA2.0 團隊</textarea>
       try {
         const oRes = await fetch('/api/orders');
         orders = await oRes.json();
-        renderOrders();
-        document.getElementById('stat-orders').textContent = orders.length;
-        document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'pending').length;
-      } catch(e) { console.log('No orders'); }
+      } catch(e) { 
+        console.log('No orders, using sample data'); 
+        orders = sampleOrders;
+      }
+      renderOrders();
+      updateOrderStats();
+      document.getElementById('stat-orders').textContent = orders.length;
+      document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'pending').length;
 
       // Load customers
       customers = sampleCustomers;
@@ -1461,6 +1487,179 @@ OHYA2.0 團隊</textarea>
       `).join('');
     }
 
+    // ========== MARKETING FUNCTIONS ==========
+    let coupons = [
+      { id: 1, code: 'SAVE20', type: 'percent', value: 20, min_spend: 100, usage_limit: 100, usage_count: 45, expiry: '2026-03-31', active: true },
+      { id: 2, code: 'WELCOME50', type: 'fixed', value: 50, min_spend: 200, usage_limit: 500, usage_count: 156, expiry: '2026-06-30', active: true },
+      { id: 3, code: 'VIP100', type: 'percent', value: 15, min_spend: 500, usage_limit: 50, usage_count: 12, expiry: '2026-04-15', active: true },
+      { id: 4, code: 'EXPIRED10', type: 'percent', value: 10, min_spend: 0, usage_limit: 200, usage_count: 200, expiry: '2026-01-31', active: false }
+    ];
+
+    let flashSales = [
+      { id: 1, name: '新春大特價', discount: 25, start_date: '2026-02-01', end_date: '2026-02-28', scope: 'all', category: '', active: true },
+      { id: 2, name: '情人節優惠', discount: 30, start_date: '2026-02-10', end_date: '2026-02-14', scope: 'category', category: 'オナホール', active: true },
+      { id: 3, name: '會員專享', discount: 15, start_date: '2026-03-01', end_date: '2026-03-31', scope: 'all', category: '', active: false }
+    ];
+
+    // Toggle scope visibility
+    document.getElementById('fs-scope')?.addEventListener('change', function() {
+      const categoryGroup = document.getElementById('fs-category-group');
+      categoryGroup.style.display = this.value === 'category' ? 'block' : 'none';
+    });
+
+    function renderCoupons() {
+      const tbody = document.getElementById('coupon-list');
+      tbody.innerHTML = coupons.map(c => `
+        <tr>
+          <td><strong>${c.code}</strong></td>
+          <td>${c.type === 'percent' ? '百分比' : '固定金額'}</td>
+          <td>${c.type === 'percent' ? c.value + '%' : 'HK$' + c.value}</td>
+          <td>HK$ ${c.min_spend}</td>
+          <td>${c.usage_count}</td>
+          <td>${c.usage_limit === null ? '無限制' : c.usage_limit}</td>
+          <td>${c.expiry}</td>
+          <td>
+            <label style="display:inline-flex; align-items:center; cursor:pointer;">
+              <input type="checkbox" ${c.active ? 'checked' : ''} onchange="toggleCoupon(${c.id})" style="margin-right:4px;">
+              <span class="status ${c.active ? 'status-completed' : 'status-cancelled'}">${c.active ? '啟用' : '停用'}</span>
+            </label>
+          </td>
+          <td>
+            <button class="action-btn delete-btn" onclick="deleteCoupon(${c.id})">刪除</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderFlashSales() {
+      const tbody = document.getElementById('flashsale-list');
+      const now = new Date();
+      tbody.innerHTML = flashSales.map(fs => {
+        const endDate = new Date(fs.end_date);
+        const isExpired = endDate < now;
+        const isActive = fs.active && !isExpired;
+        return `
+        <tr>
+          <td><strong>${fs.name}</strong></td>
+          <td><span style="color: var(--secondary); font-weight: 700;">${fs.discount}%</span></td>
+          <td>${fs.start_date}</td>
+          <td>${fs.end_date}</td>
+          <td>${fs.scope === 'all' ? '全部產品' : fs.category}</td>
+          <td>
+            <label style="display:inline-flex; align-items:center; cursor:pointer;">
+              <input type="checkbox" ${fs.active ? 'checked' : ''} onchange="toggleFlashSale(${fs.id})" style="margin-right:4px;">
+              <span class="status ${isActive ? 'status-completed' : isExpired ? 'status-cancelled' : 'status-pending'}">${isExpired ? '已過期' : fs.active ? '進行中' : '已停用'}</span>
+            </label>
+          </td>
+          <td>
+            <button class="action-btn delete-btn" onclick="deleteFlashSale(${fs.id})">刪除</button>
+          </td>
+        </tr>
+      `}).join('');
+    }
+
+    function toggleCoupon(id) {
+      const coupon = coupons.find(c => c.id === id);
+      if (coupon) {
+        coupon.active = !coupon.active;
+        renderCoupons();
+      }
+    }
+
+    function toggleFlashSale(id) {
+      const fs = flashSales.find(f => f.id === id);
+      if (fs) {
+        fs.active = !fs.active;
+        renderFlashSales();
+      }
+    }
+
+    function deleteCoupon(id) {
+      if (confirm('確定要刪除此優惠券嗎？')) {
+        coupons = coupons.filter(c => c.id !== id);
+        renderCoupons();
+      }
+    }
+
+    function deleteFlashSale(id) {
+      if (confirm('確定要刪除此閃購優惠嗎？')) {
+        flashSales = flashSales.filter(f => f.id !== id);
+        renderFlashSales();
+      }
+    }
+
+    // Coupon form submission
+    document.getElementById('coupon-form')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const newCoupon = {
+        id: Date.now(),
+        code: document.getElementById('c-code').value.toUpperCase(),
+        type: document.getElementById('c-type').value,
+        value: parseInt(document.getElementById('c-value').value),
+        min_spend: parseInt(document.getElementById('c-min-spend').value),
+        usage_limit: parseInt(document.getElementById('c-usage-limit').value),
+        usage_count: 0,
+        expiry: document.getElementById('c-expiry').value,
+        active: true
+      };
+      coupons.push(newCoupon);
+      renderCoupons();
+      hideModal('coupon-modal');
+      this.reset();
+    });
+
+    // Flash sale form submission
+    document.getElementById('flashsale-form')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const scope = document.getElementById('fs-scope').value;
+      const newFlashSale = {
+        id: Date.now(),
+        name: document.getElementById('fs-name').value,
+        discount: parseInt(document.getElementById('fs-discount').value),
+        start_date: document.getElementById('fs-start').value.replace('T', ' '),
+        end_date: document.getElementById('fs-end').value.replace('T', ' '),
+        scope: scope,
+        category: scope === 'category' ? document.getElementById('fs-category').value : '',
+        active: true
+      };
+      flashSales.push(newFlashSale);
+      renderFlashSales();
+      hideModal('flashsale-modal');
+      this.reset();
+    });
+
+    // Email template save
+    function saveEmailTemplate(type) {
+      if (type === 'order') {
+        localStorage.setItem('email_order_subject', document.getElementById('email-order-subject').value);
+        localStorage.setItem('email_order_content', document.getElementById('email-order-content').value);
+      } else if (type === 'shipment') {
+        localStorage.setItem('email_shipment_subject', document.getElementById('email-shipment-subject').value);
+        localStorage.setItem('email_shipment_content', document.getElementById('email-shipment-content').value);
+      }
+      alert('郵件範本已儲存！');
+    }
+
+    // Load saved email templates
+    function loadEmailTemplates() {
+      if (localStorage.getItem('email_order_subject')) {
+        document.getElementById('email-order-subject').value = localStorage.getItem('email_order_subject');
+        document.getElementById('email-order-content').value = localStorage.getItem('email_order_content');
+      }
+      if (localStorage.getItem('email_shipment_subject')) {
+        document.getElementById('email-shipment-subject').value = localStorage.getItem('email_shipment_subject');
+        document.getElementById('email-shipment-content').value = localStorage.getItem('email_shipment_content');
+      }
+    }
+
+    function showMarketingTab(tab) {
+      document.querySelectorAll('.marketing-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('#page-marketing .tab').forEach(t => t.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById('marketing-' + tab).classList.add('active');
+    }
+
     function addTag() {
       const name = document.getElementById('new-tag-name').value.trim();
       const color = document.getElementById('new-tag-color').value;
@@ -1489,7 +1688,8 @@ OHYA2.0 團隊</textarea>
         'products': '產品管理',
         'orders': '訂單管理',
         'customers': '客戶管理',
-        'import': '匯入/匯出'
+        'import': '匯入/匯出',
+        'marketing': '營銷推廣'
       };
       document.getElementById('page-title').textContent = titles[page] || page;
       
