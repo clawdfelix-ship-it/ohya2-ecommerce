@@ -480,16 +480,18 @@
     let products = [], orders = [], customers = [], coupons = [];
     let analytics = {};
     
-    // Load data
+    // Load data with timeout
     Promise.all([
-      fetch('/api/products').then(r => r.json()),
-      fetch('/api/orders').then(r => r.json()),
-      fetch('/api/customers').then(r => r.json()),
-      fetch('/api/analytics').then(r => r.json())
+      fetch('/api/products').then(r => r.json()).catch(() => []),
+      fetch('/api/orders').then(r => r.json()).catch(() => []),
+      fetch('/api/customers').then(r => r.json()).catch(() => []),
+      fetch('/api/analytics').then(r => r.json()).catch(() => ({}))
     ]).then(([p, o, c, a]) => {
+      console.log('Data loaded:', p.length, o.length, c.length);
       products = p; orders = o; customers = c; analytics = a;
       renderDashboard();
     }).catch(e => {
+      console.error('Load error:', e);
       document.getElementById('content').innerHTML = '<div class="empty" style="color:red">Error: ' + e.message + '</div>';
     });
     
