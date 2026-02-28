@@ -1,83 +1,546 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OHYA2.0 - Adult Products Store</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <title>OHYA2.0 - 成人用品商店</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #ec4899;
+      --background: #fafafa;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --error: #ef4444;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--secondary);
+    }
+
+    nav {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--primary);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      font-size: 0.9375rem;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .cart-btn {
+      position: relative;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--secondary);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      padding: 6rem 2rem;
+      text-align: center;
+      color: white;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+
+    /* Categories */
+    .categories {
+      max-width: 1400px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 1.5rem;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .category-card {
+      background: var(--surface);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .category-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .category-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .category-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .category-count {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    /* Products */
+    .products {
+      max-width: 1400px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .product-card {
+      background: var(--surface);
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .product-image {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      background: #f3f4f6;
+    }
+
+    .product-info {
+      padding: 1.25rem;
+    }
+
+    .product-code {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .product-name {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .product-price {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .product-price .original {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+      margin-left: 0.5rem;
+    }
+
+    .product-stock {
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .in-stock {
+      color: var(--success);
+    }
+
+    .out-of-stock {
+      color: var(--error);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--text);
+      color: white;
+      padding: 4rem 2rem 2rem;
+      margin-top: 4rem;
+    }
+
+    .footer-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 3rem;
+    }
+
+    .footer-section h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .footer-section a {
+      display: block;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 0.25rem 0;
+      transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      max-width: 1400px;
+      margin: 3rem auto 0;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.875rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      nav {
+        display: none;
+      }
+      
+      .header-inner {
+        padding: 1rem;
+      }
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      justify-content: center;
+      padding: 4rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <!-- Header -->
   <header>
-    <div class="header-top">
-      <div class="container">
-        <span>OHYA2.0 - Premium Adult Products</span>
-      </div>
-    </div>
-    <div class="container">
-      <div class="header-main">
-        <a href="/" class="logo">OHYA2.0</a>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/#products">Products</a>
-          <a href="/cart.html">Cart</a>
-        </nav>
-        <div class="header-actions">
-          <a href="/cart.html" class="cart-btn">
-            Cart <span class="cart-badge" style="display:none">0</span>
-          </a>
-          <div id="user-menu" class="user-menu">
-            <a href="/login.html" class="btn btn-login">Login</a>
-            <a href="/register.html" class="btn btn-register">Register</a>
-          </div>
-        </div>
+    <div class="header-inner">
+      <a href="/" class="logo">OHYA<span>2.0</span></a>
+      <nav>
+        <a href="#categories">分類</a>
+        <a href="#products">產品</a>
+        <a href="#about">關於</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="location.href='/login.html'">登入</button>
+        <button class="btn btn-primary" onclick="location.href='/register.html'">註冊</button>
+        <button class="cart-btn" onclick="location.href='/cart.html'">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span class="cart-badge" id="cart-count">0</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Hero -->
   <section class="hero">
-    <div class="container">
-      <h1>Welcome to OHYA2.0</h1>
-      <p>Premium quality adult products for your intimate moments</p>
+    <h1>探索極致體驗</h1>
+    <p>精選高品質成人用品，為您帶來前所未有的愉悅體驗</p>
+    <button class="btn btn-primary" onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})">
+      立即選購
+    </button>
+  </section>
+
+  <section class="categories" id="categories">
+    <h2 class="section-title">產品分類</h2>
+    <div class="category-grid">
+      <a href="/?category=101" class="category-card">
+        <div class="category-icon">🎯</div>
+        <div class="category-name">オナホール</div>
+        <div class="category-count">1087件商品</div>
+      </a>
+      <a href="/?category=102" class="category-card">
+        <div class="category-icon">🧸</div>
+        <div class="category-name">ダッチワイフ</div>
+        <div class="category-count">40件商品</div>
+      </a>
+      <a href="/?category=70" class="category-card">
+        <div class="category-icon">💕</div>
+        <div class="category-name">おっぱいグッズ</div>
+        <div class="category-count">14件商品</div>
+      </a>
+      <a href="/?category=103" class="category-card">
+        <div class="category-icon">🛋️</div>
+        <div class="category-name">性感クッション</div>
+        <div class="category-count">2件商品</div>
+      </a>
+      <a href="/?category=120" class="category-card">
+        <div class="category-icon">🎬</div>
+        <div class="category-name">Tokyo Libido</div>
+        <div class="category-count">分類商品</div>
+      </a>
+      <a href="/?category=130" class="category-card">
+        <div class="category-icon">👩‍🎤</div>
+        <div class="category-name">空気少女</div>
+        <div class="category-count">分類商品</div>
+      </a>
     </div>
   </section>
 
-  <!-- Products -->
-  <section class="categories" id="products">
-    <div class="container">
-      <h2 class="section-title">Our Products</h2>
-      
-      <div class="category-filters" id="category-filters">
-        <button class="category-btn active" onclick="filterProducts('')">All</button>
-      </div>
-
-      <div class="products-grid" id="products-grid">
-        <div class="loading">Loading products...</div>
+  <section class="products" id="products">
+    <h2 class="section-title">熱門產品</h2>
+    <div class="product-grid" id="product-list">
+      <div class="loading">
+        <div class="spinner"></div>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>OHYA2.0</h3>
-          <p>Premium adult products store. Quality guaranteed.</p>
-        </div>
-        <div class="footer-section">
-          <h3>Contact</h3>
-          <p>Email: info@ohya2.com</p>
-        </div>
-        <div class="footer-section">
-          <h3>Payment</h3>
-          <p>Bank Transfer Available</p>
-        </div>
+  <footer id="about">
+    <div class="footer-inner">
+      <div class="footer-section">
+        <h3>OHYA2.0</h3>
+        <p style="color: rgba(255,255,255,0.7);">專業成人用品商店，為您精選優質產品。</p>
       </div>
+      <div class="footer-section">
+        <h3>客戶服務</h3>
+        <a href="#">聯繫我們</a>
+        <a href="#">常見問題</a>
+        <a href="#">配送說明</a>
+        <a href="#">隱私政策</a>
+      </div>
+      <div class="footer-section">
+        <h3>付款方式</h3>
+        <p style="color: rgba(255,255,255,0.7);">銀行轉帳<br>轉帳後請上傳收據</p>
+      </div>
+      <div class="footer-section">
+        <h3>聯繫</h3>
+        <p style="color: rgba(255,255,255,0.7);">Email: info@ohya2.com</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 OHYA2.0 All rights reserved.
     </div>
   </footer>
 
-  <script src="/js/main.js"></script>
+  <script>
+    // Load products from API
+    async function loadProducts() {
+      try {
+        const response = await fetch('/api/products');
+        const products = await response.json();
+        
+        const container = document.getElementById('product-list');
+        
+        if (!products || products.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">暫無產品</p>';
+          return;
+        }
+        
+        container.innerHTML = products.slice(0, 12).map(product => `
+          <div class="product-card">
+            <img src="${product.image_url || '/images/placeholder.jpg'}" alt="${product.name}" class="product-image" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 280 280%22><rect fill=%22%23f3f4f6%22 width=%22280%22 height=%22280%22/><text fill=%22%239ca3af%22 x=%22140%22 y=%22150%22 text-anchor=%22middle%22 dy=%22.3em%22>No Image</text></svg>'">
+            <div class="product-info">
+              <div class="product-code">${product.product_code || ''}</div>
+              <div class="product-name">${product.name || '未命名產品'}</div>
+              <div class="product-price">
+                ¥${product.price?.toLocaleString() || '0'}
+                ${product.normalPrice ? `<span class="original">¥${product.normalPrice.toLocaleString()}</span>` : ''}
+              </div>
+              <div class="product-stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
+                ${product.stock > 0 ? '✓ 有貨' : '✗ 缺貨'}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading products:', error);
+        document.getElementById('product-list').innerHTML = 
+          '<p style="text-align: center; color: #ef4444; padding: 2rem;">載入失敗，請稍後再試</p>';
+      }
+    }
+
+    // Load cart count
+    async function loadCartCount() {
+      try {
+        const response = await fetch('/api/cart');
+        const cart = await response.json();
+        document.getElementById('cart-count').textContent = cart?.length || 0;
+      } catch (e) {
+        console.log('Cart not available');
+      }
+    }
+
+    loadProducts();
+    loadCartCount();
+  </script>
 </body>
 </html>
