@@ -202,6 +202,38 @@ app.get('/api/test', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// --- Import API ---
+
+app.post('/api/admin/import-products', async (req, res) => {
+  try {
+    const fs = require('fs');
+    const productsPath = path.join(__dirname, 'public', 'products.json');
+    const productsData = JSON.parse(fs.readFileSync(productsPath, 'utf8'));
+    
+    let imported = 0;
+    for (const p of productsData) {
+      try {
+        const price = typeof p.shopPrice === 'number' ? p.shopPrice : 
+          parseInt((p.shopPrice || '0').replace(/[^\d]/g, ''));
+        const stock = p.stock === '有貨' ? 10 : (parseInt(p.stock) || 0);
+        
+        await sql`
+          INSERT INTO products (product_code, name, price, stock, category, description, image_url, active)
+          VALUES (${p.code}, ${p.name}, ${price}, ${stock}, ${p.category || 'オナホール'}, ${p.description || ''}, ${p.image_url}, 1)
+        `;
+        imported++;
+      } catch (e) {
+        // Skip duplicates
+      }
+    }
+    
+    res.json({ success: true, imported });
+  } catch (e) {
+    console.error('Import error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
