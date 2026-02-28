@@ -61,15 +61,15 @@
     <aside class="sidebar">
       <div class="sidebar-header"><div class="logo">OHYA<span>2.0</span> Admin</div></div>
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" onclick="showPage('dashboard',event)">📊 Dashboard</a>
-        <a href="#" class="nav-item" onclick="showPage('products',event)">📦 產品管理</a>
-        <a href="#" class="nav-item" onclick="showPage('categories',event)">🏷️ 分類管理</a>
-        <a href="#" class="nav-item" onclick="showPage('orders',event)">🛒 訂單管理</a>
-        <a href="#" class="nav-item" onclick="showPage('customers',event)">👥 客戶管理</a>
-        <a href="#" class="nav-item" onclick="showPage('marketing',event)">🎟️ 營銷推廣</a>
-        <a href="#" class="nav-item" onclick="showPage('analytics',event)">📈 數據分析</a>
-        <a href="#" class="nav-item" onclick="showPage('settings',event)">⚙️ 系統設定</a>
-        <a href="#" class="nav-item" onclick="showPage('import',event)">📥 匯入/匯出</a>
+        <a href="#" class="nav-item active" onclick="event.preventDefault();alert('Click Dashboard');showPage('dashboard',event)">📊 Dashboard</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Products');showPage('products',event)">📦 產品管理</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Categories');showPage('categories',event)">🏷️ 分類管理</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Orders');showPage('orders',event)">🛒 訂單管理</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Customers');showPage('customers',event)">👥 客戶管理</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Marketing');showPage('marketing',event)">🎟️ 營銷推廣</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Analytics');showPage('analytics',event)">📈 數據分析</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Settings');showPage('settings',event)">⚙️ 系統設定</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Import');showPage('import',event)">📥 匯入/匯出</a>
         <a href="/" class="nav-item">🏠 返回網站</a>
       </nav>
     </aside>
@@ -152,6 +152,7 @@
     }
 
     async function showPage(page, evt) {
+      console.log('showPage called:', page);
       currentPage = page;
       // Update active nav state
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
