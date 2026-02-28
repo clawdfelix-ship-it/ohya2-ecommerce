@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聯繫我們 - OHYA2.0</title>
+  <meta name="description" content="聯繫 OHYA2.0 客服">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #6366f1; --secondary: #ec4899; --background: #fafafa; --surface: #ffffff; --text: #1f2937; --text-muted: #6b7280; --border: #e5e7eb; --success: #10b981; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--background); color: var(--text); line-height: 1.6; }
+    
+    header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .logo span { color: var(--secondary); }
+    .btn { display: inline-flex; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; border: 1px solid var(--border); background: var(--surface); }
+    
+    .main { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+    h1 { font-size: 2rem; margin-bottom: 2rem; text-align: center; }
+    
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+    
+    .contact-card { background: var(--surface); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); text-align: center; }
+    .contact-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .contact-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .contact-info { color: var(--text-muted); }
+    .contact-info a { color: var(--primary); text-decoration: none; }
+    
+    .form-card { background: var(--surface); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); }
+    .form-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 1rem; font-family: inherit; }
+    .form-group textarea { min-height: 120px; resize: vertical; }
+    .btn-primary { background: var(--primary); color: white; border: none; cursor: pointer; width: 100%; }
+    .success-msg { background: #d1fae5; color: #065f46; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; display: none; }
+    
+    footer { background: var(--text); color: white; padding: 2rem; text-align: center; margin-top: 3rem; }
+    footer a { color: rgba(255,255,255,0.7); text-decoration: none; margin: 0 1rem; }
+    
+    .whatsapp-float { position: fixed; bottom: 20px; right: 20px; background: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="logo">OHYA<span>2.0</span></a>
+      <a href="/" class="btn">返回首頁</a>
+    </div>
+  </header>
+
+  <main class="main">
+    <h1>聯繫我們</h1>
+    
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="contact-icon">📧</div>
+        <div class="contact-title">Email</div>
+        <div class="contact-info">
+          <a href="mailto:info@ohya2.com">info@ohya2.com</a>
+          <p>24小時內回覆</p>
+        </div>
+      </div>
+      
+      <div class="contact-card">
+        <div class="contact-icon">💬</div>
+        <div class="contact-title">WhatsApp</div>
+        <div class="contact-info">
+          <a href="https://wa.me/85212345678">+852 1234 5678</a>
+          <p>營業時間: 11:00-00:00</p>
+        </div>
+      </div>
+      
+      <div class="contact-card">
+        <div class="contact-icon">📞</div>
+        <div class="contact-title">電話</div>
+        <div class="contact-info">
+          <a href="tel:85212345678">+852 1234 5678</a>
+          <p>11:00 - 00:00 (每日)</p>
+        </div>
+      </div>
+      
+      <div class="contact-card">
+        <div class="contact-icon">🏪</div>
+        <div class="contact-title">門市查詢</div>
+        <div class="contact-info">
+          <p>銅鑼灣 / 旺角 / 尖沙咀 / 荃灣</p>
+          <p><a href="/about.html">查看分店資料</a></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-card" style="margin-top:2rem;">
+      <h2 class="form-title">✉️ 留言給我們</h2>
+      <div class="success-msg" id="success-msg">✅ 訊息已發送！我們會盡快回覆您。</div>
+      <form id="contact-form">
+        <div class="form-group">
+          <label>姓名 *</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="email" required>
+        </div>
+        <div class="form-group">
+          <label>電話</label>
+          <input type="tel" id="phone">
+        </div>
+        <div class="form-group">
+          <label>查詢類型</label>
+          <select id="type">
+            <option>一般查詢</option>
+            <option>訂單問題</option>
+            <option>產品問題</option>
+            <option>退換貨</option>
+            <option>合作洽談</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>訊息內容 *</label>
+          <textarea id="message" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">發送訊息</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <a href="/">首頁</a>
+    <a href="/about.html">關於我們</a>
+    <a href="/policies.html">私隱政策</a>
+    <p style="margin-top:1rem;font-size:0.75rem;color:rgba(255,255,255,0.5)">© 2026 OHYA2.0 All rights reserved.</p>
+  </footer>
+  
+  <a href="https://wa.me/85212345678" class="whatsapp-float" target="_blank">💬</a>
+
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Show success message (in real app, would send to server)
+      document.getElementById('success-msg').style.display = 'block';
+      this.reset();
+    });
+  </script>
+</body>
+</html>

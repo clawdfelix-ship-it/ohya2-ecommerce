@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>關於我們 - OHYA2.0</title>
+  <meta name="description" content="OHYA2.0 - 專業成人用品商店，為您精選優質產品。">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #6366f1; --secondary: #ec4899; --background: #fafafa; --surface: #ffffff; --text: #1f2937; --text-muted: #6b7280; --border: #e5e7eb; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--background); color: var(--text); line-height: 1.6; }
+    
+    header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .logo span { color: var(--secondary); }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-size: 0.9375rem; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .cart-btn { position: relative; background: none; border: none; cursor: pointer; padding: 0.5rem; }
+    .cart-badge { position: absolute; top: 0; right: 0; background: var(--secondary); color: white; font-size: 0.75rem; width: 1.25rem; height: 1.25rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    
+    .main { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+    
+    .page-header { text-align: center; margin-bottom: 3rem; }
+    .page-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; }
+    .page-desc { color: var(--text-muted); font-size: 1.125rem; }
+    
+    .content { background: var(--surface); border-radius: 1rem; padding: 3rem; border: 1px solid var(--border); }
+    
+    .section { margin-bottom: 3rem; }
+    .section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary); }
+    .section p { color: var(--text-muted); margin-bottom: 1rem; }
+    
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+    .feature { text-align: center; padding: 2rem; background: var(--background); border-radius: 1rem; }
+    .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .feature h3 { font-weight: 600; margin-bottom: 0.5rem; }
+    .feature p { font-size: 0.875rem; color: var(--text-muted); }
+    
+    .stores { margin-top: 2rem; }
+    .store-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+    .store-card { background: var(--background); padding: 1.5rem; border-radius: 0.75rem; }
+    .store-name { font-weight: 700; margin-bottom: 0.5rem; }
+    .store-address { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+    .store-time { font-size: 0.75rem; color: var(--primary); }
+    
+    footer { background: var(--text); color: white; padding: 3rem 2rem 1rem; margin-top: 4rem; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
+    .footer-section h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .footer-section a { display: block; color: rgba(255,255,255,0.7); text-decoration: none; padding: 0.25rem 0; font-size: 0.875rem; }
+    .footer-section a:hover { color: white; }
+    .footer-bottom { max-width: 1200px; margin: 2rem auto 0; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: rgba(255,255,255,0.5); font-size: 0.75rem; }
+    
+    /* WhatsApp Float */
+    .whatsapp-float { position: fixed; bottom: 20px; right: 20px; background: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="logo">OHYA<span>2.0</span></a>
+      <div style="display:flex;gap:1rem;align-items:center;">
+        <a href="/" class="btn btn-secondary">返回首頁</a>
+        <a href="/cart.html" class="cart-btn">🛒<span class="cart-badge">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">關於我們</h1>
+      <p class="page-desc">認識 OHYA2.0 — 您的信賴之選</p>
+    </div>
+    
+    <div class="content">
+      <div class="section">
+        <h2>🌸 OHYA2.0 的理念</h2>
+        <p>「超市形式的情趣用品商店」是 OHYA2.0 的經營理念。我們的宗旨是讓客人可在舒心的環境下，享受簡易而優質的購物體驗。</p>
+        <p>我們相信您的慾望並不應該成為被批評的原因，情慾與人的心理和生理健康緊扣，不應被陳規列為禁忌。我們致力為客人搜羅多元化的商品，令其得到感知上的滿足與突破。</p>
+      </div>
+      
+      <div class="section">
+        <h2>為什麼選擇 OHYA2.0？</h2>
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">🔒</div>
+            <h3>安全 私密 可靠</h3>
+            <p>100% 私隱保密包裝、運送和帳單，絕不泄露任何信息</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">💯</div>
+            <h3>原廠正貨</h3>
+            <p>官方授權代理商，保證原廠正貨</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">🏪</div>
+            <h3>網店直營</h3>
+            <p>直接由廠商供貨，價格實惠</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">↩️</div>
+            <h3>簡易退貨</h3>
+            <p>提供退款保證，購物無憂</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>🏪 門市資訊</h2>
+        <p>我們在香港設有多間分店，方便您到店選購：</p>
+        <div class="stores">
+          <div class="store-grid">
+            <div class="store-card">
+              <div class="store-name">OHYA2.0 銅鑼灣店</div>
+              <div class="store-address">銅鑼灣渣甸街38-40號1樓</div>
+              <div class="store-time">營業時間: 11:00-00:00</div>
+            </div>
+            <div class="store-card">
+              <div class="store-name">OHYA2.0 旺角店</div>
+              <div class="store-address">旺角亞皆老街36-38號龍飛大廈1樓</div>
+              <div class="store-time">營業時間: 12:00-00:00</div>
+            </div>
+            <div class="store-card">
+              <div class="store-name">OHYA2.0 尖沙咀店</div>
+              <div class="store-address">尖沙咀海防道30號1樓</div>
+              <div class="store-time">營業時間: 12:00-00:00</div>
+            </div>
+            <div class="store-card">
+              <div class="store-name">OHYA2.0 荃灣店</div>
+              <div class="store-address">荃灣沙咀道290號1樓</div>
+              <div class="store-time">營業時間: 12:00-00:00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>📞 聯繫我們</h2>
+        <p>有任何問題？歡迎聯繫我們！</p>
+        <p>📧 Email: info@ohya2.com</p>
+        <p>📱 WhatsApp: +852 6xxx xxxx</p>
+        <p>🕐 客服時間: 11:00 - 00:00 (每日)</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-section">
+        <h3>OHYA2.0</h3>
+        <a href="/about.html">關於我們</a>
+        <a href="/contact.html">聯繫我們</a>
+        <a href="/policies.html">私隱政策</a>
+      </div>
+      <div class="footer-section">
+        <h3>客戶服務</h3>
+        <a href="/contact.html">聯繫我們</a>
+        <a href="/policies.html">退換貨政策</a>
+        <a href="/policies.html">配送說明</a>
+      </div>
+      <div class="footer-section">
+        <h3>付款方式</h3>
+        <a href="#">銀行轉帳</a>
+        <a href="#">PayPal</a>
+        <a href="#">信用卡</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 OHYA2.0 All rights reserved.
+    </div>
+  </footer>
+
+  <a href="https://wa.me/852XXXXXXX" class="whatsapp-float" target="_blank">💬</a>
+</body>
+</html>
