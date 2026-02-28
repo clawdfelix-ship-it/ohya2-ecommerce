@@ -40,13 +40,31 @@
     .qty-btn { width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); border-radius: 0.5rem; cursor: pointer; font-size: 1.25rem; }
     .add-btn { width: 100%; margin-top: 1rem; }
     
+    /* Image Gallery */
+    .thumbnail-gallery { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .thumbnail { width: 75px; height: 75px; object-fit: cover; border-radius: 0.5rem; cursor: pointer; }
+    .thumbnail.active { border: 2px solid var(--primary); }
+    
+    /* Cross-selling */
+    .cross-selling { margin-top: 3rem; }
+    .cross-selling h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .cross-selling-item { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .cross-selling-item img { width: 75px; height: 75px; object-fit: cover; border-radius: 0.5rem; }
+    .cross-selling-item .item-info { flex: 1; }
+    .cross-selling-item .item-info h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .cross-selling-item .item-info p { color: var(--text-muted); line-height: 1.5; }
+    
     footer { background: var(--text); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
     .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
     .footer-section h3 { font-size: 1rem; margin-bottom: 0.5rem; }
     .footer-section a { display: block; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.875rem; }
     .footer-bottom { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.75rem; }
     
-    @media (max-width: 768px) { .product-detail { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { 
+      .product-detail { grid-template-columns: 1fr; }
+      .thumbnail-gallery { overflow-x: scroll; }
+      .cross-selling-item { flex-direction: column; align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
@@ -67,7 +85,15 @@
 
   <main class="main">
     <div class="product-detail" id="product-detail">
-      <img src="" alt="產品圖片" class="product-image" id="product-image">
+      <div class="product-image-wrapper">
+        <img src="" alt="產品圖片" class="product-image" id="product-image">
+        <div class="thumbnail-gallery" id="thumbnail-gallery">
+          <!-- Mock data for thumbnails -->
+          <img src="https://via.placeholder.com/75x75" alt="Thumbnail 1" class="thumbnail" onclick="changeMainImage(this)">
+          <img src="https://via.placeholder.com/75x75" alt="Thumbnail 2" class="thumbnail" onclick="changeMainImage(this)">
+          <img src="https://via.placeholder.com/75x75" alt="Thumbnail 3" class="thumbnail" onclick="changeMainImage(this)">
+        </div>
+      </div>
       <div class="product-info">
         <h1 id="product-name">載入中...</h1>
         <div class="product-code" id="product-code"></div>
@@ -83,11 +109,37 @@
         </div>
         
         <button class="btn btn-primary add-btn" onclick="addToCart()">🛒 加入購物車</button>
+        <button class="btn btn-secondary buy-now-btn" onclick="buyNow()">即時購買</button>
         
         <div class="product-meta" style="margin-top: 2rem;">
           <div class="meta-row"><span class="meta-label">商品編碼</span><span id="meta-code"></span></div>
           <div class="meta-row"><span class="meta-label">Barcode</span><span id="meta-barcode"></span></div>
           <div class="meta-row"><span class="meta-label">分類</span><span id="meta-category"></span></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="cross-selling" id="cross-selling">
+      <h2>經常一起購買</h2>
+      <div class="cross-selling-item">
+        <img src="https://via.placeholder.com/75x75" alt="Product 1">
+        <div class="item-info">
+          <h3>產品名稱 1</h3>
+          <p>產品描述 1</p>
+        </div>
+      </div>
+      <div class="cross-selling-item">
+        <img src="https://via.placeholder.com/75x75" alt="Product 2">
+        <div class="item-info">
+          <h3>產品名稱 2</h3>
+          <p>產品描述 2</p>
+        </div>
+      </div>
+      <div class="cross-selling-item">
+        <img src="https://via.placeholder.com/75x75" alt="Product 3">
+        <div class="item-info">
+          <h3>產品名稱 3</h3>
+          <p>產品描述 3</p>
         </div>
       </div>
     </div>
@@ -127,9 +179,32 @@
         document.getElementById('meta-code').textContent = product.product_code || '-';
         document.getElementById('meta-barcode').textContent = product.barcode || '-';
         document.getElementById('meta-category').textContent = product.category || '-';
+        
+        // Load thumbnails
+        if (product.images) {
+          const thumbnailGallery = document.getElementById('thumbnail-gallery');
+          product.images.forEach((image, index) => {
+            const thumbnail = document.createElement('img');
+            thumbnail.src = image;
+            thumbnail.className = 'thumbnail';
+            thumbnail.onclick = () => changeMainImage(thumbnail);
+            thumbnailGallery.appendChild(thumbnail);
+            if (index === 0) {
+              thumbnail.classList.add('active');
+            }
+          });
+        }
       } catch (e) {
         document.getElementById('product-name').textContent = '載入失敗';
       }
+    }
+    
+    function changeMainImage(thumbnail) {
+      const mainImage = document.getElementById('product-image');
+      mainImage.src = thumbnail.src;
+      const thumbnails = document.querySelectorAll('.thumbnail');
+      thumbnails.forEach(t => t.classList.remove('active'));
+      thumbnail.classList.add('active');
     }
     
     function updateQty(delta) {
@@ -163,6 +238,30 @@
       const res = await fetch('/api/cart');
       const cart = await res.json();
       document.getElementById('cart-count').textContent = cart?.length || 0;
+    }
+    
+    async function buyNow() {
+      if (!currentProduct) return;
+      
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          productId: currentProduct.id,
+          name: currentProduct.name,
+          price: currentProduct.price,
+          quantity: quantity,
+          image_url: currentProduct.image_url
+        })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        alert('購買成功！');
+        window.location.href = '/checkout.html';
+      } else {
+        alert('購買失敗，請稍後再試。');
+      }
     }
     
     if (productId) {

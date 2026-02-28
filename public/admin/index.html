@@ -20,7 +20,7 @@
     .logo span { color: var(--secondary); }
     
     .sidebar-nav { padding: 1rem 0; }
-    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.2s; cursor: pointer; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.2s; }
     .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
     .nav-item svg { width: 20px; height: 20px; }
     
@@ -38,7 +38,6 @@
     .btn-primary:hover { background: var(--primary-dark); }
     .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
     .btn-danger { background: var(--error); color: white; }
-    .btn-warning { background: var(--warning); color: white; }
     .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
     
     /* Stats */
@@ -46,7 +45,13 @@
     .stat-card { background: var(--surface); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border); }
     .stat-label { font-size: 0.875rem; color: var(--text-muted); }
     .stat-value { font-size: 2rem; font-weight: 700; margin-top: 0.5rem; }
-    .stat-card.warning { border-color: var(--warning); background: #fffbeb; }
+    .stat-value.purple { color: var(--primary); }
+    .stat-value.pink { color: var(--secondary); }
+    .stat-value.green { color: var(--success); }
+    .stat-value.orange { color: var(--warning); }
+    .stat-change { font-size: 0.75rem; margin-top: 0.25rem; }
+    .stat-change.positive { color: var(--success); }
+    .stat-change.negative { color: var(--error); }
     
     /* Table */
     .data-table { background: var(--surface); border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden; }
@@ -57,90 +62,177 @@
     tr:hover { background: var(--background); }
     .status { padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; display: inline-block; }
     .status-pending { background: #fef3c7; color: #92400e; }
-    .status-completed, .status-active { background: #d1fae5; color: #065f46; }
-    .status-cancelled, .status-inactive { background: #fee2e2; color: #991b1b; }
-    .status-low-stock { background: #fee2e2; color: #991b1b; }
-    .status-out-of-stock { background: #7f1d1d; color: white; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
     
-    .action-btn { padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; cursor: pointer; border: none; margin-right: 0.25rem; }
+    .action-btn { padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; cursor: pointer; border: none; }
     .edit-btn { background: var(--primary); color: white; }
     .delete-btn { background: var(--error); color: white; }
+    .view-btn { background: var(--secondary); color: white; }
     
     /* Tabs */
-    .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); flex-wrap: wrap; }
-    .tab { padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+    .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
+    .tab { padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
     .tab:hover { color: var(--primary); }
     .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
     
-    /* Form */
-    .form-container { background: var(--surface); padding: 2rem; border-radius: 0.75rem; border: 1px solid var(--border); }
-    .form-group { margin-bottom: 1.25rem; }
-    .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.9375rem; font-family: inherit; transition: border-color 0.2s; }
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+    /* Search & Filter */
+    .search-filter { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 250px; position: relative; }
+    .search-box input { width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.9375rem; }
+    .search-box svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted); }
+    .filter-group { display: flex; gap: 0.5rem; }
+    .filter-btn { padding: 0.625rem 1rem; border: 1px solid var(--border); background: var(--surface); border-radius: 0.5rem; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; }
+    .filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
     
-    /* Toggle Switch */
-    .toggle-wrapper { display: flex; align-items: center; gap: 0.75rem; }
-    .toggle { position: relative; width: 48px; height: 26px; }
-    .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 26px; cursor: pointer; transition: 0.3s; }
-    .toggle-slider:before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-    .toggle input:checked + .toggle-slider { background: var(--primary); }
-    .toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
+    /* Tags */
+    .tag { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.625rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; margin-right: 0.25rem; margin-bottom: 0.25rem; }
+    .tag-vip { background: #fef08a; color: #854d0e; }
+    .tag-new { background: #dbeafe; color: #1e40af; }
+    .tag-inactive { background: #f3f4f6; color: #6b7280; }
+    .tag-kol { background: #fce7f3; color: #9d174d; }
+    .tag-frequent { background: #d1fae5; color: #065f46; }
+    .tag-custom { background: #ede9fe; color: #5b21b6; }
+    
+    /* Customer Profile */
+    .profile-header { display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 700; }
+    .profile-info { flex: 1; }
+    .profile-name { font-size: 1.5rem; font-weight: 700; }
+    .profile-email { color: var(--text-muted); margin-top: 0.25rem; }
+    .profile-stats { display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap; }
+    .profile-stat { text-align: center; }
+    .profile-stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .profile-stat-label { font-size: 0.75rem; color: var(--text-muted); }
+    
+    /* Form */
+    .form-container { background: var(--surface); padding: 2rem; border-radius: 0.75rem; border: 1px solid var(--border); max-width: 600px; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 1rem; font-family: inherit; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
     
     /* Modal */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
     .modal.active { display: flex; }
     .modal-content { background: var(--surface); padding: 2rem; border-radius: 1rem; max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
     .modal-close:hover { color: var(--text); }
-    .modal-title { font-size: 1.25rem; font-weight: 700; }
     
-    /* Variants */
-    .variant-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; padding: 0.75rem; background: var(--background); border-radius: 0.5rem; }
-    .variant-row input, .variant-row select { flex: 1; padding: 0.5rem; border: 1px solid var(--border); border-radius: 0.375rem; font-size: 0.875rem; }
-    .variant-remove { background: var(--error); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .add-variant-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--background); border: 1px dashed var(--border); border-radius: 0.5rem; cursor: pointer; width: 100%; justify-content: center; color: var(--text-muted); }
-    .add-variant-btn:hover { border-color: var(--primary); color: var(--primary); }
+    /* Tags Management */
+    .tags-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
+    .tag-item { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--background); border-radius: 0.5rem; }
+    .tag-item .remove-tag { cursor: pointer; color: var(--error); font-weight: bold; }
     
-    /* Categories */
-    .category-tag { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.5rem; background: var(--background); border-radius: 0.25rem; font-size: 0.8125rem; margin-right: 0.5rem; margin-bottom: 0.5rem; }
-    .category-tag .remove { cursor: pointer; color: var(--error); font-weight: bold; }
+    /* Section titles */
+    .section-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; margin-top: 1.5rem; }
+    .section-title:first-child { margin-top: 0; }
     
-    /* Badges */
-    .badge { padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; }
-    .badge-purple { background: #ede9fe; color: #7c3aed; }
-    .badge-pink { background: #fce7f3; color: #db2777; }
+    /* Notes textarea */
+    .notes-list { margin-top: 1rem; }
+    .note-item { background: var(--background); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; }
+    .note-date { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
     
-    /* Search */
-    .search-bar { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
-    .search-input { flex: 1; min-width: 200px; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.9375rem; }
-    .search-input:focus { outline: none; border-color: var(--primary); }
+    /* Form */
+    .form-container { background: var(--surface); padding: 2rem; border-radius: 0.75rem; border: 1px solid var(--border); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     
-    /* Settings */
-    .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .settings-title { font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    /* ========== ANALYTICS STYLES ========== */
+    .analytics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+    .analytics-card { background: var(--surface); border-radius: 0.75rem; border: 1px solid var(--border); padding: 1.5rem; }
+    .analytics-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .analytics-card-title { font-size: 0.875rem; color: var(--text-muted); font-weight: 600; }
+    .analytics-icon { width: 40px; height: 40px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; }
+    .analytics-icon.purple { background: #ede9fe; color: var(--primary); }
+    .analytics-icon.pink { background: #fce7f3; color: var(--secondary); }
+    .analytics-icon.green { background: #d1fae5; color: var(--success); }
+    .analytics-icon.orange { background: #fef3c7; color: var(--warning); }
+    .analytics-value { font-size: 1.75rem; font-weight: 700; }
     
-    /* Alerts */
-    .alert { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
-    .alert-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
-    .alert-error { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
-    .alert-success { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+    /* Chart containers */
+    .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .chart-card { background: var(--surface); border-radius: 0.75rem; border: 1px solid var(--border); padding: 1.5rem; }
+    .chart-title { font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; }
     
-    /* Image Preview */
-    .image-preview { width: 100px; height: 100px; border-radius: 0.5rem; object-fit: cover; border: 1px solid var(--border); background: var(--background); }
-    .image-preview-container { display: flex; align-items: center; gap: 1rem; }
+    /* Bar chart */
+    .bar-chart { display: flex; align-items: flex-end; gap: 0.75rem; height: 200px; padding-top: 1rem; }
+    .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .bar { width: 100%; max-width: 40px; background: linear-gradient(180deg, var(--primary), var(--primary-dark)); border-radius: 4px 4px 0 0; transition: height 0.3s; position: relative; }
+    .bar:hover { opacity: 0.8; }
+    .bar-label { font-size: 0.75rem; color: var(--text-muted); }
+    .bar-value { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; font-weight: 600; color: var(--text); white-space: nowrap; }
     
-    /* Pagination */
-    .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
-    .pagination button { padding: 0.5rem 0.75rem; border: 1px solid var(--border); background: var(--surface); border-radius: 0.375rem; cursor: pointer; }
-    .pagination button:hover { border-color: var(--primary); color: var(--primary); }
-    .pagination button.active { background: var(--primary); color: white; border-color: var(--primary); }
+    /* Horizontal bar chart */
+    .h-bar-chart { display: flex; flex-direction: column; gap: 1rem; }
+    .h-bar-item { display: flex; align-items: center; gap: 1rem; }
+    .h-bar-label { min-width: 100px; font-size: 0.875rem; }
+    .h-bar-track { flex: 1; height: 24px; background: var(--background); border-radius: 4px; overflow: hidden; }
+    .h-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; transition: width 0.5s; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.5rem; }
+    .h-bar-fill span { font-size: 0.75rem; font-weight: 600; color: white; }
+    
+    /* Donut chart */
+    .donut-chart-container { display: flex; align-items: center; gap: 2rem; justify-content: center; }
+    .donut-chart { width: 150px; height: 150px; border-radius: 50%; position: relative; }
+    .donut-legend { display: flex; flex-direction: column; gap: 0.75rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+    
+    /* Date range picker */
+    .date-range { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .date-range input { padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.875rem; }
+    .date-range label { font-size: 0.875rem; color: var(--text-muted); }
+    
+    /* Analytics tabs */
+    .analytics-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .analytics-tab { padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; }
+    .analytics-tab:hover { border-color: var(--primary); color: var(--primary); }
+    .analytics-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    
+    /* Top customers table */
+    .top-customers-list { display: flex; flex-direction: column; gap: 1rem; }
+    .top-customer-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--background); border-radius: 0.5rem; }
+    .top-customer-rank { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem; }
+    .top-customer-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .top-customer-rank.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); }
+    .top-customer-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); }
+    .top-customer-info { flex: 1; }
+    .top-customer-name { font-weight: 600; font-size: 0.9375rem; }
+    .top-customer-orders { font-size: 0.75rem; color: var(--text-muted); }
+    .top-customer-spent { font-weight: 700; color: var(--primary); }
+    
+    /* KPI Row */
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .kpi-item { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; text-align: center; }
+    .kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .kpi-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+    
+    /* Category breakdown */
+    .category-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .category-item { display: flex; align-items: center; gap: 1rem; }
+    .category-name { min-width: 120px; font-size: 0.875rem; }
+    .category-bar { flex: 1; height: 20px; background: var(--background); border-radius: 4px; overflow: hidden; }
+    .category-fill { height: 100%; border-radius: 4px; }
+    .category-fill.primary { background: var(--primary); }
+    .category-fill.secondary { background: var(--secondary); }
+    .category-fill.success { background: var(--success); }
+    .category-fill.warning { background: var(--warning); }
+    .category-fill.error { background: var(--error); }
+    .category-amount { min-width: 80px; text-align: right; font-weight: 600; font-size: 0.875rem; }
+    
+    /* Analytics section visibility */
+    .analytics-section { display: none; }
+    .analytics-section.active { display: block; }
+    
+    /* Loading state */
+    .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--text-muted); }
     
     /* Mobile */
+    @media (max-width: 1024px) {
+      .analytics-grid { grid-template-columns: repeat(2, 1fr); }
+      .chart-grid { grid-template-columns: 1fr; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 768px) {
       .admin-layout { flex-direction: column; }
       .sidebar { 
@@ -163,9 +255,23 @@
       table { min-width: 700px; }
       .form-container { padding: 1rem; }
       .modal-content { padding: 1rem; }
+      .search-filter { flex-direction: column; }
+      .filter-group { flex-wrap: wrap; }
+      .profile-header { flex-direction: column; gap: 1rem; }
+      .profile-stats { gap: 1rem; }
       .form-row { grid-template-columns: 1fr; }
-      .search-bar { flex-direction: column; }
-      .search-input { width: 100%; }
+      
+      /* Analytics mobile */
+      .analytics-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .analytics-card { padding: 1rem; }
+      .analytics-value { font-size: 1.25rem; }
+      .chart-grid { gap: 1rem; }
+      .chart-card { padding: 1rem; }
+      .bar-chart { height: 150px; }
+      .donut-chart-container { flex-direction: column; gap: 1rem; }
+      .kpi-row { grid-template-columns: 1fr 1fr; }
+      .analytics-tabs { flex-wrap: wrap; }
+      .date-range { flex-direction: column; align-items: stretch; }
     }
   </style>
 </head>
@@ -177,25 +283,25 @@
         <div class="logo">OHYA<span>2.0</span> Admin</div>
       </div>
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" onclick="showPage('dashboard')">
+        <a href="#" class="nav-item" onclick="showPage('dashboard')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
           Dashboard
+        </a>
+        <a href="#" class="nav-item active" onclick="showPage('analytics')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          Analytics
         </a>
         <a href="#" class="nav-item" onclick="showPage('products')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
           產品管理
         </a>
-        <a href="#" class="nav-item" onclick="showPage('categories')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          分類管理
-        </a>
-        <a href="#" class="nav-item" onclick="showPage('inventory')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          庫存管理
-        </a>
         <a href="#" class="nav-item" onclick="showPage('orders')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           訂單管理
+        </a>
+        <a href="#" class="nav-item" onclick="showPage('customers')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          客戶管理
         </a>
         <a href="#" class="nav-item" onclick="showPage('import')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -212,7 +318,7 @@
     <main class="main">
       <div class="page-header">
         <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">☰ Menu</button>
-        <h1 class="page-title" id="page-title">Dashboard</h1>
+        <h1 class="page-title" id="page-title">Analytics</h1>
         <div class="user-info">
           <span>Admin</span>
           <button class="btn btn-secondary" onclick="logout()">登出</button>
@@ -220,7 +326,7 @@
       </div>
 
       <!-- Dashboard Page -->
-      <div id="page-dashboard">
+      <div id="page-dashboard" style="display:none;">
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-label">總產品數</div>
@@ -234,9 +340,9 @@
             <div class="stat-label">待處理訂單</div>
             <div class="stat-value" id="stat-pending">-</div>
           </div>
-          <div class="stat-card warning">
-            <div class="stat-label">低庫存產品</div>
-            <div class="stat-value" id="stat-low-stock" style="color: var(--warning);">-</div>
+          <div class="stat-card">
+            <div class="stat-label">會員數</div>
+            <div class="stat-value purple" id="stat-users">-</div>
           </div>
         </div>
         
@@ -251,103 +357,224 @@
         </div>
       </div>
 
+      <!-- Analytics Page -->
+      <div id="page-analytics">
+        <div class="analytics-tabs">
+          <button class="analytics-tab active" onclick="showAnalyticsTab('realtime')">實時數據</button>
+          <button class="analytics-tab"Tab('sales') onclick="showAnalytics">銷售報告</button>
+          <button class="analytics-tab" onclick="showAnalyticsTab('customers')">客戶分析</button>
+        </div>
+
+        <!-- Real-time Dashboard -->
+        <div class="analytics-section active" id="analytics-realtime">
+          <div class="date-range">
+            <label>日期範圍：</label>
+            <input type="date" id="analytics-start-date" value="2026-02-01">
+            <span>至</span>
+            <input type="date" id="analytics-end-date" value="2026-02-28">
+            <button class="btn btn-primary btn-sm" onclick="updateAnalytics()">更新</button>
+          </div>
+          
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <span class="analytics-card-title">今日訂單</span>
+                <div class="analytics-icon purple">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                </div>
+              </div>
+              <div class="analytics-value purple" id="today-orders">23</div>
+              <div class="stat-change positive">↑ 12% 較昨日</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <span class="analytics-card-title">今日營收</span>
+                <div class="analytics-icon green">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+              </div>
+              <div class="analytics-value green" id="today-revenue">¥45,200</div>
+              <div class="stat-change positive">↑ 8% 較昨日</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <span class="analytics-card-title">今日訪客</span>
+                <div class="analytics-icon orange">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+              </div>
+              <div class="analytics-value orange" id="today-visitors">1,247</div>
+              <div class="stat-change positive">↑ 15% 較昨日</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <span class="analytics-card-title">待處理訂單</span>
+                <div class="analytics-icon pink">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+              </div>
+              <div class="analytics-value pink" id="pending-orders">7</div>
+              <div class="stat-change negative">需盡快處理</div>
+            </div>
+          </div>
+
+          <!-- Quick KPIs -->
+          <div class="kpi-row">
+            <div class="kpi-item">
+              <div class="kpi-value" id="kpi-aov">¥1,965</div>
+              <div class="kpi-label">平均訂單價值</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-value" id="kpi-conversion">3.2%</div>
+              <div class="kpi-label">轉化率</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-value" id="kpi-bounce">42%</div>
+              <div class="kpi-label">跳出率</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-value" id="kpi-avg-session">4:32</div>
+              <div class="kpi-label">平均會話時長</div>
+            </div>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-title">📈 過去7天銷售趨勢</div>
+              <div class="bar-chart" id="sales-trend-chart">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">📊 訂單狀態分佈</div>
+              <div class="donut-chart-container">
+                <div class="donut-chart" id="order-status-chart" style="background: conic-gradient(#10b981 0deg 198deg, #f59e0b 198deg 252deg, #ef4444 252deg 288deg, #6366f1 288deg 360deg);"></div>
+                <div class="donut-legend">
+                  <div class="legend-item"><span class="legend-dot" style="background:#10b981"></span>已完成 (55%)</div>
+                  <div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>處理中 (15%)</div>
+                  <div class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>已取消 (10%)</div>
+                  <div class="legend-item"><span class="legend-dot" style="background:#6366f1"></span>待付款 (20%)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sales Reports -->
+        <div class="analytics-section" id="analytics-sales">
+          <div class="date-range">
+            <label>日期範圍：</label>
+            <input type="date" id="sales-start-date" value="2026-02-01">
+            <span>至</span>
+            <input type="date" id="sales-end-date" value="2026-02-28">
+            <button class="btn btn-primary btn-sm" onclick="updateSalesReport()">更新報告</button>
+          </div>
+
+          <div class="analytics-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="analytics-card">
+              <div class="analytics-card-title">總銷售額</div>
+              <div class="analytics-value green">¥1,284,500</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-title">訂單數</div>
+              <div class="analytics-value purple">653</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-title">平均訂單價值</div>
+              <div class="analytics-value orange">¥1,967</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-title">退貨率</div>
+              <div class="analytics-value pink">2.3%</div>
+            </div>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-title">🏆 暢銷產品 (Top 10)</div>
+              <div class="h-bar-chart" id="top-products-chart">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">📦 類別營收分佈</div>
+              <div class="category-list" id="category-chart">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-title">📅 月度銷售趨勢</div>
+            <div class="bar-chart" id="monthly-sales-chart">
+              <!-- Generated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Analytics -->
+        <div class="analytics-section" id="analytics-customers">
+          <div class="analytics-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="analytics-card">
+              <div class="analytics-card-title">總客戶數</div>
+              <div class="analytics-value purple">2,847</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-title">本月新客戶</div>
+              <div class="analytics-value green">156</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-title">回購客戶</div>
+              <div class="analytics-value orange">892</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-title">平均客戶價值</div>
+              <div class="analytics-value pink">¥12,450</div>
+            </div>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-title">👥 新客戶 vs 回訪客戶</div>
+              <div class="donut-chart-container">
+                <div class="donut-chart" id="customer-type-chart" style="background: conic-gradient(#6366f1 0deg 180deg, #ec4899 180deg 360deg);"></div>
+                <div class="donut-legend">
+                  <div class="legend-item"><span class="legend-dot" style="background:#6366f1"></span>新客戶 (50%)</div>
+                  <div class="legend-item"><span class="legend-dot" style="background:#ec4899"></span>回訪客戶 (50%)</div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">💰 消費階層分佈</div>
+              <div class="h-bar-chart" id="spending-tiers-chart">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-title">⭐ 最高消費客戶 (Top 10)</div>
+            <div class="top-customers-list" id="top-customers-list">
+              <!-- Generated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Products Page -->
       <div id="page-products" style="display:none;">
-        <div class="search-bar">
-          <input type="text" class="search-input" placeholder="搜尋產品..." id="product-search" oninput="filterProducts()">
-          <select class="search-input" style="max-width: 180px;" id="category-filter" onchange="filterProducts()">
-            <option value="">所有分類</option>
-          </select>
-          <select class="search-input" style="max-width: 150px;" id="status-filter" onchange="filterProducts()">
-            <option value="">所有狀態</option>
-            <option value="active">上架中</option>
-            <option value="inactive">已下架</option>
-          </select>
-        </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <div class="tabs" style="margin-bottom: 0;">
             <div class="tab active">全部產品</div>
           </div>
-          <button class="btn btn-primary" onclick="openProductModal()">➕ 新增產品</button>
+          <button class="btn btn-primary" onclick="showModal('product-modal')">➕ 新增產品</button>
         </div>
-        
-        <div id="low-stock-alert"></div>
-        
         <div class="data-table">
           <table>
             <thead>
-              <tr><th>編碼</th><th>名稱</th><th>分類</th><th>價格</th><th>比較價</th><th>庫存</th><th>狀態</th><th>操作</th></tr>
+              <tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th><th>狀態</th><th>操作</th></tr>
             </thead>
             <tbody id="product-list"></tbody>
-          </table>
-        </div>
-        <div class="pagination" id="product-pagination"></div>
-      </div>
-
-      <!-- Categories Page -->
-      <div id="page-categories" style="display:none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-          <h2>分類管理</h2>
-          <button class="btn btn-primary" onclick="openCategoryModal()">➕ 新增分類</button>
-        </div>
-        
-        <div class="data-table">
-          <table>
-            <thead>
-              <tr><th>分類名稱</th><th>產品數量</th><th>建立日期</th><th>操作</th></tr>
-            </thead>
-            <tbody id="category-list"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Inventory Page -->
-      <div id="page-inventory" style="display:none;">
-        <div class="settings-card">
-          <div class="settings-title">
-            ⚙️ 庫存設定
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>低庫存警告閾值</label>
-              <input type="number" id="low-stock-threshold" value="10" min="1" onchange="saveSettings()">
-              <div class="form-hint">當庫存低於此數量時顯示警告</div>
-            </div>
-            <div class="form-group">
-              <label>缺貨閾值</label>
-              <input type="number" id="out-of-stock-threshold" value="0" min="0" onchange="saveSettings()">
-              <div class="form-hint">當庫存等於或低於此數量時視為缺貨</div>
-            </div>
-          </div>
-        </div>
-        
-        <h3 style="margin-bottom: 1rem;">庫存概覽</h3>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">總庫存產品</div>
-            <div class="stat-value" id="inv-total">-</div>
-          </div>
-          <div class="stat-card" style="border-color: var(--warning);">
-            <div class="stat-label">低庫存</div>
-            <div class="stat-value" id="inv-low" style="color: var(--warning);">-</div>
-          </div>
-          <div class="stat-card" style="border-color: var(--error);">
-            <div class="stat-label">缺貨</div>
-            <div class="stat-value" id="inv-out" style="color: var(--error);">-</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">總庫存價值</div>
-            <div class="stat-value" id="inv-value">-</div>
-          </div>
-        </div>
-        
-        <h3 style="margin-bottom: 1rem;">庫存不足的產品</h3>
-        <div class="data-table">
-          <table>
-            <thead>
-              <tr><th>產品</th><th>當前庫存</th><th>閾值</th><th>狀態</th><th>操作</th></tr>
-            </thead>
-            <tbody id="inventory-list"></tbody>
           </table>
         </div>
       </div>
@@ -369,9 +596,54 @@
         </div>
       </div>
 
+      <!-- Customers Page (CRM) -->
+      <div id="page-customers" style="display:none;">
+        <div class="search-filter">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="customer-search" placeholder="搜尋客戶..." oninput="filterCustomers()">
+          </div>
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="all" onclick="setCustomerFilter('all')">全部</button>
+            <button class="filter-btn" data-filter="vip" onclick="setCustomerFilter('vip')">VIP</button>
+            <button class="filter-btn" data-filter="new" onclick="setCustomerFilter('new')">新客戶</button>
+            <button class="filter-btn" data-filter="inactive" onclick="setCustomerFilter('inactive')">非活躍</button>
+          </div>
+          <button class="btn btn-primary" onclick="showModal('tag-modal')">🏷️ 管理標籤</button>
+        </div>
+        
+        <div class="stats-grid" style="margin-bottom: 1.5rem;">
+          <div class="stat-card">
+            <div class="stat-label">總客戶數</div>
+            <div class="stat-value purple" id="stat-customers">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">VIP 客戶</div>
+            <div class="stat-value pink" id="stat-vip">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">本月新客戶</div>
+            <div class="stat-value green" id="stat-new-customers">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">總營收</div>
+            <div class="stat-value" id="stat-revenue">-</div>
+          </div>
+        </div>
+
+        <div class="data-table">
+          <table>
+            <thead>
+              <tr><th>客戶</th><th>Email</th><th>電話</th><th>訂單數</th><th>總消費</th><th>標籤</th><th>加入日期</th><th>操作</th></tr>
+            </thead>
+            <tbody id="customer-list"></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Import/Export Page -->
       <div id="page-import" style="display:none;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
           <div class="form-container">
             <h3 style="margin-bottom: 1rem;">📥 匯入產品 (CSV)</h3>
             <div class="form-group">
@@ -394,931 +666,548 @@
   <div class="modal" id="product-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 class="modal-title" id="product-modal-title">新增產品</h2>
-        <button class="modal-close" onclick="closeModal('product-modal')">&times;</button>
+        <h2>新增/編輯產品</h2>
+        <button class="modal-close" onclick="hideModal('product-modal')">&times;</button>
       </div>
-      <form id="product-form" onsubmit="saveProduct(event)">
-        <input type="hidden" id="p-id">
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label>產品編碼 *</label>
-            <input type="text" id="p-code" required placeholder="例如: OHYA-001">
-          </div>
-          <div class="form-group">
-            <label>條碼</label>
-            <input type="text" id="p-barcode" placeholder="EAN/UPC條碼">
-          </div>
-        </div>
-        
+      <form id="product-form">
         <div class="form-group">
-          <label>產品名稱 *</label>
-          <input type="text" id="p-name" required placeholder="產品名稱">
+          <label>產品編碼</label>
+          <input type="text" id="p-code" required>
         </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label>價格 *</label>
-            <input type="number" id="p-price" required min="0" step="1" placeholder="0">
-          </div>
-          <div class="form-group">
-            <label>比較價格 (原價)</label>
-            <input type="number" id="p-compare-price" min="0" step="1" placeholder="0">
-            <div class="form-hint">顯示為折扣前的價格</div>
-          </div>
-        </div>
-        
         <div class="form-group">
-          <label>產品描述</label>
-          <textarea id="p-desc" rows="4" placeholder="產品描述..."></textarea>
+          <label>產品名稱</label>
+          <input type="text" id="p-name" required>
         </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label>分類</label>
-            <select id="p-category">
-              <option value="">選擇分類</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>圖片URL</label>
-            <input type="url" id="p-image" placeholder="https://...">
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label>庫存數量</label>
-            <input type="number" id="p-stock" value="0" min="0">
-          </div>
-          <div class="form-group">
-            <label>庫存追蹤</label>
-            <div class="toggle-wrapper">
-              <label class="toggle">
-                <input type="checkbox" id="p-track-stock" checked>
-                <span class="toggle-slider"></span>
-              </label>
-              <span>啟用庫存追蹤</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Product Variants -->
         <div class="form-group">
-          <label>產品變體 (顏色/尺寸)</label>
-          <div id="variant-container">
-            <div class="variant-row">
-              <select class="variant-type" style="max-width: 100px;">
-                <option value="size">尺寸</option>
-                <option value="color">顏色</option>
-              </select>
-              <input type="text" class="variant-value" placeholder="例如: S, M, L 或 紅色, 藍色">
-              <input type="number" class="variant-stock" placeholder="庫存" min="0" value="0">
-              <button type="button" class="variant-remove" onclick="removeVariant(this)">×</button>
-            </div>
-          </div>
-          <button type="button" class="add-variant-btn" onclick="addVariant()">+ 添加變體</button>
+          <label>價格</label>
+          <input type="number" id="p-price" required>
         </div>
-        
         <div class="form-group">
-          <div class="toggle-wrapper">
-            <label class="toggle">
-              <input type="checkbox" id="p-active" checked>
-              <span class="toggle-slider"></span>
-            </label>
-            <span>產品狀態: <strong id="p-active-label">上架中</strong></span>
-          </div>
+          <label>描述</label>
+          <textarea id="p-desc"></textarea>
         </div>
-        
-        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-          <button type="submit" class="btn btn-primary">儲存產品</button>
-          <button type="button" class="btn btn-secondary" onclick="closeModal('product-modal')">取消</button>
+        <div class="form-group">
+          <label>分類</label>
+          <select id="p-category">
+            <option value="オナホール">オナホール</option>
+            <option value="ダッチワイフ">ダッチワイフ</option>
+            <option value="おっぱいグッズ">おっぱいグッズ</option>
+          </select>
         </div>
+        <div class="form-group">
+          <label>庫存</label>
+          <input type="number" id="p-stock" value="0">
+        </div>
+        <button type="submit" class="btn btn-primary">儲存</button>
       </form>
     </div>
   </div>
 
-  <!-- Category Modal -->
-  <div class="modal" id="category-modal">
-    <div class="modal-content" style="max-width: 450px;">
+  <!-- Customer Profile Modal -->
+  <div class="modal" id="customer-modal">
+    <div class="modal-content" style="max-width: 800px;">
       <div class="modal-header">
-        <h2 class="modal-title" id="category-modal-title">新增分類</h2>
-        <button class="modal-close" onclick="closeModal('category-modal')">&times;</button>
+        <h2>客戶詳情</h2>
+        <button class="modal-close" onclick="hideModal('customer-modal')">&times;</button>
       </div>
-      <form onsubmit="saveCategory(event)">
-        <input type="hidden" id="c-id">
-        <div class="form-group">
-          <label>分類名稱 *</label>
-          <input type="text" id="c-name" required placeholder="分類名稱">
-        </div>
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-          <button type="submit" class="btn btn-primary">儲存</button>
-          <button type="button" class="btn btn-secondary" onclick="closeModal('category-modal')">取消</button>
-        </div>
-      </form>
+      <div id="customer-profile"></div>
     </div>
   </div>
 
-  <!-- Stock Update Modal -->
-  <div class="modal" id="stock-modal">
-    <div class="modal-content" style="max-width: 400px;">
+  <!-- Tag Management Modal -->
+  <div class="modal" id="tag-modal">
+    <div class="modal-content">
       <div class="modal-header">
-        <h2 class="modal-title">更新庫存</h2>
-        <button class="modal-close" onclick="closeModal('stock-modal')">&times;</button>
+        <h2>🏷️ 管理客戶標籤</h2>
+        <button class="modal-close" onclick="hideModal('tag-modal')">&times;</button>
       </div>
-      <form onsubmit="updateStock(event)">
-        <input type="hidden" id="stock-p-id">
-        <div class="form-group">
-          <label>產品</label>
-          <div id="stock-p-name" style="font-weight: 600; padding: 0.5rem; background: var(--background); border-radius: 0.5rem;"></div>
+      <div class="form-group">
+        <label>新增標籤</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="new-tag-name" placeholder="標籤名稱">
+          <input type="color" id="new-tag-color" value="#6366f1" style="width: 50px; padding: 0.25rem;">
+          <button class="btn btn-primary" onclick="addTag()">新增</button>
         </div>
-        <div class="form-group">
-          <label>當前庫存</label>
-          <div id="stock-current" style="font-weight: 600; color: var(--primary);"></div>
-        </div>
-        <div class="form-group">
-          <label>調整數量</label>
-          <input type="number" id="stock-adjust" value="0" placeholder="輸入正數增加，負數減少">
-          <div class="form-hint">例如: +10 增加庫存, -5 減少庫存</div>
-        </div>
-        <div class="form-group">
-          <label>新庫存數量</label>
-          <div id="stock-new" style="font-weight: 600; color: var(--success);"></div>
-        </div>
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-          <button type="submit" class="btn btn-primary">更新庫存</button>
-          <button type="button" class="btn btn-secondary" onclick="closeModal('stock-modal')">取消</button>
-        </div>
-      </form>
+      </div>
+      <div class="section-title">現有標籤</div>
+      <div class="tags-grid" id="tags-list"></div>
     </div>
   </div>
 
   <script>
-    // Data
     let products = [];
-    let categories = [];
     let orders = [];
-    let settings = {
-      lowStockThreshold: 10,
-      outOfStockThreshold: 0
+    let customers = [];
+    let customTags = [
+      { id: 'vip', name: 'VIP', color: '#fef08a' },
+      { id: 'new', name: '新客戶', color: '#dbeafe' },
+      { id: 'inactive', name: '非活躍', color: '#f3f4f6' },
+      { id: 'kol', name: 'KOL', color: '#fce7f3' },
+      { id: 'frequent', name: '頻繁退貨', color: '#fee2e2' }
+    ];
+    let currentCustomerFilter = 'all';
+    let selectedCustomer = null;
+
+    // Sample data for analytics
+    const mockAnalytics = {
+      today: { orders: 23, revenue: 45200, visitors: 1247, pending: 7 },
+      weeklySales: [
+        { day: '週一', sales: 18200 },
+        { day: '週二', sales: 21500 },
+        { day: '週三', sales: 19800 },
+        { day: '週四', sales: 24500 },
+        { day: '週五', sales: 28100 },
+        { day: '週六', sales: 35200 },
+        { day: '週日', sales: 28900 }
+      ],
+      topProducts: [
+        { name: 'Premium オナホール Pro', sales: 156, revenue: 312000 },
+        { name: '超進化ダッチワイフ', sales: 89, revenue: 445000 },
+        { name: '極上のおっぱい套裝', sales: 67, revenue: 268000 },
+        { name: 'VR沉浸式體驗套件', sales: 54, revenue: 378000 },
+        { name: '靜音震動器旗艦版', sales: 48, revenue: 144000 },
+        { name: '雙人共震按摩器', sales: 42, revenue: 210000 },
+        { name: '智能飛機杯旗艦', sales: 38, revenue: 152000 },
+        { name: '前列腺按摩儀Pro', sales: 31, revenue: 124000 },
+        { name: '口交模擬器旗艦', sales: 28, revenue: 98000 },
+        { name: '真空負壓助勃器', sales: 24, revenue: 72000 }
+      ],
+      categories: [
+        { name: 'オナホール', revenue: 520000, color: 'primary' },
+        { name: 'ダッチワイフ', revenue: 380000, color: 'secondary' },
+        { name: 'おっぱいグッズ', revenue: 245000, color: 'success' },
+        { name: '輔助器具', revenue: 139500, color: 'warning' }
+      ],
+      monthlySales: [
+        { month: '8月', sales: 98000 },
+        { month: '9月', sales: 112000 },
+        { month: '10月', sales: 145000 },
+        { month: '11月', sales: 168000 },
+        { month: '12月', sales: 235000 },
+        { month: '1月', sales: 198000 },
+        { month: '2月', sales: 186000 }
+      ],
+      customerTiers: [
+        { tier: '¥0-5,000', count: 1245, percentage: 44 },
+        { tier: '¥5,000-20,000', count: 892, percentage: 31 },
+        { tier: '¥20,000-50,000', count: 456, percentage: 16 },
+        { tier: '¥50,000+', count: 254, percentage: 9 }
+      ],
+      topCustomers: [
+        { name: '陳大文', orders: 28, spent: 125000, rank: 1 },
+        { name: '王小明', orders: 12, spent: 45600, rank: 2 },
+        { name: '林志穎', orders: 18, spent: 38900, rank: 3 },
+        { name: '黃志強', orders: 15, spent: 32400, rank: 4 },
+        { name: '周杰倫', orders: 11, spent: 28700, rank: 5 },
+        { name: '劉德華', orders: 9, spent: 24500, rank: 6 },
+        { name: '張學友', orders: 8, spent: 21200, rank: 7 },
+        { name: '郭富城', orders: 7, spent: 18900, rank: 8 },
+        { name: '黎明', orders: 6, spent: 15600, rank: 9 },
+        { name: '成龍', orders: 5, spent: 12300, rank: 10 }
+      ]
     };
-    
-    // Pagination
-    let currentPage = 1;
-    const itemsPerPage = 15;
-    
-    // Initialize
-    document.addEventListener('DOMContentLoaded', async () => {
-      await loadSettings();
-      await loadCategories();
-      await loadData();
-      updateCategoryFilters();
-      
-      // Toggle label update
-      document.getElementById('p-active').addEventListener('change', function() {
-        document.getElementById('p-active-label').textContent = this.checked ? '上架中' : '已下架';
-      });
-      
-      // Stock adjustment preview
-      document.getElementById('stock-adjust').addEventListener('input', updateStockPreview);
-    });
-    
-    async function loadSettings() {
-      try {
-        const res = await fetch('/api/settings');
-        const data = await res.json();
-        if (data.lowStockThreshold) settings.lowStockThreshold = data.lowStockThreshold;
-        if (data.outOfStockThreshold !== undefined) settings.outOfStockThreshold = data.outOfStockThreshold;
-      } catch(e) { console.log('Using default settings'); }
-      
-      document.getElementById('low-stock-threshold').value = settings.lowStockThreshold;
-      document.getElementById('out-of-stock-threshold').value = settings.outOfStockThreshold;
+
+    // Sample customer data
+    const sampleCustomers = [
+      { id: 1, name: '王小明', email: 'wang@example.com', phone: '9123 4567', total_orders: 12, total_spent: 45600, tags: ['vip'], join_date: '2024-01-15', notes: [] },
+      { id: 2, name: '李小華', email: 'lee@example.com', phone: '9876 5432', total_orders: 3, total_spent: 8900, tags: ['new'], join_date: '2025-12-01', notes: [] },
+      { id: 3, name: '張美美', email: 'zhang@example.com', phone: '9234 5678', total_orders: 0, total_spent: 0, tags: ['inactive'], join_date: '2024-03-20', notes: [] },
+      { id: 4, name: '陳大文', email: 'chen@example.com', phone: '9456 7890', total_orders: 28, total_spent: 125000, tags: ['vip', 'kol'], join_date: '2023-06-10', notes: [{ text: '知名部落客', date: '2025-01-15' }] },
+      { id: 5, name: '林怡君', email: 'lin@example.com', phone: '9789 0123', total_orders: 8, total_spent: 23400, tags: [], join_date: '2024-08-22', notes: [] },
+      { id: 6, name: '黃志強', email: 'huang@example.com', phone: '9123 0987', total_orders: 2, total_spent: 4500, tags: ['frequent'], join_date: '2025-10-05', notes: [{ text: '已退貨3次', date: '2025-12-10' }] }
+    ];
+
+    // Initialize analytics charts
+    function initAnalytics() {
+      renderSalesTrendChart();
+      renderTopProductsChart();
+      renderCategoryChart();
+      renderMonthlySalesChart();
+      renderSpendingTiersChart();
+      renderTopCustomersList();
     }
-    
-    async function saveSettings() {
-      settings.lowStockThreshold = parseInt(document.getElementById('low-stock-threshold').value);
-      settings.outOfStockThreshold = parseInt(document.getElementById('out-of-stock-threshold').value);
-      
-      try {
-        await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(settings)
-        });
-      } catch(e) { console.log('Settings saved locally'); }
-      
-      renderProducts();
-      renderInventory();
+
+    function renderSalesTrendChart() {
+      const container = document.getElementById('sales-trend-chart');
+      const maxSales = Math.max(...mockAnalytics.weeklySales.map(s => s.sales));
+      container.innerHTML = mockAnalytics.weeklySales.map(s => `
+        <div class="bar-item">
+          <div class="bar" style="height: ${(s.sales / maxSales) * 160}px;">
+            <span class="bar-value">¥${(s.sales / 1000).toFixed(1)}k</span>
+          </div>
+          <span class="bar-label">${s.day}</span>
+        </div>
+      `).join('');
     }
-    
+
+    function renderTopProductsChart() {
+      const container = document.getElementById('top-products-chart');
+      const maxRevenue = mockAnalytics.topProducts[0].revenue;
+      container.innerHTML = mockAnalytics.topProducts.slice(0, 5).map(p => `
+        <div class="h-bar-item">
+          <span class="h-bar-label">${p.name.substring(0, 15)}${p.name.length > 15 ? '...' : ''}</span>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width: ${(p.revenue / maxRevenue) * 100}%">
+              <span>¥${(p.revenue / 1000).toFixed(0)}k</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderCategoryChart() {
+      const container = document.getElementById('category-chart');
+      const totalRevenue = mockAnalytics.categories.reduce((sum, c) => sum + c.revenue, 0);
+      container.innerHTML = mockAnalytics.categories.map(c => `
+        <div class="category-item">
+          <span class="category-name">${c.name}</span>
+          <div class="category-bar">
+            <div class="category-fill ${c.color}" style="width: ${(c.revenue / totalRevenue) * 100}%"></div>
+          </div>
+          <span class="category-amount">¥${(c.revenue / 1000).toFixed(0)}k</span>
+        </div>
+      `).join('');
+    }
+
+    function renderMonthlySalesChart() {
+      const container = document.getElementById('monthly-sales-chart');
+      const maxSales = Math.max(...mockAnalytics.monthlySales.map(s => s.sales));
+      container.innerHTML = mockAnalytics.monthlySales.map(s => `
+        <div class="bar-item">
+          <div class="bar" style="height: ${(s.sales / maxSales) * 160}px;">
+            <span class="bar-value">¥${(s.sales / 1000).toFixed(0)}k</span>
+          </div>
+          <span class="bar-label">${s.month}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderSpendingTiersChart() {
+      const container = document.getElementById('spending-tiers-chart');
+      container.innerHTML = mockAnalytics.customerTiers.map(t => `
+        <div class="h-bar-item">
+          <span class="h-bar-label">${t.tier}</span>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width: ${t.percentage}%">
+              <span>${t.percentage}%</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderTopCustomersList() {
+      const container = document.getElementById('top-customers-list');
+      container.innerHTML = mockAnalytics.topCustomers.slice(0, 5).map(c => `
+        <div class="top-customer-item">
+          <div class="top-customer-rank ${c.rank === 1 ? 'gold' : c.rank === 2 ? 'silver' : c.rank === 3 ? 'bronze' : ''}">${c.rank}</div>
+          <div class="top-customer-info">
+            <div class="top-customer-name">${c.name}</div>
+            <div class="top-customer-orders">${c.orders} 筆訂單</div>
+          </div>
+          <div class="top-customer-spent">¥${c.spent.toLocaleString()}</div>
+        </div>
+      `).join('');
+    }
+
+    // Tab switching
+    function showAnalyticsTab(tab) {
+      document.querySelectorAll('.analytics-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.analytics-section').forEach(s => s.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById('analytics-' + tab).classList.add('active');
+    }
+
+    function updateAnalytics() {
+      // In real app, fetch data based on date range
+      console.log('Updating analytics...');
+    }
+
+    function updateSalesReport() {
+      console.log('Updating sales report...');
+    }
+
     async function loadData() {
+      // Load products
       try {
         const pRes = await fetch('/api/products');
         products = await pRes.json();
         renderProducts();
-      } catch(e) { 
-        products = getSampleProducts();
-        renderProducts();
-      }
+        document.getElementById('stat-products').textContent = products.length;
+      } catch(e) { console.log('No products'); }
       
+      // Load orders
       try {
         const oRes = await fetch('/api/orders');
         orders = await oRes.json();
-      } catch(e) { 
-        orders = getSampleOrders();
-      }
-      renderOrders();
-      
-      // Update stats
-      document.getElementById('stat-products').textContent = products.length;
-      document.getElementById('stat-orders').textContent = orders.length;
-      document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'pending').length;
-      
-      const lowStock = products.filter(p => p.stock <= settings.lowStockThreshold && p.stock > settings.outOfStockThreshold).length;
-      const outOfStock = products.filter(p => p.stock <= settings.outOfStockThreshold).length;
-      document.getElementById('stat-low-stock').textContent = lowStock + outOfStock;
-      
-      renderCategories();
-      renderInventory();
-      
-      // Load marketing data
-      loadCoupons();
-      loadFlashSales();
+        renderOrders();
+        document.getElementById('stat-orders').textContent = orders.length;
+        document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'pending').length;
+      } catch(e) { console.log('No orders'); }
+
+      // Load customers
+      customers = sampleCustomers;
+      renderCustomers();
+      updateCustomerStats();
     }
-    
-    // ========== Marketing Functions ==========
-    function loadCoupons() {
-      const stored = localStorage.getItem('ohya_coupons');
-      coupons = stored ? JSON.parse(stored) : [];
-      renderCoupons();
-    }
-    
-    function saveCoupons() {
-      localStorage.setItem('ohya_coupons', JSON.stringify(coupons));
-    }
-    
-    function renderCoupons() {
-      const tbody = document.getElementById('coupon-list');
-      if (!tbody) return;
-      if (coupons.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">暫無優惠券</td></tr>';
-        return;
-      }
-      tbody.innerHTML = coupons.map(c => `
-        <tr>
-          <td style="font-weight: 600; color: var(--primary);">${c.code}</td>
-          <td>${c.type === 'percentage' ? '百分比' : '固定金額'}</td>
-          <td>${c.type === 'percentage' ? c.value + '%' : 'HK$' + c.value}</td>
-          <td>HK$ ${c.minSpend}</td>
-          <td>${c.used}/${c.limit}</td>
-          <td>${c.expiry}</td>
-          <td><span class="status ${c.active ? 'status-completed' : 'status-cancelled'}">${c.active ? '啟用' : '停用'}</span></td>
-          <td>
-            <button class="action-btn ${c.active ? 'delete-btn' : 'edit-btn'}" onclick="toggleCoupon('${c.code}')">${c.active ? '停用' : '啟用'}</button>
-            <button class="action-btn delete-btn" onclick="deleteCoupon('${c.code}')">刪除</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-    
-    document.getElementById('coupon-form')?.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const coupon = {
-        code: document.getElementById('c-code').value.toUpperCase(),
-        type: document.getElementById('c-type').value,
-        value: parseFloat(document.getElementById('c-value').value),
-        minSpend: parseFloat(document.getElementById('c-min').value) || 0,
-        limit: parseInt(document.getElementById('c-limit').value) || 100,
-        expiry: document.getElementById('c-expiry').value,
-        used: 0,
-        active: true,
-        createdAt: new Date().toISOString()
-      };
-      
-      if (coupons.find(c => c.code === coupon.code)) {
-        alert('此優惠碼已存在');
-        return;
-      }
-      
-      coupons.push(coupon);
-      saveCoupons();
-      renderCoupons();
-      hideModal('coupon-modal');
-      this.reset();
-      alert('優惠券已建立');
-    });
-    
-    function toggleCoupon(code) {
-      const coupon = coupons.find(c => c.code === code);
-      if (coupon) {
-        coupon.active = !coupon.active;
-        saveCoupons();
-        renderCoupons();
-      }
-    }
-    
-    function deleteCoupon(code) {
-      if (confirm('確定要刪除此優惠券嗎？')) {
-        coupons = coupons.filter(c => c.code !== code);
-        saveCoupons();
-        renderCoupons();
-      }
-    }
-    
-    // Flash Sales
-    function loadFlashSales() {
-      const stored = localStorage.getItem('ohya_flashsales');
-      flashSales = stored ? JSON.parse(stored) : [];
-      renderFlashSales();
-    }
-    
-    function saveFlashSales() {
-      localStorage.setItem('ohya_flashsales', JSON.stringify(flashSales));
-    }
-    
-    function renderFlashSales() {
-      const tbody = document.getElementById('flashsale-list');
-      if (!tbody) return;
-      if (flashSales.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">暫無閃購優惠</td></tr>';
-        return;
-      }
-      tbody.innerHTML = flashSales.map(fs => {
-        const now = new Date();
-        const start = new Date(fs.startDate);
-        const end = new Date(fs.endDate);
-        let status = 'status-pending';
-        let statusText = '即將開始';
-        
-        if (now >= start && now <= end) {
-          status = 'status-completed';
-          statusText = '進行中';
-        } else if (now > end) {
-          status = 'status-cancelled';
-          statusText = '已結束';
-        }
-        
-        return `
-          <tr>
-            <td>${fs.name}</td>
-            <td style="font-weight: 600; color: var(--secondary);">${fs.discount}%</td>
-            <td>${fs.startDate.replace('T', ' ')}</td>
-            <td>${fs.endDate.replace('T', ' ')}</td>
-            <td>${fs.scope === 'all' ? '全部產品' : (fs.categories || []).join(', ')}</td>
-            <td><span class="status ${status}">${statusText}</span></td>
-            <td>
-              <button class="action-btn delete-btn" onclick="deleteFlashSale('${fs.name}')">刪除</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-    
-    document.getElementById('flashsale-form')?.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const categorySelect = document.getElementById('fs-categories');
-      const selectedCategories = categorySelect ? Array.from(categorySelect.selectedOptions).map(o => o.value) : [];
-      
-      const flashSale = {
-        name: document.getElementById('fs-name').value,
-        discount: parseInt(document.getElementById('fs-discount').value),
-        startDate: document.getElementById('fs-start').value,
-        endDate: document.getElementById('fs-end').value,
-        scope: document.getElementById('fs-scope').value,
-        categories: selectedCategories,
-        active: true,
-        createdAt: new Date().toISOString()
-      };
-      
-      if (flashSales.find(fs => fs.name === flashSale.name)) {
-        alert('此活動名稱已存在');
-        return;
-      }
-      
-      flashSales.push(flashSale);
-      saveFlashSales();
-      renderFlashSales();
-      hideModal('flashsale-modal');
-      this.reset();
-      alert('閃購優惠已建立');
-    });
-    
-    function deleteFlashSale(name) {
-      if (confirm('確定要刪除此閃購優惠嗎？')) {
-        flashSales = flashSales.filter(fs => fs.name !== name);
-        saveFlashSales();
-        renderFlashSales();
-      }
-    }
-    
-    // Email Templates
-    function showEmailTemplate(type) {
-      document.getElementById('email-welcome').style.display = 'none';
-      document.getElementById('email-order').style.display = 'none';
-      document.getElementById('email-cart').style.display = 'none';
-      const el = document.getElementById('email-' + type);
-      if (el) el.style.display = 'block';
-      
-      document.querySelectorAll('#marketing-emails .tabs .tab').forEach(t => t.classList.remove('active'));
-      if (event && event.target) event.target.classList.add('active');
-    }
-    
-    function saveEmailTemplate(type) {
-      const subject = document.getElementById('email-' + type + '-subject');
-      const body = document.getElementById('email-' + type + '-body');
-      if (!subject || !body) return;
-      
-      emailTemplates[type] = { subject: subject.value, body: body.value };
-      localStorage.setItem('ohya_email_templates', JSON.stringify(emailTemplates));
-      alert('電郵範本已儲存');
-    }
-    
-    function showMarketingTab(tab) {
-      document.getElementById('marketing-coupons').style.display = 'none';
-      document.getElementById('marketing-flashsales').style.display = 'none';
-      document.getElementById('marketing-emails').style.display = 'none';
-      document.getElementById('marketing-' + tab).style.display = 'block';
-      
-      document.querySelectorAll('#page-marketing .tabs:first-child .tab').forEach(t => t.classList.remove('active'));
-      if (event && event.target) event.target.classList.add('active');
-    }
-    
-    function getSampleProducts() {
-      return [
-        { id: 1, product_code: 'OHYA-001', name: 'Premium Plus', price: 4980, compare_price: 5980, description: '頂級產品', category: 'オナホール', stock: 25, active: true, barcode: '123456789', image: '', track_stock: true, variants: [] },
-        { id: 2, product_code: 'OHYA-002', name: 'Classic Edition', price: 3980, compare_price: 0, description: '經典款式', category: 'オナホール', stock: 8, active: true, barcode: '123456790', image: '', track_stock: true, variants: [] },
-        { id: 3, product_code: 'OHYA-003', name: 'Realistic Lite', price: 6980, compare_price: 7980, description: '仿真版本', category: 'ダッチワイフ', stock: 0, active: true, barcode: '123456791', image: '', track_stock: true, variants: [] },
-        { id: 4, product_code: 'OHYA-004', name: 'Silky Touch', price: 2980, compare_price: 0, description: '絲滑觸感', category: 'おっぱいグッズ', stock: 15, active: true, barcode: '', image: '', track_stock: true, variants: [] }
-      ];
-    }
-    
-    function getSampleOrders() {
-      return [
-        { id: 1001, user_name: '測試用戶', user_id: 1, total: '¥4980', status: 'pending', created_at: new Date().toISOString() },
-        { id: 1002, user_name: '張三', user_id: 2, total: '¥6980', status: 'completed', created_at: new Date(Date.now() - 86400000).toISOString() }
-      ];
-    }
-    
-    // Categories
-    const defaultCategories = ['オナホール', 'ダッチワイフ', 'おっぱいグッズ', 'レザー・ピスピーク', '其他'];
-    
-    async function loadCategories() {
-      try {
-        const res = await fetch('/api/categories');
-        categories = await res.json();
-      } catch(e) {
-        categories = defaultCategories.map((name, i) => ({ id: i + 1, name, created_at: new Date().toISOString() }));
-      }
-    }
-    
-    function renderCategories() {
-      const tbody = document.getElementById('category-list');
-      tbody.innerHTML = categories.map(c => {
-        const count = products.filter(p => p.category === c.name).length;
-        return `
-          <tr>
-            <td><strong>${c.name}</strong></td>
-            <td><span class="badge badge-purple">${count} 項產品</span></td>
-            <td>${new Date(c.created_at || Date.now()).toLocaleDateString()}</td>
-            <td>
-              <button class="action-btn edit-btn" onclick="editCategory(${c.id})">編輯</button>
-              <button class="action-btn delete-btn" onclick="deleteCategory(${c.id})">刪除</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-    
-    function updateCategoryFilters() {
-      const filters = ['category-filter', 'p-category'];
-      filters.forEach(id => {
-        const select = document.getElementById(id);
-        select.innerHTML = id === 'category-filter' ? '<option value="">所有分類</option>' : '<option value="">選擇分類</option>';
-        categories.forEach(c => {
-          select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-        });
-      });
-    }
-    
-    function openCategoryModal(id = null) {
-      document.getElementById('category-modal-title').textContent = id ? '編輯分類' : '新增分類';
-      document.getElementById('c-id').value = id || '';
-      if (id) {
-        const cat = categories.find(c => c.id === id);
-        document.getElementById('c-name').value = cat.name;
-      } else {
-        document.getElementById('c-name').value = '';
-      }
-      showModal('category-modal');
-    }
-    
-    function editCategory(id) {
-      openCategoryModal(id);
-    }
-    
-    async function deleteCategory(id) {
-      if (!confirm('確定要刪除此分類嗎？')) return;
-      categories = categories.filter(c => c.id !== id);
-      renderCategories();
-      updateCategoryFilters();
-    }
-    
-    async function saveCategory(e) {
-      e.preventDefault();
-      const id = document.getElementById('c-id').value;
-      const name = document.getElementById('c-name').value;
-      
-      if (id) {
-        const cat = categories.find(c => c.id === parseInt(id));
-        cat.name = name;
-      } else {
-        categories.push({ id: Date.now(), name, created_at: new Date().toISOString() });
-      }
-      
-      renderCategories();
-      updateCategoryFilters();
-      closeModal('category-modal');
-    }
-    
-    // Products
-    function filterProducts() {
-      const search = document.getElementById('product-search').value.toLowerCase();
-      const category = document.getElementById('category-filter').value;
-      const status = document.getElementById('status-filter').value;
-      
-      let filtered = products.filter(p => {
-        const matchSearch = !search || p.name.toLowerCase().includes(search) || (p.product_code || '').toLowerCase().includes(search);
-        const matchCategory = !category || p.category === category;
-        const matchStatus = !status || (status === 'active' && p.active) || (status === 'inactive' && !p.active);
-        return matchSearch && matchCategory && matchStatus;
-      });
-      
-      renderProductList(filtered);
-    }
-    
+
     function renderProducts() {
-      filterProducts();
-      checkLowStock();
-    }
-    
-    function renderProductList(list) {
-      const start = (currentPage - 1) * itemsPerPage;
-      const paginated = list.slice(start, start + itemsPerPage);
-      
       const tbody = document.getElementById('product-list');
-      tbody.innerHTML = paginated.map(p => {
-        let stockStatus = 'status-active';
-        let statusText = '上架';
-        if (p.stock <= settings.outOfStockThreshold) {
-          stockStatus = 'status-out-of-stock';
-          statusText = '缺貨';
-        } else if (p.stock <= settings.lowStockThreshold) {
-          stockStatus = 'status-low-stock';
-          statusText = '低庫存';
-        }
-        
-        const variantCount = p.variants ? p.variants.length : 0;
-        
-        return `
-          <tr>
-            <td><code>${p.product_code || '-'}</code></td>
-            <td>
-              <strong>${p.name || '-'}</strong>
-              ${variantCount > 0 ? `<br><span class="badge badge-pink">${variantCount} 變體</span>` : ''}
-            </td>
-            <td>${p.category || '-'}</td>
-            <td>¥${p.price || 0}</td>
-            <td>${p.compare_price > 0 ? `<span style="text-decoration: line-through; color: var(--text-muted);">¥${p.compare_price}</span>` : '-'}</td>
-            <td>
-              <span class="${stockStatus}">${p.stock || 0}</span>
-              ${p.track_stock ? '' : '<br><span class="form-hint">不追蹤</span>'}
-            </td>
-            <td><span class="status ${p.active ? 'status-active' : 'status-inactive'}">${p.active ? '上架' : '下架'}</span></td>
-            <td>
-              <button class="action-btn edit-btn" onclick="editProduct(${p.id})">編輯</button>
-              <button class="action-btn delete-btn" onclick="deleteProduct(${p.id})">刪除</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-      
-      // Pagination
-      const totalPages = Math.ceil(list.length / itemsPerPage);
-      let paginationHtml = '';
-      for (let i = 1; i <= totalPages; i++) {
-        paginationHtml += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-      }
-      document.getElementById('product-pagination').innerHTML = paginationHtml;
-    }
-    
-    function goToPage(page) {
-      currentPage = page;
-      filterProducts();
-    }
-    
-    function checkLowStock() {
-      const lowStockProducts = products.filter(p => p.stock <= settings.lowStockThreshold && p.stock > settings.outOfStockThreshold);
-      const outOfStockProducts = products.filter(p => p.stock <= settings.outOfStockThreshold);
-      
-      const alertDiv = document.getElementById('low-stock-alert');
-      if (lowStockProducts.length > 0 || outOfStockProducts.length > 0) {
-        alertDiv.innerHTML = `
-          <div class="alert ${outOfStockProducts.length > 0 ? 'alert-error' : 'alert-warning'}">
-            <span>⚠️ ${outOfStockProducts.length > 0 ? `${outOfStockProducts.length} 項產品缺貨，` : ''}${lowStockProducts.length} 項產品庫存不足</span>
-            <button class="btn btn-sm btn-warning" onclick="showPage('inventory')">查看庫存</button>
-          </div>
-        `;
-      } else {
-        alertDiv.innerHTML = '';
-      }
-    }
-    
-    function openProductModal(id = null) {
-      document.getElementById('product-modal-title').textContent = id ? '編輯產品' : '新增產品';
-      document.getElementById('product-form').reset();
-      document.getElementById('p-id').value = id || '';
-      document.getElementById('p-track-stock').checked = true;
-      document.getElementById('p-active').checked = true;
-      document.getElementById('p-active-label').textContent = '上架中';
-      document.getElementById('p-stock').value = 0;
-      
-      // Reset variants
-      document.getElementById('variant-container').innerHTML = `
-        <div class="variant-row">
-          <select class="variant-type" style="max-width: 100px;">
-            <option value="size">尺寸</option>
-            <option value="color">顏色</option>
-          </select>
-          <input type="text" class="variant-value" placeholder="例如: S, M, L 或 紅色, 藍色">
-          <input type="number" class="variant-stock" placeholder="庫存" min="0" value="0">
-          <button type="button" class="variant-remove" onclick="removeVariant(this)">×</button>
-        </div>
-      `;
-      
-      if (id) {
-        const p = products.find(prod => prod.id === id);
-        document.getElementById('p-code').value = p.product_code || '';
-        document.getElementById('p-barcode').value = p.barcode || '';
-        document.getElementById('p-name').value = p.name || '';
-        document.getElementById('p-price').value = p.price || 0;
-        document.getElementById('p-compare-price').value = p.compare_price || 0;
-        document.getElementById('p-desc').value = p.description || '';
-        document.getElementById('p-category').value = p.category || '';
-        document.getElementById('p-image').value = p.image || '';
-        document.getElementById('p-stock').value = p.stock || 0;
-        document.getElementById('p-track-stock').checked = p.track_stock !== false;
-        document.getElementById('p-active').checked = p.active !== false;
-        document.getElementById('p-active-label').textContent = p.active ? '上架中' : '已下架';
-        
-        // Variants
-        if (p.variants && p.variants.length > 0) {
-          let variantsHtml = '';
-          p.variants.forEach(v => {
-            variantsHtml += `
-              <div class="variant-row">
-                <select class="variant-type" style="max-width: 100px;">
-                  <option value="${v.type}" ${v.type === 'size' ? 'selected' : ''}>尺寸</option>
-                  <option value="${v.type}" ${v.type === 'color' ? 'selected' : ''}>顏色</option>
-                </select>
-                <input type="text" class="variant-value" placeholder="例如: S, M, L 或 紅色, 藍色" value="${v.value}">
-                <input type="number" class="variant-stock" placeholder="庫存" min="0" value="${v.stock || 0}">
-                <button type="button" class="variant-remove" onclick="removeVariant(this)">×</button>
-              </div>
-            `;
-          });
-          document.getElementById('variant-container').innerHTML = variantsHtml;
-        }
-      }
-      
-      showModal('product-modal');
-    }
-    
-    function editProduct(id) {
-      openProductModal(id);
-    }
-    
-    async function saveProduct(e) {
-      e.preventDefault();
-      
-      const id = document.getElementById('p-id').value;
-      
-      // Collect variants
-      const variantRows = document.querySelectorAll('#variant-container .variant-row');
-      const variants = [];
-      variantRows.forEach(row => {
-        const type = row.querySelector('.variant-type').value;
-        const value = row.querySelector('.variant-value').value;
-        const stock = parseInt(row.querySelector('.variant-stock').value) || 0;
-        if (value) {
-          variants.push({ type, value, stock });
-        }
-      });
-      
-      const productData = {
-        product_code: document.getElementById('p-code').value,
-        barcode: document.getElementById('p-barcode').value,
-        name: document.getElementById('p-name').value,
-        price: parseInt(document.getElementById('p-price').value) || 0,
-        compare_price: parseInt(document.getElementById('p-compare-price').value) || 0,
-        description: document.getElementById('p-desc').value,
-        category: document.getElementById('p-category').value,
-        image: document.getElementById('p-image').value,
-        stock: parseInt(document.getElementById('p-stock').value) || 0,
-        track_stock: document.getElementById('p-track-stock').checked,
-        active: document.getElementById('p-active').checked,
-        variants: variants
-      };
-      
-      if (id) {
-        const idx = products.findIndex(p => p.id === parseInt(id));
-        products[idx] = { ...products[idx], ...productData };
-      } else {
-        productData.id = Date.now();
-        products.push(productData);
-      }
-      
-      renderProducts();
-      renderInventory();
-      closeModal('product-modal');
-    }
-    
-    async function deleteProduct(id) {
-      if (!confirm('確定要刪除此產品嗎？')) return;
-      products = products.filter(p => p.id !== id);
-      renderProducts();
-      renderInventory();
-    }
-    
-    function addVariant() {
-      const container = document.getElementById('variant-container');
-      const div = document.createElement('div');
-      div.className = 'variant-row';
-      div.innerHTML = `
-        <select class="variant-type" style="max-width: 100px;">
-          <option value="size">尺寸</option>
-          <option value="color">顏色</option>
-        </select>
-        <input type="text" class="variant-value" placeholder="例如: S, M, L 或 紅色, 藍色">
-        <input type="number" class="variant-stock" placeholder="庫存" min="0" value="0">
-        <button type="button" class="variant-remove" onclick="removeVariant(this)">×</button>
-      `;
-      container.appendChild(div);
-    }
-    
-    function removeVariant(btn) {
-      const rows = document.querySelectorAll('#variant-container .variant-row');
-      if (rows.length > 1) {
-        btn.parentElement.remove();
-      }
-    }
-    
-    // Inventory
-    function renderInventory() {
-      const lowStock = products.filter(p => p.stock <= settings.lowStockThreshold && p.stock > settings.outOfStockThreshold);
-      const outOfStock = products.filter(p => p.stock <= settings.outOfStockThreshold);
-      const totalValue = products.reduce((sum, p) => sum + (p.price * (p.stock || 0)), 0);
-      
-      document.getElementById('inv-total').textContent = products.length;
-      document.getElementById('inv-low').textContent = lowStock.length;
-      document.getElementById('inv-out').textContent = outOfStock.length;
-      document.getElementById('inv-value').textContent = '¥' + totalValue.toLocaleString();
-      
-      const tbody = document.getElementById('inventory-list');
-      const allIssues = [...outOfStock, ...lowStock].sort((a, b) => a.stock - b.stock);
-      
-      tbody.innerHTML = allIssues.map(p => {
-        const isOutOfStock = p.stock <= settings.outOfStockThreshold;
-        return `
-          <tr>
-            <td><strong>${p.name}</strong><br><code>${p.product_code}</code></td>
-            <td><strong style="color: ${isOutOfStock ? 'var(--error)' : 'var(--warning)'}">${p.stock}</strong></td>
-            <td>${settings.lowStockThreshold}</td>
-            <td><span class="status ${isOutOfStock ? 'status-out-of-stock' : 'status-low-stock'}">${isOutOfStock ? '缺貨' : '低庫存'}</span></td>
-            <td>
-              <button class="action-btn edit-btn" onclick="openStockModal(${p.id})">更新庫存</button>
-              <button class="action-btn edit-btn" onclick="editProduct(${p.id})">編輯產品</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-    
-    function openStockModal(id) {
-      const p = products.find(prod => prod.id === id);
-      document.getElementById('stock-p-id').value = id;
-      document.getElementById('stock-p-name').textContent = p.name;
-      document.getElementById('stock-current').textContent = p.stock;
-      document.getElementById('stock-adjust').value = 0;
-      document.getElementById('stock-new').textContent = p.stock;
-      showModal('stock-modal');
-    }
-    
-    function updateStockPreview() {
-      const current = parseInt(document.getElementById('stock-current').textContent);
-      const adjust = parseInt(document.getElementById('stock-adjust').value) || 0;
-      const newStock = Math.max(0, current + adjust);
-      document.getElementById('stock-new').textContent = newStock;
-    }
-    
-    function updateStock(e) {
-      e.preventDefault();
-      const id = parseInt(document.getElementById('stock-p-id').value);
-      const adjust = parseInt(document.getElementById('stock-adjust').value) || 0;
-      
-      const p = products.find(prod => prod.id === id);
-      p.stock = Math.max(0, p.stock + adjust);
-      
-      renderProducts();
-      renderInventory();
-      closeModal('stock-modal');
-    }
-    
-    // Orders
-    function filterOrders(status) {
-      document.querySelectorAll('#page-orders .tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-      
-      let filtered = orders;
-      if (status !== 'all') {
-        filtered = orders.filter(o => o.status === status);
-      }
-      
-      const tbody = document.getElementById('order-list');
-      tbody.innerHTML = filtered.slice(0, 20).map(o => `
+      tbody.innerHTML = products.slice(0, 20).map(p => `
         <tr>
-          <td>#${o.id}</td>
-          <td>${o.user_name || 'User ' + o.user_id}</td>
-          <td>${o.items || '-'}</td>
-          <td>${o.total}</td>
-          <td><span class="status status-${o.status}">${o.status === 'pending' ? '待處理' : o.status === 'completed' ? '已完成' : o.status}</span></td>
+          <td>${p.product_code || '-'}</td>
+          <td>${p.name || '-'}</td>
+          <td>¥${p.price || 0}</td>
+          <td>${p.stock || 0}</td>
+          <td><span class="status ${p.active ? 'status-completed' : 'status-cancelled'}">${p.active ? '上架' : '下架'}</span></td>
           <td>
-            <button class="action-btn edit-btn" onclick="updateOrderStatus(${o.id})">更新狀態</button>
+            <button class="action-btn edit-btn" onclick="editProduct(${p.id})">編輯</button>
+            <button class="action-btn delete-btn" onclick="deleteProduct(${p.id})">刪除</button>
           </td>
         </tr>
       `).join('');
     }
     
     function renderOrders() {
-      filterOrders('all');
+      const tbody = document.getElementById('order-list');
+      tbody.innerHTML = orders.slice(0, 20).map(o => `
+        <tr>
+          <td>#${o.id}</td>
+          <td>${o.user_name || 'User ' + o.user_id}</td>
+          <td>${o.total}</td>
+          <td><span class="status status-${o.status}">${o.status}</span></td>
+          <td>${new Date(o.created_at).toLocaleDateString()}</td>
+          <td>
+            <button class="action-btn edit-btn" onclick="updateOrderStatus(${o.id})">更新狀態</button>
+          </td>
+        </tr>
+      `).join('');
       
       // Recent orders
       document.getElementById('recent-orders').innerHTML = orders.slice(0, 5).map(o => `
         <tr>
           <td>#${o.id}</td>
           <td>${o.user_name || 'User ' + o.user_id}</td>
-          <td>${o.total}</td>
-          <td><span class="status status-${o.status}">${o.status === 'pending' ? '待處理' : o.status === 'completed' ? '已完成' : o.status}</span></td>
+          <td>¥${o.total}</td>
+          <td><span class="status status-${o.status}">${o.status}</span></td>
           <td>${new Date(o.created_at).toLocaleDateString()}</td>
         </tr>
       `).join('');
     }
-    
-    function updateOrderStatus(id) {
-      // Simple status toggle for demo
-      const order = orders.find(o => o.id === id);
-      if (order.status === 'pending') {
-        order.status = 'completed';
-        // Auto-deduct stock when order completes
-        deductStock(order);
-      } else {
-        order.status = 'pending';
+
+    // Customer functions
+    function renderCustomers() {
+      const searchTerm = document.getElementById('customer-search').value.toLowerCase();
+      let filtered = customers.filter(c => {
+        const matchSearch = c.name.toLowerCase().includes(searchTerm) || 
+                          c.email.toLowerCase().includes(searchTerm) ||
+                          c.phone.includes(searchTerm);
+        const matchFilter = currentCustomerFilter === 'all' || c.tags.includes(currentCustomerFilter);
+        return matchSearch && matchFilter;
+      });
+
+      const tbody = document.getElementById('customer-list');
+      tbody.innerHTML = filtered.map(c => `
+        <tr>
+          <td><strong>${c.name}</strong></td>
+          <td>${c.email}</td>
+          <td>${c.phone}</td>
+          <td>${c.total_orders}</td>
+          <td>¥${c.total_spent.toLocaleString()}</td>
+          <td>${renderCustomerTags(c.tags)}</td>
+          <td>${c.join_date}</td>
+          <td>
+            <button class="action-btn view-btn" onclick="viewCustomer(${c.id})">查看</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCustomerTags(tags) {
+      if (!tags || tags.length === 0) return '-';
+      return tags.map(tagId => {
+        const tag = customTags.find(t => t.id === tagId);
+        if (!tag) return '';
+        return `<span class="tag" style="background:${tag.color};">${tag.name}</span>`;
+      }).join('');
+    }
+
+    function setCustomerFilter(filter) {
+      currentCustomerFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+      renderCustomers();
+    }
+
+    function filterCustomers() {
+      renderCustomers();
+    }
+
+    function updateCustomerStats() {
+      document.getElementById('stat-customers').textContent = customers.length;
+      document.getElementById('stat-vip').textContent = customers.filter(c => c.tags.includes('vip')).length;
+      
+      const thisMonth = new Date().toISOString().slice(0, 7);
+      document.getElementById('stat-new-customers').textContent = customers.filter(c => c.join_date.startsWith(thisMonth)).length;
+      
+      const totalRevenue = customers.reduce((sum, c) => sum + c.total_spent, 0);
+      document.getElementById('stat-revenue').textContent = '¥' + totalRevenue.toLocaleString();
+    }
+
+    function viewCustomer(id) {
+      selectedCustomer = customers.find(c => c.id === id);
+      if (!selectedCustomer) return;
+
+      const profile = document.getElementById('customer-profile');
+      profile.innerHTML = `
+        <div class="profile-header">
+          <div class="profile-avatar">${selectedCustomer.name.charAt(0)}</div>
+          <div class="profile-info">
+            <div class="profile-name">${selectedCustomer.name}</div>
+            <div class="profile-email">${selectedCustomer.email} • ${selectedCustomer.phone}</div>
+            <div class="profile-stats">
+              <div class="profile-stat">
+                <div class="profile-stat-value">${selectedCustomer.total_orders}</div>
+                <div class="profile-stat-label">訂單數</div>
+              </div>
+              <div class="profile-stat">
+                <div class="profile-stat-value">¥${selectedCustomer.total_spent.toLocaleString()}</div>
+                <div class="profile-stat-label">總消費 (LTV)</div>
+              </div>
+              <div class="profile-stat">
+                <div class="profile-stat-value">${selectedCustomer.join_date}</div>
+                <div class="profile-stat-label">加入日期</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">🏷️ 標籤</div>
+        <div class="tags-grid" id="customer-tags-list">
+          ${renderCustomerTags(selectedCustomer.tags)}
+          <button class="btn btn-secondary btn-sm" onclick="showTagSelector()">+ 添加標籤</button>
+        </div>
+        <div id="tag-selector" style="display:none; margin-top: 0.5rem;">
+          <select id="tag-select" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid var(--border);">
+            ${customTags.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="addTagToCustomer()">添加</button>
+        </div>
+
+        <div class="section-title">📝 備註</div>
+        <div class="notes-list">
+          ${(selectedCustomer.notes || []).map(n => `
+            <div class="note-item">
+              <div class="note-date">${n.date}</div>
+              <div>${n.text}</div>
+            </div>
+          `).join('') || '<p style="color: var(--text-muted);">暫無備註</p>'}
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+          <input type="text" id="customer-note" placeholder="新增備註..." style="flex:1; padding: 0.5rem; border: 1px solid var(--border); border-radius: 0.375rem;">
+          <button class="btn btn-primary btn-sm" onclick="addNoteToCustomer()">添加</button>
+        </div>
+
+        <div class="section-title">🛒 訂單歷史</div>
+        <div class="data-table" style="margin-top: 0.5rem;">
+          <table>
+            <thead><tr><th>訂單ID</th><th>日期</th><th>金額</th><th>狀態</th></tr></thead>
+            <tbody>
+              ${selectedCustomer.total_orders > 0 ? `
+                <tr><td>#${selectedCustomer.id * 100 + 1}</td><td>2025-12-15</td><td>¥${selectedCustomer.total_spent / selectedCustomer.total_orders * 2}</td><td><span class="status status-completed">completed</span></td></tr>
+                <tr><td>#${selectedCustomer.id * 100 + 2}</td><td>2025-11-20</td><td>¥${selectedCustomer.total_spent / selectedCustomer.total_orders}</td><td><span class="status status-completed">completed</span></td></tr>
+              ` : '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">暫無訂單</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      showModal('customer-modal');
+    }
+
+    function showTagSelector() {
+      document.getElementById('tag-selector').style.display = 'flex';
+      document.getElementById('tag-selector').style.gap = '0.5rem';
+    }
+
+    function addTagToCustomer() {
+      const tagId = document.getElementById('tag-select').value;
+      if (!selectedCustomer.tags.includes(tagId)) {
+        selectedCustomer.tags.push(tagId);
+        renderCustomers();
+        viewCustomer(selectedCustomer.id);
       }
-      renderOrders();
-      renderInventory();
     }
-    
-    function deductStock(order) {
-      // In real app, this would be more sophisticated
-      console.log('Stock deducted for order #' + order.id);
+
+    function addNoteToCustomer() {
+      const noteText = document.getElementById('customer-note').value.trim();
+      if (noteText && selectedCustomer) {
+        if (!selectedCustomer.notes) selectedCustomer.notes = [];
+        selectedCustomer.notes.push({
+          text: noteText,
+          date: new Date().toISOString().split('T')[0]
+        });
+        document.getElementById('customer-note').value = '';
+        viewCustomer(selectedCustomer.id);
+      }
     }
-    
-    // Navigation
+
+    // Tag management
+    function renderTags() {
+      const tagsList = document.getElementById('tags-list');
+      tagsList.innerHTML = customTags.map(t => `
+        <div class="tag-item">
+          <span class="tag" style="background:${t.color};">${t.name}</span>
+          <span class="remove-tag" onclick="removeTag('${t.id}')">&times;</span>
+        </div>
+      `).join('');
+    }
+
+    function addTag() {
+      const name = document.getElementById('new-tag-name').value.trim();
+      const color = document.getElementById('new-tag-color').value;
+      if (name) {
+        const id = name.toLowerCase().replace(/\s+/g, '-');
+        customTags.push({ id, name, color });
+        document.getElementById('new-tag-name').value = '';
+        renderTags();
+        renderCustomers();
+      }
+    }
+
+    function removeTag(id) {
+      customTags = customTags.filter(t => t.id !== id);
+      renderTags();
+      renderCustomers();
+    }
+
     function showPage(page) {
       document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
       document.getElementById('page-' + page).style.display = 'block';
       
       const titles = {
-        dashboard: 'Dashboard',
-        products: '產品管理',
-        categories: '分類管理',
-        inventory: '庫存管理',
-        orders: '訂單管理',
-        import: '匯入/匯出'
+        'dashboard': 'Dashboard',
+        'analytics': 'Analytics',
+        'products': '產品管理',
+        'orders': '訂單管理',
+        'customers': '客戶管理',
+        'import': '匯入/匯出'
       };
       document.getElementById('page-title').textContent = titles[page] || page;
       
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      event?.target?.classList?.add('active');
+      event.target.classList.add('active');
       
-      // Reset pagination
-      currentPage = 1;
+      if (page === 'analytics') {
+        initAnalytics();
+      }
     }
     
-    // Modal helpers
     function showModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function hideModal(id) { document.getElementById(id).classList.remove('active'); }
     
-    // Import/Export
     async function exportProducts() {
       window.location.href = '/api/products/export';
     }
@@ -1330,21 +1219,22 @@
       const formData = new FormData();
       formData.append('file', file);
       
-      try {
-        const res = await fetch('/api/products/import', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success) {
-          alert('匯入成功！' + data.imported + ' 項產品');
-          loadData();
-        } else {
-          alert('匯入失敗');
-        }
-      } catch(e) {
-        alert('匯入功能需要後端支援');
+      const res = await fetch('/api/products/import', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        alert('匯入成功！' + data.imported + ' 項產品');
+        loadData();
+      } else {
+        alert('匯入失敗');
       }
     }
     
     function logout() { location.href = '/'; }
+
+    // Initialize
+    loadData();
+    renderTags();
+    initAnalytics();
   </script>
 </body>
 </html>

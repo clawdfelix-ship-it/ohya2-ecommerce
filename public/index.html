@@ -19,7 +19,8 @@
       --border: #e5e7eb;
       --success: #10b981;
       --error: #ef4444;
-      --shadow: 0 px -1px4px 6 rgb(0 0 0 / 0.1);
+      --warning: #f59e0b;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
       --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
     }
 
@@ -53,10 +54,7 @@
       max-width: 400px;
     }
 
-    .age-box h2 {
-      color: var(--error);
-      margin-bottom: 1rem;
-    }
+    .age-box h2 { color: var(--error); margin-bottom: 1rem; }
 
     .age-warning {
       background: #fef3c7;
@@ -73,14 +71,17 @@
       margin-top: 1.5rem;
     }
 
-    /* Header */
+    /* Sticky Header */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 100;
+      transition: box-shadow 0.3s ease;
     }
+
+    header.scrolled { box-shadow: var(--shadow-lg); }
 
     .header-inner {
       max-width: 1400px;
@@ -89,6 +90,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 1rem;
     }
 
     .logo {
@@ -96,10 +98,12 @@
       font-weight: 700;
       color: var(--primary);
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .logo span { color: var(--secondary); }
 
+    /* Mega Menu */
     nav {
       display: flex;
       gap: 1.5rem;
@@ -114,10 +118,16 @@
     }
 
     nav a:hover { color: var(--primary); }
+: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--primary); }
 
     .nav-dropdown { position: relative; }
 
-    .nav-link { display: flex; align-items: center; gap: 0.25rem; }
+    .nav-link { display: flex; align-items: center; gap: 0.25rem; cursor: pointer; }
 
     .dropdown-menu {
       display: none;
@@ -126,64 +136,103 @@
       left: 0;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 0.5rem;
+      border-radius: 0.75rem;
       box-shadow: var(--shadow-lg);
-      min-width: 180px;
+      min-width: 220px;
       padding: 0.5rem 0;
       z-index: 200;
+      animation: dropdownFade 0.2s ease;
+    }
+
+    @keyframes dropdownFade {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .dropdown-menu.wide {
-      min-width: 400px;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      min-width: 700px;
+      display: none;
+      grid-template-columns: repeat(4, 1fr);
       gap: 0;
       padding: 0;
     }
 
+    .dropdown-menu.mega {
+      min-width: 900px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
     .dropdown-section {
-      padding: 1rem;
+      padding: 1rem 1.25rem;
       border-right: 1px solid var(--border);
     }
 
-    .dropdown-section:last-child {
-      border-right: none;
-    }
+    .dropdown-section:last-child { border-right: none; }
 
     .dropdown-section h4 {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      font-size: 0.7rem;
+      color: var(--primary);
       text-transform: uppercase;
-      margin-bottom: 0.5rem;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+      font-weight: 700;
     }
 
     .dropdown-menu a {
       display: block;
-      padding: 0.375rem 0;
+      padding: 0.4rem 0;
       color: var(--text);
-      font-size: 0.875rem;
+      font-size: 0.85rem;
+      transition: all 0.15s;
     }
 
     .dropdown-menu a:hover {
       color: var(--primary);
+      transform: translateX(4px);
+    }
+
+    .dropdown-badge {
+      display: inline-block;
+      background: var(--secondary);
+      color: white;
+      font-size: 0.6rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.25rem;
+      margin-left: 0.5rem;
     }
 
     .nav-dropdown:hover .dropdown-menu { display: grid; }
 
-    .dropdown-menu a {
-      display: block;
-      padding: 0.625rem 1rem;
-      color: var(--text);
+    .level-3 {
+      position: relative;
     }
 
-    .dropdown-menu a:hover {
-      background: var(--background);
-      color: var(--primary);
+    .level-3-menu {
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      box-shadow: var(--shadow-lg);
+      min-width: 180px;
+      padding: 0.5rem 0;
     }
 
+    .level-3:hover .level-3-menu { display: block; }
+
+    .level-3 > a::after {
+      content: '→';
+      margin-left: 0.5rem;
+      font-size: 0.7rem;
+    }
+
+    /* Header Actions */
     .header-actions {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       align-items: center;
     }
 
@@ -199,6 +248,7 @@
       border: none;
       font-size: 0.9375rem;
       transition: all 0.2s;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -222,7 +272,20 @@
       color: var(--primary);
     }
 
-    /* Search */
+    .btn-white {
+      background: white;
+      color: var(--primary);
+    }
+
+    .btn-white:hover {
+      background: var(--background);
+    }
+
+    /* Search with Autocomplete */
+    .search-container {
+      position: relative;
+    }
+
     .search-box {
       display: flex;
       align-items: center;
@@ -230,6 +293,12 @@
       border: 1px solid var(--border);
       border-radius: 0.5rem;
       overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
     .search-box input {
@@ -237,8 +306,9 @@
       background: transparent;
       padding: 0.5rem 1rem;
       font-size: 0.875rem;
-      width: 200px;
+      width: 220px;
       outline: none;
+      font-family: inherit;
     }
 
     .search-btn {
@@ -251,6 +321,64 @@
 
     .search-btn:hover { color: var(--primary); }
 
+    .search-suggestions {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      box-shadow: var(--shadow-lg);
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 300;
+      margin-top: 0.5rem;
+    }
+
+    .search-suggestions.active { display: block; }
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .suggestion-item:hover { background: var(--background); }
+
+    .suggestion-item img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 0.25rem;
+      background: #f3f4f6;
+    }
+
+    .suggestion-info { flex: 1; min-width: 0; }
+
+    .suggestion-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .suggestion-price {
+      font-size: 0.8rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .suggestion-category {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
     /* Cart */
     .cart-btn {
       position: relative;
@@ -258,6 +386,7 @@
       border: none;
       cursor: pointer;
       padding: 0.5rem;
+      color: var(--text);
     }
 
     .cart-badge {
@@ -266,70 +395,393 @@
       right: 0;
       background: var(--secondary);
       color: white;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
-      width: 1.25rem;
-      height: 1.25rem;
+      min-width: 1.1rem;
+      height: 1.1rem;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* Hero */
-    .hero {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      padding: 6rem 2rem;
+    /* Hero Slider */
+    .hero-slider {
+      position: relative;
+      height: 520px;
+      overflow: hidden;
+    }
+
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-slide.active { opacity: 1; }
+
+    .hero-slide-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero-slide-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.85) 0%, rgba(236, 72, 153, 0.75) 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
       text-align: center;
       color: white;
+      max-width: 700px;
+      padding: 2rem;
     }
 
-    .hero h1 {
-      font-size: 3.5rem;
+    .hero-content h1 {
+      font-size: 3.25rem;
       font-weight: 700;
       margin-bottom: 1rem;
+      animation: slideUp 0.6s ease;
     }
 
-    .hero p {
-      font-size: 1.25rem;
-      opacity: 0.9;
-      margin-bottom: 2rem;
+    .hero-content p {
+      font-size: 1.2rem;
+      opacity: 0.95;
+      margin-bottom: 1.75rem;
+      line-height: 1.7;
     }
 
-    /* Features Bar */
-    .features-bar {
-      background: var(--text);
+    .hero-content .price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      opacity: 1;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-dots {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .hero-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .hero-dot.active {
+      background: white;
+      transform: scale(1.2);
+    }
+
+    .hero-arrows {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+    }
+
+    .hero-arrow {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
       color: white;
-      padding: 1.5rem 2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      backdrop-filter: blur(4px);
     }
 
-    .features-inner {
+    .hero-arrow:hover { background: rgba(255,255,255,0.35); }
+    .hero-arrow.prev { left: 1.5rem; }
+    .hero-arrow.next { right: 1.5rem; }
+
+    /* Value Proposition Bar */
+    .value-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+    }
+
+    .value-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .value-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+    }
+
+    .value-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .value-text {
+      text-align: left;
+    }
+
+    .value-text strong {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .value-text span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Flash Sale */
+    .flash-sale {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border-bottom: 2px solid var(--error);
+      padding: 1rem 2rem;
+    }
+
+    .flash-inner {
       max-width: 1400px;
       margin: 0 auto;
       display: flex;
-      justify-content: space-around;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .flash-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .flash-title h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--error);
+    }
+
+    .flash-icon {
+      font-size: 1.5rem;
+      animation: flash 1s infinite;
+    }
+
+    @keyframes flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .countdown {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .countdown-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-right: 0.5rem;
+    }
+
+    .countdown-item {
+      background: var(--error);
+      color: white;
+      padding: 0.375rem 0.625rem;
+      border-radius: 0.375rem;
+      font-weight: 700;
+      font-size: 1rem;
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .countdown-sep {
+      font-weight: 700;
+      color: var(--error);
+    }
+
+    /* Section Headers */
+    .section {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
       flex-wrap: wrap;
       gap: 1rem;
     }
 
-    .feature-item {
+    .section-title {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 0.875rem;
+      font-size: 1.5rem;
+      font-weight: 700;
     }
 
-    .feature-icon {
-      font-size: 1.5rem;
+    .section-title .icon { font-size: 1.25rem; }
+
+    .section-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: gap 0.2s;
+    }
+
+    .section-link:hover { gap: 0.5rem; }
+
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .product-card {
+      background: var(--surface);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .product-badge {
+      position: absolute;
+      top: 0.75rem;
+      left: 0.75rem;
+      background: var(--secondary);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      z-index: 1;
+    }
+
+    .product-badge.hot { background: var(--error); }
+    .product-badge.new { background: var(--success); }
+    .product-badge.sale { background: var(--warning); }
+
+    .product-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: #f8fafc;
+      transition: transform 0.3s;
+    }
+
+    .product-card:hover .product-image { transform: scale(1.05); }
+
+    .product-img-wrap {
+      overflow: hidden;
+      height: 200px;
+      background: #f8fafc;
+    }
+
+    .product-info {
+      padding: 1rem;
+    }
+
+    .product-code {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .product-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin: 0.25rem 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.4;
+      min-height: 2.8em;
+    }
+
+    .product-price-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .product-price {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .product-price-original {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
     }
 
     /* Tabs */
     .tabs {
       max-width: 1400px;
-      margin: 2rem auto;
+      margin: 0 auto 2rem;
       padding: 0 2rem;
       display: flex;
-      gap: 1rem;
+      gap: 0.5rem;
       border-bottom: 2px solid var(--border);
     }
 
@@ -341,6 +793,9 @@
       border-bottom: 2px solid transparent;
       margin-bottom: -2px;
       transition: all 0.2s;
+      background: none;
+      font-size: 1rem;
+      font-family: inherit;
     }
 
     .tab.active {
@@ -353,26 +808,20 @@
     /* Categories */
     .categories {
       max-width: 1400px;
-      margin: 2rem auto;
-      padding: 0 2rem;
-    }
-
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 1.5rem;
+      margin: 0 auto;
+      padding: 0 2rem 2rem;
     }
 
     .category-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 1rem;
     }
 
     .category-card {
       background: var(--surface);
       border-radius: 0.75rem;
-      padding: 1.5rem;
+      padding: 1.25rem;
       text-align: center;
       border: 1px solid var(--border);
       transition: all 0.3s;
@@ -388,78 +837,20 @@
     }
 
     .category-icon {
-      font-size: 2.5rem;
+      font-size: 2rem;
       margin-bottom: 0.5rem;
     }
 
     .category-name {
       font-weight: 600;
-      font-size: 0.875rem;
-    }
-
-    /* Products */
-    .products {
-      max-width: 1400px;
-      margin: 2rem auto;
-      padding: 0 2rem;
-    }
-
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .product-card {
-      background: var(--surface);
-      border-radius: 0.75rem;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      transition: all 0.3s;
-    }
-
-    .product-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .product-image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      background: #f3f4f6;
-    }
-
-    .product-info {
-      padding: 1rem;
-    }
-
-    .product-code {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .product-name {
-      font-weight: 600;
-      font-size: 0.875rem;
-      margin: 0.25rem 0;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .product-price {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: var(--primary);
+      font-size: 0.8rem;
     }
 
     /* Footer */
     footer {
-      background: var(--text);
+      background: #111827;
       color: white;
-      padding: 3rem 2rem 1rem;
+      padding: 3.5rem 2rem 1.5rem;
       margin-top: 4rem;
     }
 
@@ -467,38 +858,147 @@
       max-width: 1400px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem;
+      grid-template-columns: 1.5fr repeat(3, 1fr);
+      gap: 2.5rem;
+    }
+
+    .footer-brand .logo {
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+
+    .footer-brand p {
+      color: rgba(255,255,255,0.65);
+      font-size: 0.875rem;
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-size: 1.1rem;
+    }
+
+    .social-link:hover {
+      background: var(--primary);
+      transform: translateY(-2px);
     }
 
     .footer-section h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      color: white;
     }
 
     .footer-section a {
       display: block;
-      color: rgba(255,255,255,0.7);
+      color: rgba(255,255,255,0.65);
       text-decoration: none;
-      padding: 0.25rem 0;
-      font-size: 0.875rem;
+      padding: 0.375rem 0;
+      font-size: 0.85rem;
+      transition: color 0.2s;
     }
 
     .footer-section a:hover { color: white; }
 
+    /* Newsletter */
+    .newsletter {
+      margin-top: 1rem;
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .newsletter-input {
+      flex: 1;
+      padding: 0.625rem 1rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 0.875rem;
+      font-family: inherit;
+    }
+
+    .newsletter-input::placeholder { color: rgba(255,255,255,0.5); }
+
+    .newsletter-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .newsletter-btn {
+      padding: 0.625rem 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .newsletter-btn:hover { background: var(--primary-dark); }
+
+    /* Trust Badges */
+    .trust-badges {
+      background: rgba(255,255,255,0.03);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 1.5rem 2rem;
+      margin-top: 2rem;
+    }
+
+    .trust-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .trust-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.8rem;
+    }
+
+    .trust-badge span:first-child {
+      font-size: 1.5rem;
+    }
+
     .footer-bottom {
       max-width: 1400px;
       margin: 2rem auto 0;
-      padding-top: 1rem;
+      padding-top: 1.5rem;
       border-top: 1px solid rgba(255,255,255,0.1);
       text-align: center;
-      color: rgba(255,255,255,0.5);
+      color: rgba(255,255,255,0.4);
       font-size: 0.75rem;
     }
 
     /* Mobile */
-    .mobile-menu-btn { display: none; }
+    .mobile-menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; }
 
     .mobile-nav {
       display: none;
@@ -510,15 +1010,18 @@
       border-bottom: 1px solid var(--border);
       padding: 1rem;
       z-index: 300;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .mobile-nav.active { display: block; }
 
     .mobile-nav a {
       display: block;
-      padding: 0.75rem 0;
+      padding: 0.875rem 0;
       color: var(--text);
       border-bottom: 1px solid var(--border);
+      font-weight: 500;
     }
 
     .mobile-nav-section {
@@ -527,25 +1030,66 @@
     }
 
     .mobile-nav-section h4 {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       padding: 0.5rem;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .mobile-nav-section a {
       padding-left: 1rem;
     }
 
+    .mobile-search {
+      display: none;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mobile-search input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-family: inherit;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .value-inner { grid-template-columns: repeat(2, 1fr); }
+      .footer-inner { grid-template-columns: repeat(2, 1fr); }
+    }
+
     @media (max-width: 768px) {
-      .hero h1 { font-size: 2rem; }
-      nav, .search-box { display: none; }
-      .mobile-menu-btn {
-        display: block;
-        background: none;
-        border: none;
-        cursor: pointer;
-      }
+      .header-inner { padding: 0.75rem 1rem; }
+      .logo { font-size: 1.4rem; }
+      nav, .search-box, .header-actions .btn { display: none; }
+      .mobile-menu-btn { display: block; }
+      .mobile-search { display: block; }
+      
+      .hero-slider { height: 400px; }
+      .hero-content h1 { font-size: 2rem; }
+      .hero-content p { font-size: 1rem; }
+      
+      .value-inner { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+      .value-item { flex-direction: column; text-align: center; gap: 0.5rem; }
+      .value-text { text-align: center; }
+      
+      .flash-inner { flex-direction: column; text-align: center; }
+      
+      .section { padding: 1.5rem 1rem; }
+      .product-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+      
+      .footer-inner { grid-template-columns: 1fr; gap: 2rem; text-align: center; }
+      .social-links { justify-content: center; }
+      .trust-inner { gap: 1.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      .product-grid { grid-template-columns: 1fr 1fr; }
+      .category-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
@@ -565,7 +1109,8 @@
     </div>
   </div>
 
-  <header>
+  <!-- Header -->
+  <header id="header">
     <div class="header-inner">
       <a href="/" class="logo">OHYA<span>2.0</span></a>
       
@@ -578,6 +1123,7 @@
       <nav>
         <div class="nav-dropdown">
           <a href="#" class="nav-link">全部產品 ▾</a>
+          <!-- Mega Menu Level 2-3 -->
           <div class="dropdown-menu wide">
             <div class="dropdown-section">
               <h4>人氣分類</h4>
@@ -585,6 +1131,14 @@
               <a href="/?category=102">ダッチワイフ</a>
               <a href="/?category=70">おっぱいグッズ</a>
               <a href="/?category=103">性感クッション</a>
+              <div class="level-3">
+                <a href="#">更多 ▸</a>
+                <div class="level-3-menu">
+                  <a href="/?category=104">润滑液</a>
+                  <a href="/?category=105">情趣內衣</a>
+                  <a href="/?category=106">SM用品</a>
+                </div>
+              </div>
             </div>
             <div class="dropdown-section">
               <h4>品牌分類</h4>
@@ -594,26 +1148,37 @@
               <a href="/?category=341">STYLISH AVENUE</a>
             </div>
             <div class="dropdown-section">
-              <h4>假陽具</h4>
+              <h4>假陽具 <span class="dropdown-badge">熱賣</span></h4>
               <a href="/?category=71">ショート</a>
               <a href="/?category=72">ボブ</a>
               <a href="/?category=73">ロング</a>
+              <a href="/?category=74">極太</a>
+            </div>
+            <div class="dropdown-section">
+              <h4>最新上架</h4>
+              <a href="/?category=new">新品上市</a>
+              <a href="/?category=sale">特價優惠</a>
+              <a href="/?category=bundle">優惠套裝</a>
             </div>
           </div>
         </div>
         <a href="/catalog.html">全部產品</a>
-        <a href="#products">最新產品</a>
-        <a href="#about">關於我們</a>
+        <a href="#bestsellers">暢銷</a>
+        <a href="#flashsale">閃購</a>
+        <a href="#newarrivals">新品</a>
       </nav>
 
       <div class="header-actions">
-        <div class="search-box">
-          <input type="text" id="search-input" placeholder="搜尋產品..." onkeyup="searchProducts(this.value)">
-          <button class="search-btn" onclick="searchProducts(document.getElementById('search-input').value)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-          </button>
+        <div class="search-container">
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="搜尋產品..." onkeyup="handleSearch(this.value)" onfocus="showSuggestions(this.value)">
+            <button class="search-btn" onclick="searchProducts(document.getElementById('search-input').value)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </button>
+          </div>
+          <div class="search-suggestions" id="search-suggestions"></div>
         </div>
         <button class="btn btn-secondary" onclick="location.href='/login.html'">登入</button>
         <button class="btn btn-primary" onclick="location.href='/register.html'">註冊</button>
@@ -628,24 +1193,28 @@
     </div>
   </header>
 
+  <!-- Mobile Nav -->
   <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-search">
+      <input type="text" placeholder="搜尋產品...">
+    </div>
     <div class="mobile-nav-section">
       <h4>全部產品</h4>
-      <a href="/?category=101" onclick="document.getElementById('mobile-nav').classList.remove('active')">オナホール</a>
-      <a href="/?category=102" onclick="document.getElementById('mobile-nav').classList.remove('active')">ダッチワイフ</a>
-      <a href="/?category=70" onclick="document.getElementById('mobile-nav').classList.remove('active')">おっぱいグッズ</a>
-      <a href="/?category=103" onclick="document.getElementById('mobile-nav').classList.remove('active')">性感クッション</a>
+      <a href="/?category=101">オナホール</a>
+      <a href="/?category=102">ダッチワイフ</a>
+      <a href="/?category=70">おっぱいグッズ</a>
+      <a href="/?category=103">性感クッション</a>
     </div>
     <div class="mobile-nav-section">
       <h4>假陽具</h4>
-      <a href="/?category=71" onclick="document.getElementById('mobile-nav').classList.remove('active')">ショート</a>
-      <a href="/?category=72" onclick="document.getElementById('mobile-nav').classList.remove('active')">ボブ</a>
-      <a href="/?category=73" onclick="document.getElementById('mobile-nav').classList.remove('active')">ロング</a>
+      <a href="/?category=71">ショート</a>
+      <a href="/?category=72">ボブ</a>
+      <a href="/?category=73">ロング</a>
     </div>
     <div class="mobile-nav-section">
-      <a href="#products" onclick="document.getElementById('mobile-nav').classList.remove('active')">🔥 暢銷產品</a>
-      <a href="#products" onclick="document.getElementById('mobile-nav').classList.remove('active')">✨ 最新產品</a>
-      <a href="#about" onclick="document.getElementById('mobile-nav').classList.remove('active')">關於我們</a>
+      <a href="#bestsellers">🔥 暢銷產品</a>
+      <a href="#flashsale">⚡ 閃購優惠</a>
+      <a href="#newarrivals">✨ 最新產品</a>
     </div>
     <div class="mobile-nav-section">
       <a href="/login.html">登入</a>
@@ -653,52 +1222,149 @@
     </div>
   </div>
 
-  <section class="hero">
-    <h1>探索極致體驗</h1>
-    <p>精選高品質成人用品，為您帶來前所未有的愉悅體驗</p>
-    <button class="btn btn-primary" onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})">
-      立即選購
+  <!-- Hero Slider -->
+  <section class="hero-slider" id="hero-slider">
+    <div class="hero-slide active">
+      <div class="hero-slide-bg" style="background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);"></div>
+      <div class="hero-content">
+        <h1>探索極致體驗</h1>
+        <p>精選高品質成人用品，為您帶來前所未有的愉悅體驗</p>
+        <p class="price">全場滿$500免運</p>
+        <button class="btn btn-white" onclick="document.getElementById('bestsellers').scrollIntoView({behavior: 'smooth'})">
+          立即選購
+        </button>
+      </div>
+    </div>
+    <div class="hero-slide">
+      <div class="hero-slide-bg" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);"></div>
+      <div class="hero-content">
+        <h1>⚡ 閃購優惠</h1>
+        <p>精選商品5折起！限時優惠，錯過不再</p>
+        <p class="price">優惠高達50% OFF</p>
+        <button class="btn btn-white" onclick="document.getElementById('flashsale').scrollIntoView({behavior: 'smooth'})">
+          查看優惠
+        </button>
+      </div>
+    </div>
+    <div class="hero-slide">
+      <div class="hero-slide-bg" style="background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);"></div>
+      <div class="hero-content">
+        <h1>✨ 新品上架</h1>
+        <p>日本原裝進口，保證正品，品質卓越</p>
+        <p class="price">新品9折優惠</p>
+        <button class="btn btn-white" onclick="document.getElementById('newarrivals').scrollIntoView({behavior: 'smooth'})">
+          探索新品
+        </button>
+      </div>
+    </div>
+    <div class="hero-dots">
+      <span class="hero-dot active" data-slide="0"></span>
+      <span class="hero-dot" data-slide="1"></span>
+      <span class="hero-dot" data-slide="2"></span>
+    </div>
+    <button class="hero-arrow prev" onclick="prevSlide()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="hero-arrow next" onclick="nextSlide()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
     </button>
   </section>
 
-  <!-- Features Bar (Like TakeToys) -->
-  <div class="features-bar">
-    <div class="features-inner">
-      <div class="feature-item">
-        <span class="feature-icon">🔒</span>
-        <span>安全 私密 可靠</span>
+  <!-- Value Proposition Bar -->
+  <div class="value-bar">
+    <div class="value-inner">
+      <div class="value-item">
+        <div class="value-icon">🚚</div>
+        <div class="value-text">
+          <strong>48小時發貨</strong>
+          <span>快速配送</span>
+        </div>
       </div>
-      <div class="feature-item">
-        <span class="feature-icon">🏪</span>
-        <span>網店直營</span>
+      <div class="value-item">
+        <div class="value-icon">🎁</div>
+        <div class="value-text">
+          <strong>滿$500免運</strong>
+          <span>門檻超低</span>
+        </div>
       </div>
-      <div class="feature-item">
-        <span class="feature-icon">💯</span>
-        <span>原廠正貨</span>
+      <div class="value-item">
+        <div class="value-icon">↩️</div>
+        <div class="value-text">
+          <strong>14天無條件退換</strong>
+          <span>購物無憂</span>
+        </div>
       </div>
-      <div class="feature-item">
-        <span class="feature-icon">💳</span>
-        <span>銀行轉帳</span>
-      </div>
-      <div class="feature-item">
-        <span class="feature-icon">🚚</span>
-        <span>順豐速遞</span>
-      </div>
-      <div class="feature-item">
-        <span class="feature-icon">↩️</span>
-        <span>簡易退貨</span>
+      <div class="value-item">
+        <div class="value-icon">✅</div>
+        <div class="value-text">
+          <strong>正品保證</strong>
+          <span>日本原裝</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('popular')">🔥 暢銷產品</div>
-    <div class="tab" onclick="switchTab('new')">✨ 最新產品</div>
-  </div>
+  <!-- Flash Sale Bar -->
+  <section class="flash-sale" id="flashsale">
+    <div class="flash-inner">
+      <div class="flash-title">
+        <span class="flash-icon">⚡</span>
+        <h3>閃購特價</h3>
+      </div>
+      <div class="countdown">
+        <span class="countdown-label">結束倒數：</span>
+        <span class="countdown-item" id="hours">08</span>
+        <span class="countdown-sep">:</span>
+        <span class="countdown-item" id="minutes">42</span>
+        <span class="countdown-sep">:</span>
+        <span class="countdown-item" id="seconds">35</span>
+      </div>
+      <button class="btn btn-primary" onclick="document.getElementById('flash-products').scrollIntoView({behavior: 'smooth'})">
+        去選購 →
+      </button>
+    </div>
+  </section>
 
-  <section class="categories" id="categories">
-    <h2 class="section-title">產品分類</h2>
+  <!-- Bestsellers Section -->
+  <section class="section" id="bestsellers">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="icon">🔥</span>
+        暢銷產品
+      </h2>
+      <a href="/catalog.html?sort=popular" class="section-link">查看全部 →</a>
+    </div>
+    <div class="product-grid" id="bestsellers-grid">
+      <p style="text-align: center; color: #6b7280; padding: 2rem;">載入中...</p>
+    </div>
+  </section>
+
+  <!-- Flash Sale Products -->
+  <section class="section" id="flash-products">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="icon">⚡</span>
+        閃購優惠
+      </h2>
+      <a href="/catalog.html?sale=1" class="section-link">更多優惠 →</a>
+    </div>
+    <div class="product-grid" id="flash-grid">
+      <p style="text-align: center; color: #6b7280; padding: 2rem;">載入中...</p>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="categories">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="icon">📦</span>
+        產品分類
+      </h2>
+    </div>
     <div class="category-grid">
       <a href="/?category=101" class="category-card">
         <div class="category-icon">🎯</div>
@@ -735,38 +1401,91 @@
     </div>
   </section>
 
-  <section class="products" id="products">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-      <h2 class="section-title" id="products-title">🔥 熱門產品</h2>
-      <a href="/catalog.html" class="btn btn-secondary">查看全部產品 →</a>
+  <!-- New Arrivals -->
+  <section class="section" id="newarrivals">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="icon">✨</span>
+        最新產品
+      </h2>
+      <a href="/catalog.html?sort=new" class="section-link">查看全部 →</a>
     </div>
-    <div class="product-grid" id="product-list">
+    <div class="product-grid" id="newarrivals-grid">
       <p style="text-align: center; color: #6b7280; padding: 2rem;">載入中...</p>
     </div>
   </section>
 
-  <footer id="about">
+  <!-- Footer -->
+  <footer>
     <div class="footer-inner">
-      <div class="footer-section">
-        <h3>OHYA2.0</h3>
-        <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">專業成人用品商店，為您精選優質產品。</p>
+      <div class="footer-brand">
+        <a href="/" class="logo">OHYA<span>2.0</span></a>
+        <p>專業成人用品商店，為您精選來自日本的高品質產品。我們致力於提供安全、私密、可靠的購物體驗。</p>
+        <div class="social-links">
+          <a href="#" class="social-link" title="Facebook">📘</a>
+          <a href="#" class="social-link" title="Instagram">📷</a>
+          <a href="#" class="social-link" title="WhatsApp">💬</a>
+          <a href="#" class="social-link" title="YouTube">📺</a>
+        </div>
       </div>
       <div class="footer-section">
         <h3>客戶服務</h3>
         <a href="#">聯繫我們</a>
         <a href="#">常見問題</a>
         <a href="#">配送說明</a>
+        <a href="#">退換政策</a>
         <a href="#">隱私政策</a>
       </div>
       <div class="footer-section">
         <h3>付款方式</h3>
-        <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">銀行轉帳<br>轉帳後請上傳收據<br>PayPal / 信用卡</p>
+        <p style="color: rgba(255,255,255,0.65); font-size: 0.85rem; line-height: 1.8;">
+          銀行轉帳<br>
+          轉帳後請上傳收據<br>
+          PayPal / 信用卡
+        </p>
       </div>
-      <div class="footer-section">
-        <h3>聯繫</h3>
-        <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">Email: info@ohya2.com</p>
+      <div class="footer-section newsletter">
+        <h3>訂閱電子報</h3>
+        <p style="color: rgba(255,255,255,0.65); font-size: 0.85rem; margin-bottom: 1rem;">
+          訂閱獲取最新優惠資訊
+        </p>
+        <form class="newsletter-form" onsubmit="handleNewsletter(event)">
+          <input type="email" class="newsletter-input" placeholder="輸入電郵地址" required>
+          <button type="submit" class="newsletter-btn">訂閱</button>
+        </form>
       </div>
     </div>
+    
+    <!-- Trust Badges -->
+    <div class="trust-badges">
+      <div class="trust-inner">
+        <div class="trust-badge">
+          <span>🔒</span>
+          <span>安全加密</span>
+        </div>
+        <div class="trust-badge">
+          <span>📦</span>
+          <span>隱密包裝</span>
+        </div>
+        <div class="trust-badge">
+          <span>🚚</span>
+          <span>順豐速遞</span>
+        </div>
+        <div class="trust-badge">
+          <span>✅</span>
+          <span>正品正貨</span>
+        </div>
+        <div class="trust-badge">
+          <span>💳</span>
+          <span>安全支付</span>
+        </div>
+        <div class="trust-badge">
+          <span>🏆</span>
+          <span>正品保證</span>
+        </div>
+      </div>
+    </div>
+
     <div class="footer-bottom">
       © 2026 OHYA2.0 All rights reserved.
     </div>
@@ -784,63 +1503,212 @@
       window.location.href = 'https://www.google.com';
     }
 
-    // Check age on load
     if (localStorage.getItem('ageVerified') === 'true') {
       document.getElementById('ageModal').classList.add('hidden');
     }
 
-    let allProducts = [];
-
-    async function loadProducts() {
-      try {
-        const response = await fetch('/api/products');
-        const products = await response.json();
-        allProducts = products || [];
-        displayProducts(allProducts);
-      } catch (error) {
-        console.error('Error:', error);
+    // Sticky Header
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
       }
+    });
+
+    // Hero Slider
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dot');
+    const totalSlides = slides.length;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+      });
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+      currentSlide = index;
     }
 
-    function displayProducts(products) {
-      const container = document.getElementById('product-list');
+    function nextSlide() {
+      showSlide((currentSlide + 1) % totalSlides);
+    }
+
+    function prevSlide() {
+      showSlide((currentSlide - 1 + totalSlides) % totalSlides);
+    }
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        showSlide(parseInt(dot.dataset.slide));
+      });
+    });
+
+    // Auto-rotate every 5 seconds
+    setInterval(nextSlide, 5000);
+
+    // Countdown Timer (mock - 8 hours from now)
+    let countdownTime = new Date().getTime() + (8 * 60 * 60 * 1000);
+    
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const diff = countdownTime - now;
+      
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+      document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    }
+    
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Mock Products Data
+    const mockProducts = [
+      { id: 1, code: 'TL-001', name: 'Tokyo Libido - Premium Onahole', price: 398, originalPrice: 498, category: 'オナホール', badge: 'hot' },
+      { id: 2, code: 'KG-002', name: '空気少女 - 第二世代', price: 688, category: '空気少女', badge: 'sale' },
+      { id: 3, code: 'PG-003', name: 'プラチナガイズ 極太タイプ', price: 558, originalPrice: 698, category: '假陽具', badge: 'hot' },
+      { id: 4, code: 'DW-004', name: '高级Dutch Wife - 真人触感', price: 1288, category: 'ダッチワイフ', badge: 'new' },
+      { id: 5, code: 'BT-005', name: 'Blowjob Master 訓練杯', price: 458, originalPrice: 558, category: 'オナホール', badge: 'sale' },
+      { id: 6, code: 'SA-006', name: 'STYLISH AVENUE - Collection', price: 368, category: '情趣內衣', badge: 'new' },
+      { id: 7, code: 'SM-007', name: 'SM套裝 - 初學者適用', price: 688, originalPrice: 888, category: 'SM用品', badge: 'hot' },
+      { id: 8, code: 'LU-008', name: '高級潤滑液 - 蘆薈精華', price: 128, category: '润滑液', badge: null },
+    ];
+
+    const mockNewArrivals = [
+      { id: 9, code: 'NA-001', name: '新品限定 - 桜沢更紗', price: 758, category: '空気少女', badge: 'new' },
+      { id: 10, code: 'NA-002', name: '最新科技VRシリーズ', price: 1588, originalPrice: 1888, category: 'VR用品', badge: 'new' },
+      { id: 11, code: 'NA-003', name: '静音設計 按摩棒', price: 398, category: '按摩棒', badge: 'new' },
+      { id: 12, code: 'NA-004', name: '日本進口 情趣服飾', price: 288, category: '情趣內衣', badge: 'new' },
+      { id: 13, code: 'NA-005', name: '前列腺按摩器 Pro', price: 468, originalPrice: 568, category: '前列腺', badge: 'new' },
+      { id: 14, code: 'NA-006', name: '真空負壓 增粗器', price: 788, category: '增大器', badge: 'new' },
+      { id: 15, code: 'NA-007', name: '智能飛機杯 App控制', price: 598, category: 'オナホール', badge: 'new' },
+      { id: 16, code: 'NA-008', name: '情趣骰子 派對遊戲', price: 168, category: '派對遊戲', badge: 'new' },
+    ];
+
+    // Render Products
+    function renderProduct(product) {
+      const badgeClass = product.badge === 'hot' ? 'hot' : product.badge === 'sale' ? 'sale' : product.badge === 'new' ? 'new' : '';
+      const badgeText = product.badge === 'hot' ? '熱賣' : product.badge === 'sale' ? '特價' : product.badge === 'new' ? '新品' : '';
+      
+      return `
+        <a href="/product.html?id=${product.id}" style="text-decoration:none;color:inherit;display:block;">
+          <div class="product-card">
+            ${product.badge ? `<span class="product-badge ${badgeClass}">${badgeText}</span>` : ''}
+            <div class="product-img-wrap">
+              <div class="product-image" style="display:flex;align-items:center;justify-content:center;font-size:3rem;background:#f8fafc;">
+                ${product.category === 'オナホール' ? '🎯' : product.category === 'ダッチワイフ' ? '🧸' : product.category === '空気少女' ? '👩‍🎤' : product.category === '假陽具' ? '💇' : '📦'}
+              </div>
+            </div>
+            <div class="product-info">
+              <div class="product-code">${product.code}</div>
+              <div class="product-name">${product.name}</div>
+              <div class="product-price-row">
+                <span class="product-price">¥${product.price}</span>
+                ${product.originalPrice ? `<span class="product-price-original">¥${product.originalPrice}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </a>
+      `;
+    }
+
+    // Display products in grids
+    function displayProducts(containerId, products) {
+      const container = document.getElementById(containerId);
       if (!products || products.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">暫無產品</p>';
         return;
       }
-      container.innerHTML = products.slice(0, 10).map(product => `
-        <a href="/product.html?id=${product.id}" style="text-decoration:none;color:inherit;display:block;">
-          <div class="product-card">
-            <img src="${product.image_url || ''}" alt="${product.name}" class="product-image" onerror="this.style.display='none'">
-            <div class="product-info">
-              <div class="product-code">${product.code || product.product_code || ''}</div>
-              <div class="product-name">${product.name || '未命名產品'}</div>
-              <div class="product-price">¥${product.price || product.shopPrice?.replace(/[^\d]/g, '') || '0'}</div>
-            </div>
+      container.innerHTML = products.map(renderProduct).join('');
+    }
+
+    // Initialize products
+    displayProducts('bestsellers-grid', mockProducts.slice(0, 8));
+    displayProducts('flash-grid', mockProducts.filter(p => p.badge === 'sale' || p.originalPrice).concat(mockProducts.slice(0, 4)));
+    displayProducts('newarrivals-grid', mockProducts.slice(0, 8));
+
+    // Search Autocomplete
+    const searchSuggestions = document.getElementById('search-suggestions');
+    const allSearchProducts = [...mockProducts, ...mockNewArrivals];
+
+    function handleSearch(query) {
+      if (query.length > 0) {
+        showSuggestions(query);
+      } else {
+        searchSuggestions.classList.remove('active');
+      }
+    }
+
+    function showSuggestions(query) {
+      query = query.toLowerCase().trim();
+      if (!query) {
+        searchSuggestions.classList.remove('active');
+        return;
+      }
+      
+      const filtered = allSearchProducts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.code.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      ).slice(0, 6);
+
+      if (filtered.length === 0) {
+        searchSuggestions.classList.remove('active');
+        return;
+      }
+
+      searchSuggestions.innerHTML = filtered.map(p => `
+        <div class="suggestion-item" onclick="location.href='/product.html?id=${p.id}'">
+          <div style="width:40px;height:40px;background:#f8fafc;border-radius:0.25rem;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">
+            ${p.category === 'オナホール' ? '🎯' : p.category === 'ダッチワイフ' ? '🧸' : p.category === '空気少女' ? '👩‍🎤' : '📦'}
           </div>
-        </a>
+          <div class="suggestion-info">
+            <div class="suggestion-name">${p.name}</div>
+            <div class="suggestion-price">¥${p.price}</div>
+          </div>
+        </div>
       `).join('');
+      
+      searchSuggestions.classList.add('active');
     }
 
     function searchProducts(query) {
       query = query.toLowerCase().trim();
-      if (!query) { displayProducts(allProducts); return; }
-      const filtered = allProducts.filter(p => {
-        const code = (p.code || p.product_code || '').toLowerCase();
-        const barcode = (p.barcode || '').toLowerCase();
-        const name = (p.name || '').toLowerCase();
-        return code.includes(query) || barcode.includes(query) || name.includes(query);
-      });
-      displayProducts(filtered);
+      if (!query) return;
+      const filtered = allSearchProducts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.code.toLowerCase().includes(query)
+      );
+      
+      // Simple search display
+      if (filtered.length > 0) {
+        displayProducts('bestsellers-grid', filtered.slice(0, 8));
+        document.getElementById('bestsellers').scrollIntoView({behavior: 'smooth'});
+      }
+      searchSuggestions.classList.remove('active');
     }
 
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById('products-title').textContent = tab === 'popular' ? '🔥 熱門產品' : '✨ 最新產品';
-    }
+    // Close suggestions on click outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-container')) {
+        searchSuggestions.classList.remove('active');
+      }
+    });
 
-    loadProducts();
+    // Newsletter
+    function handleNewsletter(e) {
+      e.preventDefault();
+      const email = e.target.querySelector('input').value;
+      alert('感謝訂閱！我們會發送最新優惠到 ' + email);
+      e.target.reset();
+    }
   </script>
 </body>
 </html>
