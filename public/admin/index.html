@@ -61,15 +61,15 @@
     <aside class="sidebar">
       <div class="sidebar-header"><div class="logo">OHYA<span>2.0</span> Admin</div></div>
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" onclick="event.preventDefault();alert('Click Dashboard');showPage('dashboard',event)">📊 Dashboard</a>
-        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Products');showPage('products',event)">📦 產品管理</a>
-        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Categories');showPage('categories',event)">🏷️ 分類管理</a>
-        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Orders');showPage('orders',event)">🛒 訂單管理</a>
-        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Customers');showPage('customers',event)">👥 客戶管理</a>
-        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Marketing');showPage('marketing',event)">🎟️ 營銷推廣</a>
-        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Analytics');showPage('analytics',event)">📈 數據分析</a>
-        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Settings');showPage('settings',event)">⚙️ 系統設定</a>
-        <a href="#" class="nav-item" onclick="event.preventDefault();alert('Click Import');showPage('import',event)">📥 匯入/匯出</a>
+        <a href="#" class="nav-item active" onclick="event.preventDefault();console.log('nav Dashboard');showPage('dashboard',event)">📊 Dashboard</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();console.log('nav Products');showPage('products',event)">📦 產品管理</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();console.log('nav Categories');showPage('categories',event)">🏷️ 分類管理</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();console.log('nav Orders');showPage('orders',event)">🛒 訂單管理</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();console.log('nav Customers');showPage('customers',event)">👥 客戶管理</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();console.log('nav Marketing');showPage('marketing',event)">🎟️ 營銷推廣</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();console.log('nav Analytics');showPage('analytics',event)">📈 數據分析</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();console.log('nav Settings');showPage('settings',event)">⚙️ 系統設定</a>
+        <a href="#" class="nav-item" onclick="event.preventDefault();console.log('nav Import');showPage('import',event)">📥 匯入/匯出</a>
         <a href="/" class="nav-item">🏠 返回網站</a>
       </nav>
     </aside>
@@ -166,15 +166,15 @@
       };
       document.getElementById('page-title').textContent = titles[page] || page;
       
-      // Show loading
-      content.innerHTML = '<p id="debug-loading">🔄 載入緊... (page: ' + page + ')</p>';
-      console.log('Loading data for:', page);
+      // Show loading immediately
+      content.innerHTML = '<div style="padding:2rem;text-align:center;"><h2>🔄 Loading: ' + page + '</h2><p>如果呢句话都唔出现，咁就係 HTML 有问题</p></div>';
+      console.log('Loading page:', page);
       
       try {
         console.log('Calling loadData...');
         await loadData();
         console.log('Data loaded, products:', products.length, 'orders:', orders.length);
-        alert('Data loaded! products: ' + products.length);
+        // Continue to render
 
         if (page === 'dashboard') renderDashboard();
         else if (page === 'products') renderProducts();
@@ -186,8 +186,7 @@
         else if (page === 'settings') renderSettings();
         else if (page === 'import') renderImport();
       } catch (e) {
-        alert('Error: ' + e.message);
-        content.innerHTML = `<p style="color:red">Error: ${e.message}</p>`;
+        content.innerHTML = `<div style="padding:2rem;color:red;"><h2>❌ Error</h2><p>${e.message}</p><pre>${e.stack}</pre></div>`;
         console.error(e);
       }
     }
