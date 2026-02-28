@@ -601,7 +601,7 @@
             </div>
           </div>
         </div>
-        <a href="#products">暢銷產品</a>
+        <a href="/catalog.html">全部產品</a>
         <a href="#products">最新產品</a>
         <a href="#about">關於我們</a>
       </nav>
@@ -736,7 +736,10 @@
   </section>
 
   <section class="products" id="products">
-    <h2 class="section-title" id="products-title">🔥 熱門產品</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h2 class="section-title" id="products-title">🔥 熱門產品</h2>
+      <a href="/catalog.html" class="btn btn-secondary">查看全部產品 →</a>
+    </div>
     <div class="product-grid" id="product-list">
       <p style="text-align: center; color: #6b7280; padding: 2rem;">載入中...</p>
     </div>
@@ -805,7 +808,7 @@
         container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">暫無產品</p>';
         return;
       }
-      container.innerHTML = products.slice(0, 50).map(product => `
+      container.innerHTML = products.slice(0, 10).map(product => `
         <a href="/product.html?id=${product.id}" style="text-decoration:none;color:inherit;display:block;">
           <div class="product-card">
             <img src="${product.image_url || ''}" alt="${product.name}" class="product-image" onerror="this.style.display='none'">

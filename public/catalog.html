@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全部產品 - OHYA2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #6366f1; --secondary: #ec4899; --background: #fafafa; --surface: #ffffff; --text: #1f2937; --text-muted: #6b7280; --border: #e5e7eb; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--background); color: var(--text); }
+    
+    header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .logo span { color: var(--secondary); }
+    .header-actions { display: flex; gap: 1rem; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; border: none; font-size: 0.9375rem; cursor: pointer; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .cart-btn { position: relative; background: none; border: none; cursor: pointer; padding: 0.5rem; }
+    .cart-badge { position: absolute; top: 0; right: 0; background: var(--secondary); color: white; font-size: 0.75rem; width: 1.25rem; height: 1.25rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .search-box { display: flex; align-items: center; background: var(--background); border: 1px solid var(--border); border-radius: 0.5rem; }
+    .search-box input { border: none; background: transparent; padding: 0.5rem 1rem; font-size: 0.875rem; width: 200px; outline: none; }
+    .search-btn { background: transparent; border: none; padding: 0.5rem; cursor: pointer; }
+
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; }
+    
+    .filters { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .filter-btn { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 2rem; background: var(--surface); font-size: 0.875rem; cursor: pointer; }
+    .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+    .product-card { background: var(--surface); border-radius: 0.75rem; overflow: hidden; border: 1px solid var(--border); transition: all 0.3s; }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+    .product-card a { text-decoration: none; color: inherit; display: block; }
+    .product-image { width: 100%; height: 200px; object-fit: cover; background: #f3f4f6; }
+    .product-info { padding: 1rem; }
+    .product-code { font-size: 0.75rem; color: var(--text-muted); }
+    .product-name { font-weight: 600; font-size: 0.875rem; margin: 0.25rem 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .product-price { font-weight: 700; color: var(--primary); }
+    
+    .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+    .page-btn { min-width: 40px; height: 40px; border: 1px solid var(--border); background: var(--surface); border-radius: 0.5rem; cursor: pointer; }
+    .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .results-count { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem; }
+
+    footer { background: var(--text); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
+    footer a { color: rgba(255,255,255,0.7); text-decoration: none; margin: 0 1rem; }
+    
+    @media (max-width: 768px) {
+      .search-box { display: none; }
+      .header-inner { padding: 1rem; }
+      .product-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="logo">OHYA<span>2.0</span></a>
+      <div class="header-actions">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="搜尋產品..." onkeyup="searchProducts(this.value)">
+          <button class="search-btn" onclick="searchProducts(document.getElementById('search-input').value)">🔍</button>
+        </div>
+        <a href="/cart.html" class="cart-btn">🛒<span class="cart-badge" id="cart-count">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">全部產品</h1>
+    
+    <div class="filters" id="filters">
+      <button class="filter-btn active" onclick="filterCategory('all')">全部</button>
+      <button class="filter-btn" onclick="filterCategory('オナホール')">オナホール</button>
+      <button class="filter-btn" onclick="filterCategory('ダッチワイフ')">ダッチワイフ</button>
+      <button class="filter-btn" onclick="filterCategory('おっぱいグッズ')">おっぱいグッズ</button>
+      <button class="filter-btn" onclick="filterCategory('性感クッション')">性感クッション</button>
+      <button class="filter-btn" onclick="filterCategory(' Short')">ショート</button>
+      <button class="filter-btn" onclick="filterCategory('ボブ')">ボブ</button>
+    </div>
+    
+    <div class="results-count" id="results-count"></div>
+    
+    <div class="product-grid" id="product-grid"></div>
+    
+    <div class="pagination" id="pagination"></div>
+  </main>
+
+  <footer>
+    <a href="/">首頁</a>
+    <a href="/about.html">關於我們</a>
+    <a href="/contact.html">聯繫我們</a>
+    <p style="margin-top:1rem;font-size:0.75rem;color:rgba(255,255,255,0.5)">© 2026 OHYA2.0</p>
+  </footer>
+
+  <script>
+    let allProducts = [];
+    let filteredProducts = [];
+    let currentPage = 1;
+    const perPage = 12;
+
+    async function loadProducts() {
+      const res = await fetch('/api/products');
+      allProducts = await res.json();
+      filteredProducts = allProducts;
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const start = (currentPage - 1) * perPage;
+      const pageProducts = filteredProducts.slice(start, start + perPage);
+      
+      document.getElementById('results-count').textContent = `共 ${filteredProducts.length} 件產品`;
+      
+      const grid = document.getElementById('product-grid');
+      if (pageProducts.length === 0) {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#6b7280;padding:2rem;">暫無產品</p>';
+        return;
+      }
+      
+      grid.innerHTML = pageProducts.map(p => `
+        <a href="/product.html?id=${p.id}" class="product-card">
+          <img src="${p.image_url || ''}" alt="${p.name}" class="product-image" onerror="this.style.display='none'">
+          <div class="product-info">
+            <div class="product-code">${p.product_code || ''}</div>
+            <div class="product-name">${p.name || '未命名'}</div>
+            <div class="product-price">¥${p.price || '0'}</div>
+          </div>
+        </a>
+      `).join('');
+      
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredProducts.length / perPage);
+      const pagination = document.getElementById('pagination');
+      
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+      
+      let html = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
+      
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+          html += `<span>...</span>`;
+        }
+      }
+      
+      html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+      pagination.innerHTML = html;
+    }
+
+    function goPage(page) {
+      currentPage = page;
+      renderProducts();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filterCategory(cat) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (cat === 'all') {
+        filteredProducts = allProducts;
+      } else {
+        filteredProducts = allProducts.filter(p => (p.category || '').includes(cat));
+      }
+      currentPage = 1;
+      renderProducts();
+    }
+
+    function searchProducts(query) {
+      query = query.toLowerCase();
+      if (!query) {
+        filteredProducts = allProducts;
+      } else {
+        filteredProducts = allProducts.filter(p => 
+          (p.name || '').toLowerCase().includes(query) ||
+          (p.product_code || '').toLowerCase().includes(query) ||
+          (p.barcode || '').includes(query)
+        );
+      }
+      currentPage = 1;
+      renderProducts();
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
