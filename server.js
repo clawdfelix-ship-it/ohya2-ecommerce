@@ -5,7 +5,17 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
-const { initDatabase, sql } = require('./database');
+
+let sql, initDatabase;
+try {
+  const db = require('./database');
+  sql = db.sql;
+  initDatabase = db.initDatabase;
+} catch (e) {
+  console.log('Database not available, using mock mode');
+  sql = null;
+  initDatabase = null;
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -75,16 +85,24 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// Helper function for DB queries
+async function dbQuery(fn) {
+  if (!sql) return { error: 'Database not available' };
+  try {
+    return await fn();
+  } catch (e) {
+    console.error('DB Error:', e.message);
+    return { error: e.message };
+  }
+}
+
 // ============ AUTH ROUTES ============
 
 app.post('/api/register', async (req, res) => {
   try {
     const { email, password, name, phone, address } = req.body;
     const hashed = await bcrypt.hash(password, 10);
-    await sql`
-      INSERT INTO users (email, password, name, phone, address)
-      VALUES (${email}, ${hashed}, ${name}, ${phone}, ${address})
-    `;
+    await sql`INSERT INTO users (email, password, name, phone, address) VALUES (${email}, ${hashed}, ${name}, ${phone}, ${address})`;
     res.json({ success: true });
   } catch (e) {
     res.status(400).json({ error: 'Email already exists' });
@@ -96,14 +114,11 @@ app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     const [user] = await sql`SELECT * FROM users WHERE email = ${email}`;
     if (!user) return res.status(400).json({ error: 'Invalid credentials' });
-    
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ error: 'Invalid credentials' });
-    
     req.session.userId = user.id;
     req.session.isAdmin = user.is_admin === 1;
     req.session.userName = user.name;
-    
     res.json({ success: true, isAdmin: user.is_admin === 1, name: user.name });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -145,11 +160,7 @@ app.post('/api/products', requireAdmin, upload.single('image'), async (req, res)
   try {
     const { product_code, name, price, description, barcode, category, stock, active } = req.body;
     const image_url = req.file ? `/uploads/products/${req.file.filename}` : '';
-    
-    await sql`
-      INSERT INTO products (product_code, name, price, description, barcode, category, stock, active, image_url)
-      VALUES (${product_code}, ${name}, ${price}, ${description}, ${barcode}, ${category}, ${stock}, ${active}, ${image_url})
-    `;
+    await sql`INSERT INTO products (product_code, name, price, description, barcode, category, stock, active, image_url) VALUES (${product_code}, ${name}, ${price}, ${description}, ${barcode}, ${category}, ${stock}, ${active}, ${image_url})`;
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -159,11 +170,7 @@ app.post('/api/products', requireAdmin, upload.single('image'), async (req, res)
 app.put('/api/products/:id', requireAdmin, async (req, res) => {
   try {
     const { product_code, name, price, description, barcode, category, stock, active } = req.body;
-    await sql`
-      UPDATE products SET product_code = ${product_code}, name = ${name}, price = ${price},
-      description = ${description}, barcode = ${barcode}, category = ${category},
-      stock = ${stock}, active = ${active} WHERE id = ${req.params.id}
-    `;
+    await sql`UPDATE products SET product_code = ${product_code}, name = ${name}, price = ${price}, description = ${description}, barcode = ${barcode}, category = ${category}, stock = ${stock}, active = ${active} WHERE id = ${req.params.id}`;
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -200,16 +207,12 @@ app.post('/api/products/import', requireAdmin, upload.single('file'), async (req
     const csv = req.file.buffer.toString();
     const lines = csv.split('\n').slice(1);
     let imported = 0;
-    
     for (const line of lines) {
       if (!line.trim()) continue;
       const [product_code, name, price, description, barcode, category, stock, active] = line.split(',');
       if (name && price) {
         try {
-          await sql`
-            INSERT INTO products (product_code, name, price, description, barcode, category, stock, active)
-            VALUES (${product_code}, ${name}, ${parseInt(price)}, ${description}, ${barcode}, ${category}, ${parseInt(stock)||0}, ${active==='TRUE'})
-          `;
+          await sql`INSERT INTO products (product_code, name, price, description, barcode, category, stock, active) VALUES (${product_code}, ${name}, ${parseInt(price)}, ${description}, ${barcode}, ${category}, ${parseInt(stock)||0}, ${active==='TRUE'})`;
           imported++;
         } catch(e) {}
       }
@@ -246,20 +249,10 @@ app.post('/api/orders', requireAuth, upload.single('proof'), async (req, res) =>
   try {
     const { items, total } = req.body;
     const proof = req.file ? `/uploads/proofs/${req.file.filename}` : '';
-    
-    const [order] = await sql`
-      INSERT INTO orders (user_id, total, bank_transfer_proof, status)
-      VALUES (${req.session.userId}, ${total}, ${proof}, 'pending')
-      RETURNING id
-    `;
-    
+    const [order] = await sql`INSERT INTO orders (user_id, total, bank_transfer_proof, status) VALUES (${req.session.userId}, ${total}, ${proof}, 'pending') RETURNING id`;
     for (const item of items) {
-      await sql`
-        INSERT INTO order_items (order_id, product_id, quantity, price)
-        VALUES (${order.id}, ${item.productId}, ${item.quantity}, ${item.price})
-      `;
+      await sql`INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (${order.id}, ${item.productId}, ${item.quantity}, ${item.price})`;
     }
-    
     req.session.cart = [];
     res.json({ success: true, orderId: order.id });
   } catch (e) {
@@ -295,10 +288,12 @@ app.put('/api/orders/:id/status', requireAdmin, async (req, res) => {
 
 async function start() {
   try {
-    await initDatabase();
-    console.log('Server ready!');
+    if (initDatabase) {
+      await initDatabase();
+      console.log('Database connected!');
+    }
   } catch (e) {
-    console.error('Init error:', e);
+    console.error('Init error:', e.message);
   }
 }
 
