@@ -29,6 +29,8 @@
     
     /* Header */
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .mobile-toggle { display: none; background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
+    
     .page-title { font-size: 1.75rem; font-weight: 700; }
     .user-info { display: flex; align-items: center; gap: 1rem; }
     .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-size: 0.9375rem; transition: all 0.2s; }
@@ -75,6 +77,30 @@
     .modal-content { background: var(--surface); padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+    /* Mobile */
+    @media (max-width: 768px) {
+      .admin-layout { flex-direction: column; }
+      .sidebar { 
+        width: 100%; 
+        height: auto; 
+        position: relative; 
+        padding: 1rem 0;
+        display: none;
+      }
+      .sidebar.show { display: block; }
+      .mobile-toggle { display: block; }
+      .sidebar-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem 1rem; }
+      .nav-item { padding: 0.5rem 1rem; font-size: 0.875rem; }
+      .main { margin-left: 0; padding: 1rem; }
+      .page-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .stat-card { padding: 1rem; }
+      .stat-value { font-size: 1.5rem; }
+      .data-table { overflow-x: auto; }
+      table { min-width: 600px; }
+      .form-container { padding: 1rem; }
+      .modal-content { padding: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -111,6 +137,7 @@
     <!-- Main -->
     <main class="main">
       <div class="page-header">
+        <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">☰ Menu</button>
         <h1 class="page-title" id="page-title">Dashboard</h1>
         <div class="user-info">
           <span>Admin</span>
