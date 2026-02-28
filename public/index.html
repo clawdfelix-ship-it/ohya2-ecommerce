@@ -358,13 +358,55 @@
         font-size: 2.5rem;
       }
       
-      nav {
+      .nav-dropdown:hover .dropdown-menu {
         display: none;
       }
       
       .header-inner {
         padding: 1rem;
       }
+    }
+
+    /* Dropdown Menu */
+    .nav-dropdown {
+      position: relative;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      box-shadow: var(--shadow-lg);
+      min-width: 180px;
+      padding: 0.5rem 0;
+      z-index: 200;
+    }
+
+    .nav-dropdown:hover .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 0.625rem 1rem;
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .dropdown-menu a:hover {
+      background: var(--background);
+      color: var(--primary);
     }
 
     /* Loading */
@@ -393,10 +435,23 @@
     <div class="header-inner">
       <a href="/" class="logo">OHYA<span>2.0</span></a>
       <nav>
-        <a href="#categories">分類</a>
-        <a href="#products">產品</a>
-        <a href="#about">關於</a>
-      </nav>
+      <div class="nav-dropdown">
+        <a href="#categories" class="nav-link">產品分類 ▾</a>
+        <div class="dropdown-menu">
+          <a href="/?category=101">オナホール</a>
+          <a href="/?category=102">ダッチワイフ</a>
+          <a href="/?category=70">おっぱいグッズ</a>
+          <a href="/?category=103">性感クッション</a>
+          <a href="/?category=120">Tokyo Libido</a>
+          <a href="/?category=130">空気少女</a>
+          <a href="/?category=71">ショート</a>
+          <a href="/?category=72">ボブ</a>
+          <a href="/?category=73">ロング</a>
+        </div>
+      </div>
+      <a href="#products">熱門產品</a>
+      <a href="#about">關於我們</a>
+    </nav>
       <div class="header-actions">
         <button class="btn btn-secondary" onclick="location.href='/login.html'">登入</button>
         <button class="btn btn-primary" onclick="location.href='/register.html'">註冊</button>
