@@ -6,10 +6,7 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server.js"
-    }
-  ]
+  "env": {
+    "POSTGRES_URL": "@ohya2-postgres"
+  }
 }
