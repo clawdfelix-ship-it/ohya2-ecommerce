@@ -1,240 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkout - OHYA2.0</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <title>結帳 - OHYA2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #ec4899; --background: #fafafa; --surface: #ffffff; --text: #1f2937; --text-muted: #6b7280; --border: #e5e7eb; --success: #10b981; --error: #ef4444; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--background); color: var(--text); }
+    
+    header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .logo span { color: var(--secondary); }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-size: 0.9375rem; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    
+    .main { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+    .page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 2rem; }
+    
+    .checkout-layout { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
+    
+    .checkout-form { background: var(--surface); border-radius: 1rem; border: 1px solid var(--border); padding: 1.5rem; }
+    .form-section { margin-bottom: 1.5rem; }
+    .form-section h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.9375rem; font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    
+    .upload-box { border: 2px dashed var(--border); border-radius: 0.5rem; padding: 2rem; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+    .upload-box:hover { border-color: var(--primary); }
+    .upload-box input { display: none; }
+    
+    .order-summary { background: var(--surface); border-radius: 1rem; border: 1px solid var(--border); padding: 1.5rem; height: fit-content; }
+    .summary-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; }
+    .summary-items { max-height: 300px; overflow-y: auto; }
+    .summary-item { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-total { font-size: 1.25rem; font-weight: 700; border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; }
+    .submit-btn { width: 100%; margin-top: 1rem; }
+    
+    footer { background: var(--text); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
+    .footer-section h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .footer-section a { display: block; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.875rem; }
+    .footer-bottom { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.75rem; }
+    
+    @media (max-width: 768px) { .checkout-layout { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
-  <!-- Header -->
   <header>
-    <div class="container">
-      <div class="header-main">
-        <a href="/" class="logo">OHYA2.0</a>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/cart.html">Cart</a>
-        </nav>
-        <div class="header-actions">
-          <a href="/cart.html" class="cart-btn">
-            Cart <span class="cart-badge" style="display:none">0</span>
-          </a>
-          <div id="user-menu" class="user-menu">
-            <a href="/login.html" class="btn btn-login">Login</a>
-            <a href="/register.html" class="btn btn-register">Register</a>
-          </div>
-        </div>
-      </div>
+    <div class="header-inner">
+      <a href="/" class="logo">OHYA<span>2.0</span></a>
+      <a href="/cart.html" class="btn btn-secondary">返回購物車</a>
     </div>
   </header>
 
-  <!-- Checkout Page -->
-  <section class="checkout-page">
-    <div class="container">
-      <h1 class="section-title">Checkout</h1>
-      
-      <div class="checkout-container">
-        <!-- Order Summary -->
-        <div class="checkout-section">
-          <h3>Order Summary</h3>
-          <div id="checkout-items">
-            <!-- Items rendered here -->
-          </div>
-          <div style="text-align: right; margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
-            <h3>Total: <span id="checkout-total" style="color: var(--primary);">$0.00</span></h3>
-          </div>
-        </div>
-
-        <!-- Shipping Info -->
-        <div class="checkout-section">
-          <h3>Shipping Information</h3>
-          <form id="checkout-form">
-            <div class="form-group">
-              <label for="shippingName">Full Name *</label>
-              <input type="text" id="shippingName" name="shippingName" required>
-            </div>
-            <div class="form-group">
-              <label for="shippingPhone">Phone Number *</label>
-              <input type="tel" id="shippingPhone" name="shippingPhone" required>
-            </div>
-            <div class="form-group">
-              <label for="shippingAddress">Delivery Address *</label>
-              <textarea id="shippingAddress" name="shippingAddress" rows="3" required></textarea>
-            </div>
-          </form>
-        </div>
-
-        <!-- Bank Transfer -->
-        <div class="checkout-section">
-          <h3>Payment - Bank Transfer</h3>
-          
-          <div class="bank-info">
-            <p><strong>Bank:</strong> HSBC</p>
-            <p><strong>Account Number:</strong> 123-456-789</p>
-            <p><strong>Account Name:</strong> OHYA2.0</p>
-            <p style="margin-top: 15px; color: #666;">Please transfer the total amount and upload your payment proof below.</p>
-          </div>
-
+  <main class="main">
+    <h1 class="page-title">💳 結帳</h1>
+    
+    <form class="checkout-layout" id="checkout-form">
+      <div class="checkout-form">
+        <div class="form-section">
+          <h3>👤 客戶資料</h3>
           <div class="form-group">
-            <label>Upload Payment Proof *</label>
-            <div class="upload-area" id="upload-area">
-              <p>Click to upload or drag and drop</p>
-              <p style="font-size: 12px; color: #888;">Supported: JPG, PNG, GIF (Max 10MB)</p>
-              <input type="file" id="bank-proof" accept="image/*" style="display: none;">
-              <img id="proof-preview" class="upload-preview hidden">
+            <label>姓名 *</label>
+            <input type="text" id="name" required>
+          </div>
+          <div class="form-group">
+            <label>電話 *</label>
+            <input type="tel" id="phone" required>
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="email" required>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3>📦 送貨資料</h3>
+          <div class="form-group">
+            <label>送貨地址 *</label>
+            <textarea id="address" required></textarea>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3>💳 付款方式</h3>
+          <div class="form-group">
+            <label>選擇付款方式 *</label>
+            <select id="payment-method" required>
+              <option value="">請選擇...</option>
+              <option value="bank_transfer">銀行轉帳</option>
+              <option value="paypal">PayPal</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="bank-info" style="display:none;">
+            <div style="background: #f0f9ff; padding: 1rem; border-radius: 0.5rem; font-size: 0.875rem;">
+              <strong>銀行轉帳資料：</strong><br>
+              銀行：恆生銀行<br>
+              帳戶：OHYA2 COMPANY LIMITED<br>
+              帳號：123-456789-001<br><br>
+              請轉帳後上傳收據
+            </div>
+            <label style="margin-top:1rem;">上傳轉帳收據 *</label>
+            <div class="upload-box" onclick="document.getElementById('proof').click()">
+              <input type="file" id="proof" accept="image/*" required>
+              <span>📎 Click 上傳收據圖片</span>
             </div>
           </div>
         </div>
-
-        <!-- Submit -->
-        <button class="btn btn-primary" onclick="submitOrder()" style="width: 100%; padding: 15px; font-size: 18px;">
-          Place Order
-        </button>
+        
+        <button type="submit" class="btn btn-primary submit-btn">確認訂單</button>
       </div>
-    </div>
-  </section>
-
-  <script src="/js/main.js"></script>
-  <script>
-    let proofFile = null;
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      await checkAuthAndLoad();
-      renderCheckoutSummary();
-      setupUpload();
-    });
-
-    async function checkAuthAndLoad() {
-      await window.ohya2.checkAuth();
-      if (!window.ohya2.currentUser()) {
-        window.location.href = '/login.html?redirect=/checkout.html';
-        return;
-      }
       
-      const cartItems = window.ohya2.getCartItems();
-      if (cartItems.length === 0) {
-        window.location.href = '/cart.html';
-      }
-    }
-
-    function renderCheckoutSummary() {
-      const items = window.ohya2.getCartItems();
-      const container = document.getElementById('checkout-items');
-      
-      container.innerHTML = items.map(item => `
-        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-          <span>${item.name} x ${item.quantity}</span>
-          <span>$${(item.price * item.quantity).toFixed(2)}</span>
+      <div class="order-summary">
+        <h3 class="summary-title">訂單摘要</h3>
+        <div class="summary-items" id="summary-items"></div>
+        <div class="summary-total">
+          <div class="summary-row">
+            <span>小計</span>
+            <span id="subtotal">¥0</span>
+          </div>
+          <div class="summary-row">
+            <span>運費</span>
+            <span>到付</span>
+          </div>
+          <div class="summary-row" style="margin-top:0.5rem;font-size:1.25rem;">
+            <span>總計</span>
+            <span id="total">¥0</span>
+          </div>
         </div>
-      `).join('');
+      </div>
+    </form>
+  </main>
 
-      document.getElementById('checkout-total').textContent = `$${window.ohya2.getCartTotal().toFixed(2)}`;
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-section"><h3>OHYA2.0</h3><a href="/">首頁</a></div>
+      <div class="footer-section"><h3>客戶服務</h3><a href="#">聯繫我們</a></div>
+      <div class="footer-section"><h3>付款方式</h3><a href="#">銀行轉帳</a></div>
+    </div>
+    <div class="footer-bottom">© 2026 OHYA2.0 All rights reserved.</div>
+  </footer>
+
+  <script>
+    document.getElementById('payment-method').addEventListener('change', (e) => {
+      document.getElementById('bank-info').style.display = e.target.value === 'bank_transfer' ? 'block' : 'none';
+    });
+    
+    async function loadSummary() {
+      const res = await fetch('/api/cart');
+      const cart = await res.json();
+      const container = document.getElementById('summary-items');
+      let total = 0;
+      container.innerHTML = cart.map(item => {
+        total += item.price * item.quantity;
+        return `<div class="summary-item"><span>${item.name} x${item.quantity}</span><span>¥${(item.price * item.quantity).toLocaleString()}</span></div>`;
+      }).join('');
+      document.getElementById('subtotal').textContent = '¥' + total.toLocaleString();
+      document.getElementById('total').textContent = '¥' + total.toLocaleString();
+      window.cartTotal = total;
     }
-
-    function setupUpload() {
-      const uploadArea = document.getElementById('upload-area');
-      const fileInput = document.getElementById('bank-proof');
-      const preview = document.getElementById('proof-preview');
-
-      uploadArea.addEventListener('click', () => fileInput.click());
-
-      uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-      });
-
-      uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-      });
-
-      uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        if (e.dataTransfer.files.length) {
-          handleFile(e.dataTransfer.files[0]);
-        }
-      });
-
-      fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length) {
-          handleFile(e.target.files[0]);
-        }
-      });
-
-      function handleFile(file) {
-        if (!file.type.startsWith('image/')) {
-          window.ohya2.showToast('Please upload an image file', 'error');
-          return;
-        }
-        if (file.size > 10 * 1024 * 1024) {
-          window.ohya2.showToast('File size must be less than 10MB', 'error');
-          return;
-        }
-        proofFile = file;
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          preview.src = e.target.result;
-          preview.classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
-        
-        window.ohya2.showToast('Proof uploaded!', 'success');
-      }
-    }
-
-    async function submitOrder() {
-      const name = document.getElementById('shippingName').value.trim();
-      const phone = document.getElementById('shippingPhone').value.trim();
-      const address = document.getElementById('shippingAddress').value.trim();
-
-      if (!name || !phone || !address) {
-        window.ohya2.showToast('Please fill in all shipping information', 'error');
-        return;
-      }
-
-      if (!proofFile) {
-        window.ohya2.showToast('Please upload payment proof', 'error');
-        return;
-      }
-
-      const items = window.ohya2.getCartItems();
-      const total = window.ohya2.getCartTotal();
-
+    
+    document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/cart');
+      const cart = await res.json();
+      
       const formData = new FormData();
-      formData.append('items', JSON.stringify(items));
-      formData.append('total', total);
-      formData.append('shippingName', name);
-      formData.append('shippingPhone', phone);
-      formData.append('shippingAddress', address);
-      formData.append('bankProof', proofFile);
-
+      formData.append('items', JSON.stringify(cart.map(i => ({productId: i.productId, quantity: i.quantity, price: i.price}))));
+      formData.append('total', window.cartTotal);
+      
+      if (document.getElementById('proof').files[0]) {
+        formData.append('proof', document.getElementById('proof').files[0]);
+      }
+      
       try {
-        const response = await fetch('/api/orders', {
+        const result = await fetch('/api/orders', {
           method: 'POST',
           body: formData
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          // Clear cart
-          localStorage.removeItem('ohya2_cart');
-          window.ohya2.showToast('Order placed successfully!', 'success');
-          
-          // Show order number and redirect
-          setTimeout(() => {
-            alert(`Order placed! Your order number is: ${data.orderNumber}`);
-            window.location.href = '/';
-          }, 500);
+        }).then(r => r.json());
+        
+        if (result.success) {
+          alert('訂單已提交！訂單號：' + result.orderId);
+          location.href = '/';
         } else {
-          window.ohya2.showToast(data.error || 'Failed to place order', 'error');
+          alert('提交失敗：' + result.error);
         }
-      } catch (error) {
-        window.ohya2.showToast('Failed to place order', 'error');
+      } catch (e) {
+        alert('網絡錯誤');
       }
-    }
+    });
+    
+    loadSummary();
   </script>
 </body>
 </html>

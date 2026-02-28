@@ -1,71 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - OHYA2.0</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <title>登入 - OHYA2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #ec4899; --background: #fafafa; --surface: #ffffff; --text: #1f2937; --text-muted: #6b7280; --border: #e5e7eb; --success: #10b981; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--background); color: var(--text); line-height: 1.6; }
+    
+    /* Header */
+    header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .logo span { color: var(--secondary); }
+    .header-actions { display: flex; gap: 1rem; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-size: 0.9375rem; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+    
+    /* Main */
+    .main { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+    .page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 2rem; }
+    
+    /* Form */
+    .form-container { max-width: 400px; margin: 0 auto; background: var(--surface); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+    .form-group input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 1rem; font-family: inherit; }
+    .form-group input:focus { outline: none; border-color: var(--primary); }
+    .form-footer { text-align: center; margin-top: 1.5rem; color: var(--text-muted); }
+    .form-footer a { color: var(--primary); text-decoration: none; }
+    .error { color: #ef4444; font-size: 0.875rem; margin-top: 0.5rem; }
+    
+    /* Footer */
+    footer { background: var(--text); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
+    .footer-section h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .footer-section a { display: block; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.875rem; }
+    .footer-bottom { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.75rem; }
+  </style>
 </head>
 <body>
-  <!-- Header -->
   <header>
-    <div class="container">
-      <div class="header-main">
-        <a href="/" class="logo">OHYA2.0</a>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/#products">Products</a>
-        </nav>
-        <div class="header-actions">
-          <a href="/cart.html" class="cart-btn">
-            Cart <span class="cart-badge" style="display:none">0</span>
-          </a>
-        </div>
+    <div class="header-inner">
+      <a href="/" class="logo">OHYA<span>2.0</span></a>
+      <div class="header-actions">
+        <a href="/" class="btn btn-secondary">返回首頁</a>
       </div>
     </div>
   </header>
 
-  <!-- Login Form -->
-  <div class="container">
+  <main class="main">
+    <h1 class="page-title">會員登入</h1>
+    
     <div class="form-container">
-      <h1 class="form-title">Login</h1>
-      
       <form id="login-form">
         <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" required>
+          <label>Email</label>
+          <input type="email" id="email" required placeholder="your@email.com">
         </div>
-        
         <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required>
+          <label>密碼</label>
+          <input type="password" id="password" required placeholder="••••••••">
         </div>
-
-        <button type="submit" class="btn btn-primary" style="width: 100%;">
-          Login
-        </button>
+        <div class="error" id="error"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">登入</button>
       </form>
-
-      <p style="text-align: center; margin-top: 20px;">
-        Don't have an account? <a href="/register.html" style="color: var(--primary);">Register here</a>
-      </p>
+      <div class="form-footer">
+        尚未註冊？ <a href="/register.html">立即註冊</a>
+      </div>
     </div>
-  </div>
+  </main>
 
-  <script src="/js/main.js"></script>
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-section">
+        <h3>OHYA2.0</h3>
+        <a href="/">首頁</a>
+        <a href="#">關於我們</a>
+      </div>
+      <div class="footer-section">
+        <h3>客戶服務</h3>
+        <a href="#">聯繫我們</a>
+        <a href="#">常見問題</a>
+      </div>
+      <div class="footer-section">
+        <h3>付款方式</h3>
+        <a href="#">銀行轉帳</a>
+        <a href="#">PayPal</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 OHYA2.0 All rights reserved.
+    </div>
+  </footer>
+
   <script>
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-
-      const success = await window.ohya2.login(email, password);
+      const error = document.getElementById('error');
       
-      if (success) {
-        const params = new URLSearchParams(window.location.search);
-        const redirect = params.get('redirect') || '/';
-        window.location.href = redirect;
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email, password})
+        });
+        const data = await res.json();
+        if (data.success) {
+          location.href = data.isAdmin ? '/admin/' : '/';
+        } else {
+          error.textContent = data.error || '登入失敗';
+        }
+      } catch (e) {
+        error.textContent = '網絡錯誤，請稍後再試';
       }
     });
   </script>
