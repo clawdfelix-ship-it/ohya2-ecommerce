@@ -806,14 +806,16 @@
         return;
       }
       container.innerHTML = products.slice(0, 50).map(product => `
-        <div class="product-card">
-          <img src="${product.image_url || ''}" alt="${product.name}" class="product-image" onerror="this.style.display='none'">
-          <div class="product-info">
-            <div class="product-code">${product.code || product.product_code || ''}</div>
-            <div class="product-name">${product.name || '未命名產品'}</div>
-            <div class="product-price">¥${product.price || product.shopPrice?.replace(/[^\d]/g, '') || '0'}</div>
+        <a href="/product.html?id=${product.id}" style="text-decoration:none;color:inherit;display:block;">
+          <div class="product-card">
+            <img src="${product.image_url || ''}" alt="${product.name}" class="product-image" onerror="this.style.display='none'">
+            <div class="product-info">
+              <div class="product-code">${product.code || product.product_code || ''}</div>
+              <div class="product-name">${product.name || '未命名產品'}</div>
+              <div class="product-price">¥${product.price || product.shopPrice?.replace(/[^\d]/g, '') || '0'}</div>
+            </div>
           </div>
-        </div>
+        </a>
       `).join('');
     }
 
