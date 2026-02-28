@@ -121,12 +121,28 @@
       <form id="order-form">
         <input type="hidden" id="o-id">
         <div class="form-group">
-          <label>客戶 (ID)</label>
-          <input type="number" id="o-customer-id">
+          <label>選擇客戶</label>
+          <select id="o-customer-id">
+            <option value="">-- 選擇客戶 --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>選擇產品</label>
+          <select id="o-product-id" onchange="updateOrderTotal()">
+            <option value="">-- 選擇產品 --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>數量</label>
+          <input type="number" id="o-quantity" value="1" min="1" onchange="updateOrderTotal()">
+        </div>
+        <div class="form-group">
+          <label>單價</label>
+          <input type="number" id="o-unit-price" readonly>
         </div>
         <div class="form-group">
           <label>總額</label>
-          <input type="number" id="o-total" required>
+          <input type="number" id="o-total" readonly>
         </div>
         <div class="form-group">
           <label>狀態</label>
@@ -325,12 +341,39 @@
     // Order functions
     function openOrderModal(id) {
       const o = id ? orders.find(x => x.id === id) : null;
+      
+      // Populate customer dropdown
+      const customerSelect = document.getElementById('o-customer-id');
+      customerSelect.innerHTML = '<option value="">-- 選擇客戶 --</option>';
+      customers.forEach(c => {
+        customerSelect.innerHTML += '<option value="' + c.id + '">' + (c.name || c.email) + '</option>';
+      });
+      
+      // Populate product dropdown
+      const productSelect = document.getElementById('o-product-id');
+      productSelect.innerHTML = '<option value="">-- 選擇產品 --</option>';
+      products.forEach(p => {
+        productSelect.innerHTML += '<option value="' + p.id + '" data-price="' + p.price + '">' + (p.name || p.product_code).substring(0,30) + ' - $' + p.price + '</option>';
+      });
+      
       document.getElementById('o-id').value = id || '';
       document.getElementById('o-customer-id').value = o ? o.user_id : '';
+      document.getElementById('o-quantity').value = 1;
+      document.getElementById('o-unit-price').value = '';
       document.getElementById('o-total').value = o ? o.total : '';
       document.getElementById('o-status').value = o ? o.status : 'pending';
       document.getElementById('order-modal').classList.add('active');
     }
+    
+    function updateOrderTotal() {
+      const productSelect = document.getElementById('o-product-id');
+      const selectedOption = productSelect.options[productSelect.selectedIndex];
+      const price = parseInt(selectedOption.dataset.price) || 0;
+      const quantity = parseInt(document.getElementById('o-quantity').value) || 1;
+      document.getElementById('o-unit-price').value = price;
+      document.getElementById('o-total').value = price * quantity;
+    }
+    
     function editOrder(id) { openOrderModal(id); }
     
     // Customer functions
@@ -383,10 +426,15 @@
     document.getElementById('order-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('o-id').value;
+      const productId = document.getElementById('o-product-id').value;
+      const quantity = parseInt(document.getElementById('o-quantity').value) || 1;
+      const total = parseInt(document.getElementById('o-total').value) || 0;
+      
       const data = {
         user_id: parseInt(document.getElementById('o-customer-id').value) || null,
-        total: parseInt(document.getElementById('o-total').value) || 0,
-        status: document.getElementById('o-status').value
+        total: total,
+        status: document.getElementById('o-status').value,
+        items: productId ? [{ product_id: parseInt(productId), quantity: quantity, price: total }] : []
       };
       const method = id ? 'PUT' : 'POST';
       const url = id ? '/api/orders/' + id : '/api/orders';
