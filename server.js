@@ -147,6 +147,106 @@ app.get('/api/customers', async (req, res) => {
   }
 });
 
+app.post('/api/customers', async (req, res) => {
+  try {
+    const { email, password, name, phone, address } = req.body;
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password || 'password123', 10);
+    
+    await sql`
+      INSERT INTO users (email, password, name, phone, address, is_admin)
+      VALUES (${email}, ${hashedPassword}, ${name}, ${phone}, ${address}, 0)
+    `;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error creating customer:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/customers/:id', async (req, res) => {
+  try {
+    const { name, phone, address, membership_level } = req.body;
+    await sql`
+      UPDATE users SET name = ${name}, phone = ${phone}, address = ${address}
+      WHERE id = ${req.params.id}
+    `;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error updating customer:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- Categories API ---
+
+app.get('/api/categories', async (req, res) => {
+  try {
+    // Get unique categories from products
+    const products = await sql`SELECT DISTINCT category FROM products WHERE active = 1`;
+    const categories = products.map(p => ({ name: p.category, count: 0 }));
+    
+    // Get count for each category
+    for (const cat of categories) {
+      const result = await sql`SELECT COUNT(*) as count FROM products WHERE category = ${cat.name} AND active = 1`;
+      cat.count = result[0].count;
+    }
+    
+    res.json(categories);
+  } catch (e) {
+    console.error('Error fetching categories:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- Coupons API ---
+
+app.get('/api/coupons', async (req, res) => {
+  // For now, return empty array (coupons stored locally in admin)
+  res.json([]);
+});
+
+app.post('/api/coupons', async (req, res) => {
+  // Coupons stored locally
+  res.json({ success: true, message: 'Coupon stored locally' });
+});
+
+// --- Analytics API ---
+
+app.get('/api/analytics', async (req, res) => {
+  try {
+    const totalProducts = await sql`SELECT COUNT(*) as count FROM products WHERE active = 1`;
+    const totalOrders = await sql`SELECT COUNT(*) as count FROM orders`;
+    const totalCustomers = await sql`SELECT COUNT(*) as count FROM users WHERE is_admin = 0`;
+    const totalRevenue = await sql`SELECT COALESCE(SUM(total), 0) as sum FROM orders WHERE status = 'completed'`;
+    
+    // Orders by status
+    const ordersByStatus = await sql`
+      SELECT status, COUNT(*) as count FROM orders GROUP BY status
+    `;
+    
+    // Recent orders
+    const recentOrders = await sql`
+      SELECT o.*, u.name as customer_name
+      FROM orders o 
+      LEFT JOIN users u ON o.user_id = u.id
+      ORDER BY o.id DESC LIMIT 10
+    `;
+    
+    res.json({
+      totalProducts: totalProducts[0].count,
+      totalOrders: totalOrders[0].count,
+      totalCustomers: totalCustomers[0].count,
+      totalRevenue: totalRevenue[0].sum,
+      ordersByStatus: ordersByStatus,
+      recentOrders: recentOrders
+    });
+  } catch (e) {
+    console.error('Error fetching analytics:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Auth API ---
 
 app.post('/api/login', async (req, res) => {
