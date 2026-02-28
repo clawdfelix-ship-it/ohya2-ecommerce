@@ -1,166 +1,208 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - OHYA2.0</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <title>Admin - OHYA2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    .admin-login {
-      max-width: 400px;
-      margin: 100px auto;
-      background: var(--white);
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-    }
-    .product-image-thumb {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 5px;
-    }
-    .action-btns {
-      display: flex;
-      gap: 5px;
-    }
-    .action-btns button {
-      padding: 5px 10px;
-      font-size: 12px;
-    }
-    .status-select {
-      padding: 5px 10px;
-      border: 1px solid var(--border);
-      border-radius: 5px;
-    }
-    .order-proof-img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      cursor: pointer;
-      border-radius: 5px;
-    }
+    :root { --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #ec4899; --background: #f3f4f6; --surface: #ffffff; --text: #1f2937; --text-muted: #6b7280; --border: #e5e7eb; --success: #10b981; --error: #ef4444; --warning: #f59e0b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--background); color: var(--text); }
+    
+    /* Layout */
+    .admin-layout { display: flex; min-height: 100vh; }
+    
+    /* Sidebar */
+    .sidebar { width: 260px; background: var(--text); color: white; padding: 1.5rem 0; position: fixed; height: 100vh; overflow-y: auto; }
+    .sidebar-header { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .logo { font-size: 1.5rem; font-weight: 700; }
+    .logo span { color: var(--secondary); }
+    
+    .sidebar-nav { padding: 1rem 0; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.2s; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+    .nav-item svg { width: 20px; height: 20px; }
+    
+    /* Main */
+    .main { flex: 1; margin-left: 260px; padding: 2rem; }
+    
+    /* Header */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .page-title { font-size: 1.75rem; font-weight: 700; }
+    .user-info { display: flex; align-items: center; gap: 1rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-size: 0.9375rem; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: var(--error); color: white; }
+    
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--surface); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border); }
+    .stat-label { font-size: 0.875rem; color: var(--text-muted); }
+    .stat-value { font-size: 2rem; font-weight: 700; margin-top: 0.5rem; }
+    
+    /* Table */
+    .data-table { background: var(--surface); border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--background); font-weight: 600; font-size: 0.875rem; }
+    td { font-size: 0.9375rem; }
+    tr:hover { background: var(--background); }
+    .status { padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    
+    .action-btn { padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; cursor: pointer; border: none; }
+    .edit-btn { background: var(--primary); color: white; }
+    .delete-btn { background: var(--error); color: white; }
+    
+    /* Tabs */
+    .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
+    .tab { padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    
+    /* Form */
+    .form-container { background: var(--surface); padding: 2rem; border-radius: 0.75rem; border: 1px solid var(--border); max-width: 600px; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 1rem; font-family: inherit; }
+    
+    /* Modal */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--surface); padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
   </style>
 </head>
 <body>
-  <!-- Admin Login (shown if not authenticated) -->
-  <div id="admin-login-screen" class="admin-login" style="display: none;">
-    <h1 style="text-align: center; margin-bottom: 30px;">Admin Login</h1>
-    <form id="admin-login-form">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="admin-email" required>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">OHYA<span>2.0</span> Admin</div>
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="admin-password" required>
-      </div>
-      <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-    </form>
-    <p style="text-align: center; margin-top: 20px;">
-      <a href="/" style="color: var(--primary);">← Back to Store</a>
-    </p>
-  </div>
-
-  <!-- Admin Panel (shown if authenticated) -->
-  <div id="admin-panel" class="admin-container" style="display: none;">
-    <aside class="admin-sidebar">
-      <h2>OHYA2.0 Admin</h2>
-      <ul class="admin-menu">
-        <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
-        <li><a href="#" data-section="products">Products</a></li>
-        <li><a href="#" data-section="orders">Orders</a></li>
-        <li><a href="/" style="margin-top: 30px;">← Back to Store</a></li>
-        <li><a href="#" onclick="adminLogout()">Logout</a></li>
-      </ul>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" onclick="showPage('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          Dashboard
+        </a>
+        <a href="#" class="nav-item" onclick="showPage('products')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          產品管理
+        </a>
+        <a href="#" class="nav-item" onclick="showPage('orders')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          訂單管理
+        </a>
+        <a href="#" class="nav-item" onclick="showPage('import')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          匯入/匯出
+        </a>
+        <a href="/" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          返回網站
+        </a>
+      </nav>
     </aside>
 
-    <main class="admin-content">
-      <!-- Dashboard Section -->
-      <section id="section-dashboard">
-        <div class="admin-header">
-          <h1>Dashboard</h1>
+    <!-- Main -->
+    <main class="main">
+      <div class="page-header">
+        <h1 class="page-title" id="page-title">Dashboard</h1>
+        <div class="user-info">
+          <span>Admin</span>
+          <button class="btn btn-secondary" onclick="logout()">登出</button>
         </div>
-        
+      </div>
+
+      <!-- Dashboard Page -->
+      <div id="page-dashboard">
         <div class="stats-grid">
           <div class="stat-card">
-            <h3>Total Products</h3>
-            <div class="value" id="stat-products">0</div>
+            <div class="stat-label">總產品數</div>
+            <div class="stat-value" id="stat-products">-</div>
           </div>
           <div class="stat-card">
-            <h3>Total Orders</h3>
-            <div class="value" id="stat-orders">0</div>
+            <div class="stat-label">總訂單數</div>
+            <div class="stat-value" id="stat-orders">-</div>
           </div>
           <div class="stat-card">
-            <h3>Total Revenue</h3>
-            <div class="value" id="stat-revenue">$0</div>
+            <div class="stat-label">待處理訂單</div>
+            <div class="stat-value" id="stat-pending">-</div>
           </div>
           <div class="stat-card">
-            <h3>Pending Orders</h3>
-            <div class="value" id="stat-pending">0</div>
+            <div class="stat-label">會員數</div>
+            <div class="stat-value" id="stat-users">-</div>
           </div>
         </div>
-      </section>
-
-      <!-- Products Section -->
-      <section id="section-products" class="hidden">
-        <div class="admin-header">
-          <h1>Products Management</h1>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-success" onclick="exportProducts()">📥 Export CSV</button>
-            <button class="btn btn-warning" onclick="showImportModal()">📤 Import CSV</button>
-            <button class="btn btn-primary" onclick="showProductModal()">+ Add Product</button>
-          </div>
-        </div>
-
-        <div class="admin-table">
+        
+        <h3 style="margin-bottom: 1rem;">最新訂單</h3>
+        <div class="data-table">
           <table>
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>Code</th>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
+              <tr><th>訂單ID</th><th>客戶</th><th>總額</th><th>狀態</th><th>日期</th></tr>
             </thead>
-            <tbody id="products-table-body">
-              <!-- Products loaded here -->
-            </tbody>
+            <tbody id="recent-orders"></tbody>
           </table>
         </div>
-      </section>
+      </div>
 
-      <!-- Orders Section -->
-      <section id="section-orders" class="hidden">
-        <div class="admin-header">
-          <h1>Orders Management</h1>
+      <!-- Products Page -->
+      <div id="page-products" style="display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div class="tabs" style="margin-bottom: 0;">
+            <div class="tab active">全部產品</div>
+          </div>
+          <button class="btn btn-primary" onclick="showModal('product-modal')">➕ 新增產品</button>
         </div>
-
-        <div class="admin-table">
+        <div class="data-table">
           <table>
             <thead>
-              <tr>
-                <th>Order #</th>
-                <th>Customer</th>
-                <th>Items</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Proof</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
+              <tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th><th>狀態</th><th>操作</th></tr>
             </thead>
-            <tbody id="orders-table-body">
-              <!-- Orders loaded here -->
-            </tbody>
+            <tbody id="product-list"></tbody>
           </table>
         </div>
-      </section>
+      </div>
+
+      <!-- Orders Page -->
+      <div id="page-orders" style="display:none;">
+        <div class="tabs">
+          <div class="tab active" onclick="filterOrders('all')">全部</div>
+          <div class="tab" onclick="filterOrders('pending')">待處理</div>
+          <div class="tab" onclick="filterOrders('completed')">已完成</div>
+        </div>
+        <div class="data-table">
+          <table>
+            <thead>
+              <tr><th>訂單ID</th><th>客戶</th><th>產品</th><th>總額</th><th>狀態</th><th>操作</th></tr>
+            </thead>
+            <tbody id="order-list"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Import/Export Page -->
+      <div id="page-import" style="display:none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div class="form-container">
+            <h3 style="margin-bottom: 1rem;">📥 匯入產品 (CSV)</h3>
+            <div class="form-group">
+              <label>選擇CSV檔案</label>
+              <input type="file" accept=".csv" id="import-file">
+            </div>
+            <button class="btn btn-primary" onclick="importProducts()">匯入</button>
+          </div>
+          <div class="form-container">
+            <h3 style="margin-bottom: 1rem;">📤 匯出產品 (CSV)</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">匯出所有產品資料為CSV檔案</p>
+            <button class="btn btn-primary" onclick="exportProducts()">匯出CSV</button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -168,429 +210,145 @@
   <div class="modal" id="product-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 id="product-modal-title">Add Product</h2>
-        <button class="modal-close" onclick="closeProductModal()">&times;</button>
+        <h2>新增/編輯產品</h2>
+        <button class="modal-close" onclick="hideModal('product-modal')">&times;</button>
       </div>
       <form id="product-form">
-        <input type="hidden" id="product-id">
         <div class="form-group">
-          <label>Product Name *</label>
-          <input type="text" id="product-name" required>
+          <label>產品編碼</label>
+          <input type="text" id="p-code" required>
         </div>
         <div class="form-group">
-          <label>Description</label>
-          <textarea id="product-description" rows="3"></textarea>
+          <label>產品名稱</label>
+          <input type="text" id="p-name" required>
         </div>
         <div class="form-group">
-          <label>Price *</label>
-          <input type="number" id="product-price" step="0.01" required>
+          <label>價格</label>
+          <input type="number" id="p-price" required>
         </div>
         <div class="form-group">
-          <label>Category</label>
-          <input type="text" id="product-category" placeholder="e.g., Vibrators, Lingerie">
+          <label>描述</label>
+          <textarea id="p-desc"></textarea>
         </div>
         <div class="form-group">
-          <label>Stock</label>
-          <input type="number" id="product-stock" value="0">
+          <label>分類</label>
+          <select id="p-category">
+            <option value="オナホール">オナホール</option>
+            <option value="ダッチワイフ">ダッチワイフ</option>
+            <option value="おっぱいグッズ">おっぱいグッズ</option>
+          </select>
         </div>
         <div class="form-group">
-          <label>Product Image</label>
-          <input type="file" id="product-image" accept="image/*">
+          <label>庫存</label>
+          <input type="number" id="p-stock" value="0">
         </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="product-active" checked> Active
-          </label>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Product</button>
+        <button type="submit" class="btn btn-primary">儲存</button>
       </form>
     </div>
   </div>
 
-  <!-- Import Modal -->
-  <div class="modal" id="import-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Import Products from CSV</h2>
-        <button class="modal-close" onclick="closeImportModal()">&times;</button>
-      </div>
-      <div style="padding: 20px 0;">
-        <p style="margin-bottom: 15px; color: #666;">
-          Upload a CSV file with the following columns:<br>
-          <small>product_code, name, price, description, barcode, category, stock, active, image_url</small>
-        </p>
-        <div class="form-group">
-          <label>Select CSV File *</label>
-          <input type="file" id="import-file" accept=".csv">
-        </div>
-        <button class="btn btn-primary" onclick="importProducts()" style="width: 100%;">Import Products</button>
-        <div id="import-result" style="margin-top: 15px;"></div>
-      </div>
-    </div>
-  </div>
-
   <script>
-    let isAdmin = false;
     let products = [];
     let orders = [];
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', async () => {
-      await checkAdminAuth();
-      setupMenu();
-    });
-
-    async function checkAdminAuth() {
+    
+    async function loadData() {
+      // Load products
       try {
-        const response = await fetch('/api/auth/me');
-        const data = await response.json();
-        
-        if (data.user && data.user.isAdmin) {
-          isAdmin = true;
-          showAdminPanel();
-          loadDashboard();
-        } else {
-          showLoginScreen();
-        }
-      } catch (error) {
-        showLoginScreen();
-      }
-    }
-
-    function showLoginScreen() {
-      document.getElementById('admin-login-screen').style.display = 'block';
-      document.getElementById('admin-panel').style.display = 'none';
-    }
-
-    function showAdminPanel() {
-      document.getElementById('admin-login-screen').style.display = 'none';
-      document.getElementById('admin-panel').style.display = 'flex';
-    }
-
-    // Admin Login
-    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('admin-email').value;
-      const password = document.getElementById('admin-password').value;
-
-      try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success && data.user.isAdmin) {
-          showAdminPanel();
-          loadDashboard();
-        } else {
-          alert('Invalid admin credentials');
-        }
-      } catch (error) {
-        alert('Login failed');
-      }
-    });
-
-    async function adminLogout() {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      window.location.reload();
-    }
-
-    // Menu Navigation
-    function setupMenu() {
-      document.querySelectorAll('.admin-menu a[data-section]').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const section = link.dataset.section;
-          showSection(section);
-          
-          document.querySelectorAll('.admin-menu a').forEach(l => l.classList.remove('active'));
-          link.classList.add('active');
-        });
-      });
-    }
-
-    function showSection(section) {
-      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
-      document.getElementById(`section-${section}`).classList.remove('hidden');
-      
-      if (section === 'products') loadProducts();
-      if (section === 'orders') loadOrders();
-    }
-
-    // Dashboard
-    async function loadDashboard() {
-      try {
-        const response = await fetch('/api/admin/stats');
-        const stats = await response.json();
-        
-        document.getElementById('stat-products').textContent = stats.totalProducts;
-        document.getElementById('stat-orders').textContent = stats.totalOrders;
-        document.getElementById('stat-revenue').textContent = `$${stats.totalRevenue.toFixed(2)}`;
-        document.getElementById('stat-pending').textContent = stats.pendingOrders;
-      } catch (error) {
-        console.error('Failed to load dashboard:', error);
-      }
-    }
-
-    // Products
-    async function loadProducts() {
-      try {
-        const response = await fetch('/api/products?active=false');
-        products = await response.json();
+        const pRes = await fetch('/api/products');
+        products = await pRes.json();
         renderProducts();
-      } catch (error) {
-        console.error('Failed to load products:', error);
-      }
+        document.getElementById('stat-products').textContent = products.length;
+      } catch(e) { console.log('No products'); }
+      
+      // Load orders
+      try {
+        const oRes = await fetch('/api/orders');
+        orders = await oRes.json();
+        renderOrders();
+        document.getElementById('stat-orders').textContent = orders.length;
+        document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'pending').length;
+      } catch(e) { console.log('No orders'); }
     }
-
+    
     function renderProducts() {
-      const tbody = document.getElementById('products-table-body');
-      tbody.innerHTML = products.map(p => `
+      const tbody = document.getElementById('product-list');
+      tbody.innerHTML = products.slice(0, 20).map(p => `
         <tr>
-          <td>${p.id}</td>
           <td>${p.product_code || '-'}</td>
+          <td>${p.name || '-'}</td>
+          <td>¥${p.price || 0}</td>
+          <td>${p.stock || 0}</td>
+          <td><span class="status ${p.active ? 'status-completed' : 'status-cancelled'}">${p.active ? '上架' : '下架'}</span></td>
           <td>
-            ${p.image 
-              ? `<img src="${p.image}" class="product-image-thumb">`
-              : '<div class="product-image-thumb" style="background:#eee;display:flex;align-items:center;justify-content:center;">-</div>'
-            }
-          </td>
-          <td>${p.name}</td>
-          <td>${p.category || '-'}</td>
-          <td>$${p.price.toFixed(2)}</td>
-          <td>${p.stock}</td>
-          <td>
-            <span class="status-badge ${p.active ? 'status-completed' : 'status-cancelled'}">
-              ${p.active ? 'Active' : 'Inactive'}
-            </span>
-          </td>
-          <td class="action-btns">
-            <button class="btn btn-primary" onclick="editProduct(${p.id})">Edit</button>
-            <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+            <button class="action-btn edit-btn" onclick="editProduct(${p.id})">編輯</button>
+            <button class="action-btn delete-btn" onclick="deleteProduct(${p.id})">刪除</button>
           </td>
         </tr>
       `).join('');
     }
-
-    function showProductModal(product = null) {
-      const modal = document.getElementById('product-modal');
-      const title = document.getElementById('product-modal-title');
-      const form = document.getElementById('product-form');
-      
-      form.reset();
-      
-      if (product) {
-        title.textContent = 'Edit Product';
-        document.getElementById('product-id').value = product.id;
-        document.getElementById('product-name').value = product.name;
-        document.getElementById('product-description').value = product.description || '';
-        document.getElementById('product-price').value = product.price;
-        document.getElementById('product-category').value = product.category || '';
-        document.getElementById('product-stock').value = product.stock;
-        document.getElementById('product-active').checked = product.active === 1;
-      } else {
-        title.textContent = 'Add Product';
-        document.getElementById('product-id').value = '';
-      }
-      
-      modal.classList.add('active');
-    }
-
-    function closeProductModal() {
-      document.getElementById('product-modal').classList.remove('active');
-    }
-
-    function editProduct(id) {
-      const product = products.find(p => p.id === id);
-      if (product) showProductModal(product);
-    }
-
-    async function deleteProduct(id) {
-      if (!confirm('Are you sure you want to delete this product?')) return;
-      
-      try {
-        const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-        const data = await response.json();
-        
-        if (data.success) {
-          alert('Product deleted');
-          loadProducts();
-        } else {
-          alert('Failed to delete product');
-        }
-      } catch (error) {
-        alert('Failed to delete product');
-      }
-    }
-
-    document.getElementById('product-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const id = document.getElementById('product-id').value;
-      const formData = new FormData();
-      
-      formData.append('name', document.getElementById('product-name').value);
-      formData.append('description', document.getElementById('product-description').value);
-      formData.append('price', document.getElementById('product-price').value);
-      formData.append('category', document.getElementById('product-category').value);
-      formData.append('stock', document.getElementById('product-stock').value);
-      formData.append('active', document.getElementById('product-active').checked ? '1' : '0');
-      
-      const imageFile = document.getElementById('product-image').files[0];
-      if (imageFile) {
-        formData.append('image', imageFile);
-      }
-
-      try {
-        const url = id ? `/api/products/${id}` : '/api/products';
-        const method = id ? 'PUT' : 'POST';
-        
-        const response = await fetch(url, { method, body: formData });
-        const data = await response.json();
-        
-        if (data.success) {
-          closeProductModal();
-          loadProducts();
-          alert(id ? 'Product updated!' : 'Product added!');
-        } else {
-          alert(data.error || 'Failed to save product');
-        }
-      } catch (error) {
-        alert('Failed to save product');
-      }
-    });
-
-    // Orders
-    async function loadOrders() {
-      try {
-        const response = await fetch('/api/orders');
-        orders = await response.json();
-        renderOrders();
-      } catch (error) {
-        console.error('Failed to load orders:', error);
-      }
-    }
-
+    
     function renderOrders() {
-      const tbody = document.getElementById('orders-table-body');
-      tbody.innerHTML = orders.map(o => `
+      const tbody = document.getElementById('order-list');
+      tbody.innerHTML = orders.slice(0, 20).map(o => `
         <tr>
-          <td>${o.order_number}</td>
-          <td>
-            ${o.user_name || 'Guest'}<br>
-            <small>${o.user_email || ''}</small>
-          </td>
-          <td>
-            ${o.items ? o.items.length : 0} items<br>
-            <small>${o.shipping_name}</small>
-          </td>
-          <td>$${o.total.toFixed(2)}</td>
-          <td>
-            <select class="status-select" onchange="updateOrderStatus(${o.id}, this.value)">
-              <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
-              <option value="confirmed" ${o.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-              <option value="shipped" ${o.status === 'shipped' ? 'selected' : ''}>Shipped</option>
-              <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Completed</option>
-              <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-            </select>
-          </td>
-          <td>
-            ${o.bank_proof 
-              ? `<img src="${o.bank_proof}" class="order-proof-img" onclick="window.open('${o.bank_proof}')" title="Click to view">`
-              : '-'
-            }
-          </td>
+          <td>#${o.id}</td>
+          <td>${o.user_name || 'User ' + o.user_id}</td>
+          <td>${o.total}</td>
+          <td><span class="status status-${o.status}">${o.status}</span></td>
           <td>${new Date(o.created_at).toLocaleDateString()}</td>
           <td>
-            <button class="btn btn-primary" onclick="viewOrderDetails(${o.id})">View</button>
+            <button class="action-btn edit-btn" onclick="updateOrderStatus(${o.id})">更新狀態</button>
           </td>
         </tr>
       `).join('');
-    }
-
-    async function updateOrderStatus(orderId, status) {
-      try {
-        const response = await fetch(`/api/orders/${orderId}/status`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status })
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-          alert('Order status updated');
-          loadOrders();
-          loadDashboard();
-        }
-      } catch (error) {
-        alert('Failed to update status');
-      }
-    }
-
-    function viewOrderDetails(orderId) {
-      const order = orders.find(o => o.id === orderId);
-      if (!order) return;
       
-      const itemsList = order.items.map(i => `${i.product_name} x ${i.quantity} - $${(i.price * i.quantity).toFixed(2)}`).join('\n');
-      
-      alert(`Order: ${order.order_number}\n\nItems:\n${itemsList}\n\nTotal: $${order.total.toFixed(2)}\n\nShipping:\n${order.shipping_name}\n${order.shipping_phone}\n${order.shipping_address}\n\nStatus: ${order.status}`);
+      // Recent orders
+      document.getElementById('recent-orders').innerHTML = orders.slice(0, 5).map(o => `
+        <tr>
+          <td>#${o.id}</td>
+          <td>${o.user_name || 'User ' + o.user_id}</td>
+          <td>¥${o.total}</td>
+          <td><span class="status status-${o.status}">${o.status}</span></td>
+          <td>${new Date(o.created_at).toLocaleDateString()}</td>
+        </tr>
+      `).join('');
     }
-
-    // CSV Export
-    function exportProducts() {
+    
+    function showPage(page) {
+      documentSelectorAll('[id.query^="page-"]').forEach(p => p.style.display = 'none');
+      document.getElementById('page-' + page).style.display = 'block';
+      document.getElementById('page-title').textContent = page === 'dashboard' ? 'Dashboard' : page === 'products' ? '產品管理' : page === 'orders' ? '訂單管理' : '匯入/匯出';
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+    
+    function showModal(id) { document.getElementById(id).classList.add('active'); }
+    function hideModal(id) { document.getElementById(id).classList.remove('active'); }
+    
+    async function exportProducts() {
       window.location.href = '/api/products/export';
     }
-
-    // CSV Import
-    function showImportModal() {
-      document.getElementById('import-modal').classList.add('active');
-      document.getElementById('import-result').innerHTML = '';
-      document.getElementById('import-file').value = '';
-    }
-
-    function closeImportModal() {
-      document.getElementById('import-modal').classList.remove('active');
-    }
-
+    
     async function importProducts() {
-      const fileInput = document.getElementById('import-file');
-      const resultDiv = document.getElementById('import-result');
+      const file = document.getElementById('import-file').files[0];
+      if (!file) return alert('請選擇檔案');
       
-      if (!fileInput.files.length) {
-        resultDiv.innerHTML = '<p style="color: red;">Please select a CSV file</p>';
-        return;
-      }
-
       const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
-
-      resultDiv.innerHTML = '<p>Importing...</p>';
-
-      try {
-        const response = await fetch('/api/products/import', {
-          method: 'POST',
-          body: formData
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          resultDiv.innerHTML = `<p style="color: green;">${data.message}</p>`;
-          if (data.errors && data.errors.length > 0) {
-            resultDiv.innerHTML += `<p style="color: orange;">Warnings: ${data.errors.join(', ')}</p>`;
-          }
-          loadProducts(); // Refresh the products list
-        } else {
-          resultDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
-        }
-      } catch (error) {
-        resultDiv.innerHTML = `<p style="color: red;">Import failed: ${error.message}</p>`;
+      formData.append('file', file);
+      
+      const res = await fetch('/api/products/import', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        alert('匯入成功！' + data.imported + ' 項產品');
+        loadData();
+      } else {
+        alert('匯入失敗');
       }
     }
+    
+    function logout() { location.href = '/'; }
+    
+    loadData();
   </script>
 </body>
 </html>
