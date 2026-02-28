@@ -6,1260 +6,248 @@
   <title>Admin - OHYA2.0</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; }
-    
-    /* Layout */
-    .sidebar { width: 240px; background: #0f172a; color: white; position: fixed; height: 100vh; padding: 20px 0; overflow-y: auto; z-index: 100; }
-    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid #1e293b; margin-bottom: 15px; }
-    .logo { font-size: 22px; font-weight: bold; color: #ec4899; }
-    .logo span { color: white; }
-    
-    .nav-section { font-size: 11px; text-transform: uppercase; color: #64748b; margin: 20px 15px 8px; letter-spacing: 1px; font-weight: 600; }
-    .nav-item { display: flex; align-items: center; gap: 10px; color: #94a3b8; padding: 12px 20px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
-    .nav-item:hover { background: #1e293b; color: white; }
-    .nav-item.active { background: #1e293b; color: white; border-left-color: #ec4899; }
-    .nav-icon { font-size: 16px; width: 24px; text-align: center; }
-    
-    .main { margin-left: 240px; padding: 24px; min-height: 100vh; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
-    .header h1 { font-size: 28px; color: #1e293b; }
-    .header-right { display: flex; align-items: center; gap: 16px; }
-    
-    /* Buttons */
-    .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    body { font-family: -apple-system, sans-serif; background: #f5f5f5; }
+    .sidebar { width: 200px; background: #1a1a2e; color: white; position: fixed; height: 100%; padding: 15px; }
+    .sidebar h2 { margin-bottom: 15px; font-size: 18px; color: #ec4899; }
+    .nav { display: flex; flex-direction: column; gap: 5px; }
+    .nav a { color: #aaa; padding: 10px; text-decoration: none; border-radius: 5px; cursor: pointer; }
+    .nav a:hover, .nav a.active { background: #16213e; color: white; }
+    .main { margin-left: 200px; padding: 20px; }
+    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .stat { font-size: 24px; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; }
     .btn-primary { background: #6366f1; color: white; }
-    .btn-primary:hover { background: #4f46e5; }
-    .btn-secondary { background: #e2e8f0; color: #475569; }
-    .btn-secondary:hover { background: #cbd5e1; }
     .btn-danger { background: #ef4444; color: white; }
-    .btn-success { background: #10b981; color: white; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; }
-    .btn-outline { background: transparent; border: 1px solid #cbd5e1; color: #475569; }
-    
-    /* Cards */
-    .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; }
-    .card-header { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-    .card-title { font-size: 16px; font-weight: 600; color: #1e293b; }
-    .card-body { padding: 20px; }
-    
-    /* Stats */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .stat-label { color: #64748b; font-size: 13px; margin-bottom: 4px; }
-    .stat-value { font-size: 28px; font-weight: bold; color: #1e293b; }
-    .stat-value.success { color: #10b981; }
-    .stat-value.warning { color: #f59e0b; }
-    .stat-value.danger { color: #ef4444; }
-    .stat-change { font-size: 12px; margin-top: 4px; }
-    .stat-change.up { color: #10b981; }
-    .stat-change.down { color: #ef4444; }
-    
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #f1f5f9; }
-    th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 13px; }
-    tr:hover { background: #f8fafc; }
-    
-    /* Forms */
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #374151; font-size: 14px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: border-color 0.2s; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #6366f1; }
-    
-    /* Modal */
-    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; }
-    .modal.active { display: flex; }
-    .modal-content { background: white; border-radius: 16px; width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h2 { font-size: 18px; }
-    .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: #94a3b8; }
-    .modal-body { padding: 24px; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; gap: 12px; justify-content: flex-end; }
-    
-    /* Badges */
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
     .badge-pending { background: #fef3c7; color: #92400e; }
-    .badge-processing { background: #dbeafe; color: #1e40af; }
-    .badge-shipped { background: #e0e7ff; color: #3730a3; }
     .badge-completed { background: #d1fae5; color: #065f46; }
-    .badge-cancelled { background: #fee2e2; color: #991b1b; }
-    .badge-paid { background: #d1fae5; color: #065f46; }
-    .badge-unpaid { background: #fee2e2; color: #991b1b; }
-    .badge-vip { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
-    .badge-silver { background: linear-gradient(135deg, #94a3b8, #64748b); color: white; }
-    .badge-bronze { background: linear-gradient(135deg, #cd7f32, #a0522d); color: white; }
-    
-    /* Toolbar */
-    .toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    .search-input { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; width: 280px; }
-    .filter-select { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 150px; }
-    
-    /* Timeline */
-    .timeline { padding: 20px; }
-    .timeline-item { display: flex; gap: 16px; padding-bottom: 20px; position: relative; }
-    .timeline-item::before { content: ''; position: absolute; left: 11px; top: 24px; bottom: 0; width: 2px; background: #e2e8f0; }
-    .timeline-item:last-child::before { display: none; }
-    .timeline-dot { width: 24px; height: 24px; border-radius: 50%; background: #6366f1; flex-shrink: 0; }
-    .timeline-content { flex: 1; }
-    .timeline-time { font-size: 12px; color: #94a3b8; }
-    .timeline-text { color: #475569; }
-    
-    /* Grid */
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    
-    /* Tags */
-    .tag { display: inline-block; padding: 4px 10px; background: #f1f5f9; border-radius: 4px; font-size: 12px; color: #475569; margin-right: 6px; margin-bottom: 6px; }
-    
-    /* Empty state */
-    .empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
-    .empty-icon { font-size: 48px; margin-bottom: 16px; }
-    
-    /* Loading */
-    .loading { text-align: center; padding: 60px 20px; color: #64748b; }
-    
-    @media (max-width: 768px) {
-      .sidebar { width: 60px; padding: 10px 0; }
-      .sidebar-header, .nav-section, .nav-item span { display: none; }
-      .nav-item { justify-content: center; padding: 14px; }
-      .nav-icon { font-size: 20px; }
-      .main { margin-left: 60px; padding: 16px; }
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    }
+    .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; }
+    .actions { display: flex; gap: 5px; }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">🛒 <span>OHYA2.0</span></div>
-    </div>
-    
-    <div class="nav-section">📊 總覽</div>
-    <div class="nav-item active" onclick="show('dashboard')">
-      <span class="nav-icon">📊</span><span>Dashboard</span>
-    </div>
-    
-    <div class="nav-section">📦 訂單與交易</div>
-    <div class="nav-item" onclick="show('orders')">
-      <span class="nav-icon">🛒</span><span>訂單管理</span>
-    </div>
-    <div class="nav-item" onclick="show('refunds')">
-      <span class="nav-icon">💸</span><span>退款管理</span>
-    </div>
-    
-    <div class="nav-section">🏷️ 商品與庫存</div>
-    <div class="nav-item" onclick="show('products')">
-      <span class="nav-icon">📦</span><span>產品管理</span>
-    </div>
-    <div class="nav-item" onclick="show('inventory')">
-      <span class="nav-icon">📈</span><span>庫存管理</span>
-    </div>
-    <div class="nav-item" onclick="show('categories')">
-      <span class="nav-icon">🏷️</span><span>分類管理</span>
-    </div>
-    
-    <div class="nav-section">👥 顧客與會員</div>
-    <div class="nav-item" onclick="show('customers')">
-      <span class="nav-icon">👥</span><span>客戶管理</span>
-    </div>
-    
-    <div class="nav-section">🎯 營銷推廣</div>
-    <div class="nav-item" onclick="show('coupons')">
-      <span class="nav-icon">🎟️</span><span>優惠碼</span>
-    </div>
-    <div class="nav-item" onclick="show('promotions')">
-      <span class="nav-icon">⚡</span><span>促銷活動</span>
-    </div>
-    
-    <div class="nav-section">📊 數據分析</div>
-    <div class="nav-item" onclick="show('analytics')">
-      <span class="nav-icon">📈</span><span>數據報告</span>
-    </div>
-    
-    <div class="nav-section">⚙️ 系統設定</div>
-    <div class="nav-item" onclick="show('payments')">
-      <span class="nav-icon">💳</span><span>付款設定</span>
-    </div>
-    <div class="nav-item" onclick="show('shipping')">
-      <span class="nav-icon">🚚</span><span>運費設定</span>
-    </div>
-    <div class="nav-item" onclick="show('settings')">
-      <span class="nav-icon">⚙️</span><span>系統設定</span>
+    <h2>OHYA2.0</h2>
+    <div class="nav">
+      <a class="active" onclick="show('dashboard')">📊 Dashboard</a>
+      <a onclick="show('products')">📦 產品</a>
+      <a onclick="show('orders')">🛒 訂單</a>
+      <a onclick="show('customers')">👥 客戶</a>
+      <a onclick="show('coupons')">🎟️ 優惠碼</a>
+      <a onclick="show('settings')">⚙️ 設定</a>
     </div>
   </div>
-
-  <!-- Main Content -->
   <div class="main">
     <div class="header">
-      <h1 id="page-title">Dashboard</h1>
-      <div class="header-right">
-        <span style="color:#64748b;font-size:14px;">admin@ohya2.com</span>
-        <button class="btn btn-secondary btn-sm" onclick="logout()">登出</button>
-      </div>
+      <h1 id="title">Dashboard</h1>
+      <button class="btn" onclick="logout()">登出</button>
     </div>
-    <div id="content">
-      <div class="loading">載入緊...</div>
-    </div>
+    <div id="content">Loading...</div>
   </div>
 
   <!-- Product Modal -->
   <div class="modal" id="product-modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="product-modal-title">產品資料</h2>
-        <button class="modal-close" onclick="closeModal('product-modal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="product-form">
-          <input type="hidden" id="p-id">
-          <div class="grid-2">
-            <div class="form-group">
-              <label>產品編碼 *</label>
-              <input type="text" id="p-code" required>
-            </div>
-            <div class="form-group">
-              <label>分類</label>
-              <select id="p-category">
-                <option value="オナホール">オナホール</option>
-                <option value="ダッチワイフ">ダッチワイフ</option>
-                <option value="おっぱいグッズ">おっぱいグッズ</option>
-                <option value="性感クッション">性感クッション</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>產品名稱 *</label>
-            <input type="text" id="p-name" required>
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>價格 (HK$) *</label>
-              <input type="number" id="p-price" required>
-            </div>
-            <div class="form-group">
-              <label>庫存數量</label>
-              <input type="number" id="p-stock">
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>商品重量 (kg)</label>
-              <input type="number" id="p-weight" placeholder="0.5">
-            </div>
-            <div class="form-group">
-              <label>狀態</label>
-              <select id="p-status">
-                <option value="active">上架中</option>
-                <option value="inactive">下架</option>
-                <option value="preorder">預售</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>主圖片 URL</label>
-            <input type="text" id="p-image" placeholder="https://...">
-          </div>
-          <div class="form-group">
-            <label>描述</label>
-            <textarea id="p-desc" rows="4"></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('product-modal')">取消</button>
-        <button class="btn btn-primary" onclick="saveProduct()">儲存產品</button>
-      </div>
+      <h2>產品資料</h2>
+      <form id="product-form">
+        <input type="hidden" id="p-id">
+        <div class="form-group"><label>編碼</label><input type="text" id="p-code" required></div>
+        <div class="form-group"><label>名稱</label><input type="text" id="p-name" required></div>
+        <div class="form-group"><label>價格</label><input type="number" id="p-price" required></div>
+        <div class="form-group"><label>庫存</label><input type="number" id="p-stock"></div>
+        <div class="form-group"><label>分類</label>
+          <select id="p-category">
+            <option value="オナホール">オナホール</option>
+            <option value="ダッチワイフ">ダッチワイフ</option>
+            <option value="おっぱいグッズ">おっぱいグッズ</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">儲存</button>
+        <button type="button" onclick="closeModal('product-modal')" class="btn">取消</button>
+      </form>
     </div>
   </div>
 
   <!-- Order Modal -->
   <div class="modal" id="order-modal">
-    <div class="modal-content" style="max-width:800px;">
-      <div class="modal-header">
-        <h2>訂單詳情 <span id="order-detail-id"></span></h2>
-        <button class="modal-close" onclick="closeModal('order-modal')">&times;</button>
-      </div>
-      <div class="modal-body" id="order-detail-content">
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('order-modal')">關閉</button>
-        <button class="btn btn-primary" onclick="saveOrder()">儲存變更</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Customer Modal -->
-  <div class="modal" id="customer-modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="customer-modal-title">客戶資料</h2>
-        <button class="modal-close" onclick="closeModal('customer-modal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="customer-form">
-          <input type="hidden" id="c-id">
-          <div class="form-group">
-            <label>姓名 *</label>
-            <input type="text" id="c-name" required>
-          </div>
-          <div class="form-group">
-            <label>Email *</label>
-            <input type="email" id="c-email" required>
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>電話</label>
-              <input type="text" id="c-phone">
-            </div>
-            <div class="form-group">
-              <label>會員等級</label>
-              <select id="c-level">
-                <option value="bronze">Bronze</option>
-                <option value="silver">Silver</option>
-                <option value="vip">VIP</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>標籤</label>
-            <input type="text" id="c-tags" placeholder="KOL,常客,愛殺價 (逗號分隔)">
-          </div>
-          <div class="form-group">
-            <label>地址</label>
-            <textarea id="c-address" rows="2"></textarea>
-          </div>
-          <div class="form-group">
-            <label>備註</label>
-            <textarea id="c-note" rows="2"></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('customer-modal')">取消</button>
-        <button class="btn btn-primary" onclick="saveCustomer()">儲存客戶</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Coupon Modal -->
-  <div class="modal" id="coupon-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>優惠碼</h2>
-        <button class="modal-close" onclick="closeModal('coupon-modal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="coupon-form">
-          <div class="form-group">
-            <label>優惠碼 *</label>
-            <input type="text" id="coupon-code" required placeholder="SAVE20">
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>折扣類型</label>
-              <select id="coupon-type">
-                <option value="percent">百分比 (%)</option>
-                <option value="fixed">固定金額 ($)</option>
-                <option value="shipping">免運費</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>折扣值</label>
-              <input type="number" id="coupon-value" required placeholder="20">
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>最低消費 (HK$)</label>
-              <input type="number" id="coupon-min" placeholder="0">
-            </div>
-            <div class="form-group">
-              <label>使用次數上限</label>
-              <input type="number" id="coupon-limit" placeholder="無限">
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>開始日期</label>
-              <input type="date" id="coupon-start">
-            </div>
-            <div class="form-group">
-              <label>到期日期</label>
-              <input type="date" id="coupon-expire">
-            </div>
-          </div>
-          <div class="form-group">
-            <label>適用範圍</label>
-            <select id="coupon-scope">
-              <option value="all">全館適用</option>
-              <option value="category">指定分類</option>
-              <option value="product">指定商品</option>
-            </select>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('coupon-modal')">取消</button>
-        <button class="btn btn-primary" onclick="saveCoupon()">新增優惠碼</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- New Order Modal -->
-  <div class="modal" id="new-order-modal">
-    <div class="modal-content" style="max-width:700px;">
-      <div class="modal-header">
-        <h2>建立新訂單</h2>
-        <button class="modal-close" onclick="closeModal('new-order-modal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="new-order-form">
-          <div class="form-group">
-            <label>選擇客戶</label>
-            <select id="new-o-customer">
-              <option value="">-- 選擇客戶 --</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>選擇產品</label>
-            <select id="new-o-product" onchange="updateOrderCalc()">
-              <option value="">-- 選擇產品 --</option>
-            </select>
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>數量</label>
-              <input type="number" id="new-o-qty" value="1" min="1" onchange="updateOrderCalc()">
-            </div>
-            <div class="form-group">
-              <label>單價</label>
-              <input type="number" id="new-o-price" readonly>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>運費</label>
-            <input type="number" id="new-o-shipping" value="0">
-          </div>
-          <div class="form-group">
-            <label>優惠碼 (如有)</label>
-            <input type="text" id="new-o-coupon" placeholder="輸入優惠碼">
-          </div>
-          <div class="form-group">
-            <label>訂單備註</label>
-            <textarea id="new-o-note" rows="2"></textarea>
-          </div>
-          <div class="card" style="background:#f8fafc;">
-            <div class="grid-2">
-              <div>商品金額:</div>
-              <div style="text-align:right;" id="new-o-subtotal">$0</div>
-            </div>
-            <div class="grid-2">
-              <div>運費:</div>
-              <div style="text-align:right;" id="new-o-ship-cost">$0</div>
-            </div>
-            <div class="grid-2">
-              <div>優惠:</div>
-              <div style="text-align:right;color:#10b981;" id="new-o-discount">-$0</div>
-            </div>
-            <div class="grid-2" style="font-size:18px;font-weight:bold;margin-top:10px;padding-top:10px;border-top:1px solid #e2e8f0;">
-              <div>總額:</div>
-              <div style="text-align:right;" id="new-o-total">$0</div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('new-order-modal')">取消</button>
-        <button class="btn btn-primary" onclick="createOrder()">建立訂單</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    let products = [], orders = [], customers = [], coupons = [];
-    let analytics = {};
-    
-    // Load data with timeout
-    Promise.all([
-      fetch('/api/products').then(r => r.json()).catch(() => []),
-      fetch('/api/orders').then(r => r.json()).catch(() => []),
-      fetch('/api/customers').then(r => r.json()).catch(() => []),
-      fetch('/api/analytics').then(r => r.json()).catch(() => ({}))
-    ]).then(([p, o, c, a]) => {
-      console.log('Data loaded:', p.length, o.length, c.length);
-      products = p; orders = o; customers = c; analytics = a;
-      renderDashboard();
-    }).catch(e => {
-      console.error('Load error:', e);
-      document.getElementById('content').innerHTML = '<div class="empty" style="color:red">Error: ' + e.message + '</div>';
-    });
-    
-    function show(page) {
-      document.getElementById('page-title').innerText = {
-        dashboard: 'Dashboard', products: '產品管理', categories: '分類管理',
-        inventory: '庫存管理', orders: '訂單管理', customers: '客戶管理',
-        refunds: '退款管理', coupons: '優惠碼', promotions: '促銷活動',
-        analytics: '數據報告', payments: '付款設定', shipping: '運費設定', settings: '系統設定'
-      }[page] || page;
-      
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      event.target.classList.add('active');
-      
-      if (page === 'dashboard') renderDashboard();
-      else if (page === 'products') renderProducts();
-      else if (page === 'categories') renderCategories();
-      else if (page === 'inventory') renderInventory();
-      else if (page === 'orders') renderOrders();
-      else if (page === 'customers') renderCustomers();
-      else if (page === 'refunds') renderRefunds();
-      else if (page === 'coupons') renderCoupons();
-      else if (page === 'promotions') renderPromotions();
-      else if (page === 'analytics') renderAnalytics();
-      else if (page === 'payments') renderPayments();
-      else if (page === 'shipping') renderShipping();
-      else if (page === 'settings') renderSettings();
-    }
-    
-    // =====================
-    // DASHBOARD
-    // =====================
-    function renderDashboard() {
-      const todayOrders = orders.filter(o => {
-        if (!o.created_at) return false;
-        const d = new Date(o.created_at);
-        const today = new Date();
-        return d.toDateString() === today.toDateString();
-      });
-      const todayRevenue = todayOrders.reduce((s,o) => s + (o.total||0), 0);
-      const pendingOrders = orders.filter(o => o.status === 'pending').length;
-      const lowStock = products.filter(p => (p.stock||0) < 5).length;
-      
-      document.getElementById('content').innerHTML = `
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">今日訂單</div>
-            <div class="stat-value">${todayOrders.length}</div>
-            <div class="stat-change">${pendingOrders} 待處理</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">今日營業額</div>
-            <div class="stat-value success">$${todayRevenue}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">總產品</div>
-            <div class="stat-value">${products.length}</div>
-            ${lowStock > 0 ? `<div class="stat-change danger">⚠️ ${lowStock} 低庫存</div>` : ''}
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">總客戶</div>
-            <div class="stat-value">${customers.length}</div>
-          </div>
-        </div>
-        
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title">📦 熱銷產品</span>
-            </div>
-            <div class="card-body">
-              <table>
-                <thead><tr><th>產品</th><th>銷售</th></tr></thead>
-                <tbody>
-                  ${products.slice(0,5).map(p => `<tr><td>${(p.name||'').substring(0,25)}</td><td>${p.stock||0} 件</td></tr>`).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title">🛒 最新訂單</span>
-              <button class="btn btn-sm btn-primary" onclick="show('orders')">查看全部</button>
-            </div>
-            <div class="card-body">
-              <table>
-                <thead><tr><th>訂單</th><th>金額</th><th>狀態</th></tr></thead>
-                <tbody>
-                  ${orders.slice(0,5).map(o => `<tr onclick="viewOrder(${o.id})" style="cursor:pointer"><td>#${o.id}</td><td>$${o.total||0}</td><td><span class="badge badge-${o.status}">${o.status}</span></td></tr>`).join('') || '<tr><td colspan="3">暫無訂單</td></tr>'}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-    
-    // =====================
-    // PRODUCTS
-    // =====================
-    function renderProducts() {
-      let html = `
-        <div class="toolbar">
-          <input type="text" class="search-input" placeholder="搜尋產品..." onkeyup="filterTable(this.value, 'products-table')">
-          <select class="filter-select" onchange="filterProductsByCategory(this.value)">
-            <option value="">全部分類</option>
-            ${[...new Set(products.map(p => p.category).filter(Boolean))].map(c => `<option value="${c}">${c}</option>`).join('')}
-          </select>
-          <button class="btn btn-primary" onclick="openProductModal()">➕ 新增產品</button>
-        </div>
-        <div class="card">
-          <table id="products-table">
-            <thead><tr><th>編碼</th><th>產品名稱</th><th>分類</th><th>價格</th><th>庫存</th><th>狀態</th><th>操作</th></tr></thead>
-            <tbody>
-              ${products.slice(0,50).map(p => `
-                <tr>
-                  <td>${p.product_code||''}</td>
-                  <td>${(p.name||'').substring(0,30)}</td>
-                  <td>${p.category||'-'}</td>
-                  <td>$${p.price||0}</td>
-                  <td style="color:${(p.stock||0) < 5 ? '#ef4444' : ''}">${p.stock||0}</td>
-                  <td><span class="badge badge-${p.stock > 0 ? 'completed' : 'cancelled'}">${p.stock > 0 ? '有貨' : '缺貨'}</span></td>
-                  <td class="actions">
-                    <button class="btn btn-primary btn-sm" onclick="editProduct(${p.id})">編輯</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">刪除</button>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
-      document.getElementById('content').innerHTML = html;
-    }
-    
-    // =====================
-    // INVENTORY
-    // =====================
-    function renderInventory() {
-      const lowStock = products.filter(p => (p.stock||0) < 5);
-      const outOfStock = products.filter(p => (p.stock||0) === 0);
-      const totalStock = products.reduce((s,p) => s + (p.stock||0), 0);
-      
-      document.getElementById('content').innerHTML = `
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">總庫存件數</div>
-            <div class="stat-value">${totalStock}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">低庫存 (<5)</div>
-            <div class="stat-value warning">${lowStock.length}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">已缺貨</div>
-            <div class="stat-value danger">${outOfStock.length}</div>
-          </div>
-        </div>
-        
-        ${lowStock.length > 0 ? `
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">⚠️ 需要補貨</span>
-          </div>
-          <table>
-            <thead><tr><th>產品</th><th>現有庫存</th><th>建議補貨</th><th>操作</th></tr></thead>
-            <tbody>
-              ${lowStock.map(p => `
-                <tr>
-                  <td>${(p.name||'').substring(0,35)}</td>
-                  <td style="color:#ef4444;font-weight:bold">${p.stock}</td>
-                  <td>${Math.max(10, p.stock * 2)}</td>
-                  <td><button class="btn btn-primary btn-sm" onclick="quickRestock(${p.id})">快速補貨</button></td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        ` : '<div class="card"><p style="color:#10b981">✅ 所有產品庫存充足</p></div>'}
-      `;
-    }
-    
-    // =====================
-    // ORDERS
-    // =====================
-    function renderOrders() {
-      let html = `
-        <div class="toolbar">
-          <select id="order-status-filter" class="filter-select" onchange="filterOrders()">
-            <option value="">全部狀態</option>
+      <h2>訂單資料</h2>
+      <form id="order-form">
+        <input type="hidden" id="o-id">
+        <div class="form-group"><label>客戶</label><select id="o-customer"></select></div>
+        <div class="form-group"><label>產品</label><select id="o-product" onchange="calcTotal()"></select></div>
+        <div class="form-group"><label>數量</label><input type="number" id="o-qty" value="1" onchange="calcTotal()"></div>
+        <div class="form-group"><label>總額</label><input type="number" id="o-total" readonly></div>
+        <div class="form-group"><label>狀態</label>
+          <select id="o-status">
             <option value="pending">待處理</option>
             <option value="processing">處理中</option>
             <option value="shipped">已發貨</option>
             <option value="completed">已完成</option>
             <option value="cancelled">已取消</option>
           </select>
-          <input type="date" id="order-date-from" class="filter-select" onchange="filterOrders()" placeholder="由">
-          <input type="date" id="order-date-to" class="filter-select" onchange="filterOrders()" placeholder="至">
-          <button class="btn btn-primary" onclick="openNewOrderModal()">➕ 新增訂單</button>
         </div>
-        <div class="card">
-          <table id="orders-table">
-            <thead><tr><th>訂單ID</th><th>客戶</th><th>金額</th><th>狀態</th><th>付款</th><th>日期</th><th>操作</th></tr></thead>
-            <tbody id="orders-tbody">
-              ${orders.map(o => `
-                <tr>
-                  <td>#${o.id}</td>
-                  <td>${o.customer_name||'Guest'}</td>
-                  <td>$${o.total||0}</td>
-                  <td><span class="badge badge-${o.status}">${o.status}</span></td>
-                  <td><span class="badge badge-paid">已付款</span></td>
-                  <td>${o.created_at ? o.created_at.substring(0,10) : '-'}</td>
-                  <td class="actions">
-                    <button class="btn btn-primary btn-sm" onclick="viewOrder(${o.id})">詳情</button>
-                  </td>
-                </tr>
-              `).join('') || '<tr><td colspan="7">暫無訂單</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-      `;
+        <button type="submit" class="btn btn-primary">儲存</button>
+        <button type="button" onclick="closeModal('order-modal')" class="btn">取消</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let products = [], orders = [], customers = [], coupons = [];
+    
+    // Load data
+    fetch('/api/products').then(r => r.json()).then(d => { products = d; renderDashboard(); }).catch(e => { document.getElementById('content').innerHTML = 'Error: ' + e.message; });
+    fetch('/api/orders').then(r => r.json()).then(d => orders = d).catch(() => {});
+    fetch('/api/customers').then(r => r.json()).then(d => customers = d).catch(() => {});
+    
+    function show(page) {
+      document.getElementById('title').innerText = page;
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (page === 'dashboard') renderDashboard();
+      else if (page === 'products') renderProducts();
+      else if (page === 'orders') renderOrders();
+      else if (page === 'customers') renderCustomers();
+      else if (page === 'coupons') renderCoupons();
+      else if (page === 'settings') renderSettings();
+    }
+    
+    function renderDashboard() {
+      document.getElementById('content').innerHTML = 
+        '<div class="card"><div>總產品</div><div class="stat">' + products.length + '</div></div>' +
+        '<div class="card"><div>總訂單</div><div class="stat">' + orders.length + '</div></div>' +
+        '<div class="card"><div>總客戶</div><div class="stat">' + customers.length + '</div></div>';
+    }
+    
+    function renderProducts() {
+      let html = '<div class="card"><button class="btn btn-primary" onclick="openProduct()">➕ 新增產品</button></div>';
+      html += '<table><tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr>';
+      products.slice(0,30).forEach(p => {
+        html += '<tr><td>' + (p.product_code||'') + '</td><td>' + (p.name||'').substring(0,20) + '</td><td>$' + (p.price||0) + '</td><td>' + (p.stock||0) + '</td><td class="actions"><button class="btn btn-primary" style="padding:4px 8px;font-size:12px" onclick="editProduct(' + p.id + ')">編輯</button></td></tr>';
+      });
+      html += '</table>';
       document.getElementById('content').innerHTML = html;
     }
     
-    function viewOrder(id) {
-      const o = orders.find(x => x.id === id);
-      if (!o) return;
-      
-      document.getElementById('order-detail-id').innerText = '#' + o.id;
-      document.getElementById('order-detail-content').innerHTML = `
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">📦 訂單資訊</span></div>
-            <div class="card-body">
-              <div class="form-group">
-                <label>訂單狀態</label>
-                <select id="o-status">
-                  <option value="pending" ${o.status==='pending'?'selected'}>待處理</option>
-                  <option value="processing" ${o.status==='processing'?'selected'}>處理中</option>
-                  <option value="shipped" ${o.status==='shipped'?'selected'}>已發貨</option>
-                  <option value="completed" ${o.status==='completed'?'selected'}>已完成</option>
-                  <option value="cancelled" ${o.status==='cancelled'?'selected'}>已取消</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>物流單號</label>
-                <input type="text" id="o-tracking" value="${o.tracking||''}" placeholder="輸入快遞單號">
-              </div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-header"><span class="card-title">👤 客戶資訊</span></div>
-            <div class="card-body">
-              <p><strong>${o.customer_name||'Guest'}</strong></p>
-              <p style="color:#64748b">${o.customer_email||''}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="card">
-          <div class="card-header"><span class="card-title">📋 訂單時間軸</span></div>
-          <div class="timeline">
-            <div class="timeline-item">
-              <div class="timeline-dot"></div>
-              <div class="timeline-content">
-                <div class="timeline-time">${o.created_at || '刚刚'}</div>
-                <div class="timeline-text">訂單已建立</div>
-              </div>
-            </div>
-            ${o.status !== 'pending' ? `
-            <div class="timeline-item">
-              <div class="timeline-dot" style="background:#10b981"></div>
-              <div class="timeline-content">
-                <div class="timeline-time">-</div>
-                <div class="timeline-text">訂單已確認</div>
-              </div>
-            </div>
-            ` : ''}
-          </div>
-        </div>
-        
-        <div class="card">
-          <div class="card-header"><span class="card-title">💰 費用明細</span></div>
-          <div class="card-body">
-            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;">
-              <span>商品小計</span><span>$${o.total||0}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;">
-              <span>運費</span><span>$0</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:18px;font-weight:bold;">
-              <span>總額</span><span>$${o.total||0}</span>
-            </div>
-          </div>
-        </div>
-      `;
-      document.getElementById('order-modal').classList.add('active');
+    function renderOrders() {
+      let html = '<div class="card"><button class="btn btn-primary" onclick="openOrder()">➕ 新增訂單</button></div>';
+      html += '<table><tr><th>ID</th><th>客戶</th><th>總額</th><th>狀態</th><th>操作</th></tr>';
+      orders.forEach(o => {
+        html += '<tr><td>#' + o.id + '</td><td>' + (o.customer_name||'Guest') + '</td><td>$' + (o.total||0) + '</td><td><span class="badge badge-' + (o.status||'pending') + '">' + (o.status||'pending') + '</span></td><td><button class="btn btn-primary" style="padding:4px 8px;font-size:12px" onclick="editOrder(' + o.id + ')">編輯</button></td></tr>';
+      });
+      html += '</table>';
+      document.getElementById('content').innerHTML = html;
     }
     
-    // =====================
-    // CUSTOMERS
-    // =====================
     function renderCustomers() {
-      const vipCount = customers.filter(c => (c.total||0) >= 1000).length;
-      
-      let html = `
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">總客戶</div>
-            <div class="stat-value">${customers.length}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">VIP 客戶</div>
-            <div class="stat-value warning">${vipCount}</div>
-          </div>
-        </div>
-        
-        <div class="toolbar">
-          <input type="text" class="search-input" placeholder="搜尋客戶..." onkeyup="filterTable(this.value, 'customers-table')">
-          <select class="filter-select">
-            <option value="">全部等級</option>
-            <option value="vip">VIP</option>
-            <option value="silver">Silver</option>
-            <option value="bronze">Bronze</option>
-          </select>
-          <button class="btn btn-primary" onclick="openCustomerModal()">➕ 新增客戶</button>
-        </div>
-        
-        <div class="card">
-          <table id="customers-table">
-            <thead><tr><th>ID</th><th>姓名</th><th>Email</th><th>電話</th><th>等級</th><th>消費總額</th><th>操作</th></tr></thead>
-            <tbody>
-              ${customers.slice(0,30).map(c => `
-                <tr>
-                  <td>${c.id}</td>
-                  <td>${c.name||'-'}</td>
-                  <td>${c.email||'-'}</td>
-                  <td>${c.phone||'-'}</td>
-                  <td>${(c.total||0) >= 1000 ? '<span class="badge badge-vip">VIP</span>' : (c.total||0) >= 500 ? '<span class="badge badge-silver">Silver</span>' : '<span class="badge badge-bronze">Bronze</span>'}</td>
-                  <td>$${c.total||0}</td>
-                  <td><button class="btn btn-primary btn-sm" onclick="editCustomer(${c.id})">編輯</button></td>
-                </tr>
-              `).join('') || '<tr><td colspan="7">暫無客戶</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-      `;
+      let html = '<table><tr><th>ID</th><th>姓名</th><th>Email</th><th>電話</th><th>消費</th></tr>';
+      customers.slice(0,20).forEach(c => {
+        html += '<tr><td>' + c.id + '</td><td>' + (c.name||'-') + '</td><td>' + (c.email||'-') + '</td><td>' + (c.phone||'-') + '</td><td>$' + (c.total||0) + '</td></tr>';
+      });
+      html += '</table>';
       document.getElementById('content').innerHTML = html;
     }
     
-    // =====================
-    // REFUNDS
-    // =====================
-    function renderRefunds() {
-      document.getElementById('content').innerHTML = `
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">💸 退款管理</span>
-          </div>
-          <div class="card-body">
-            <p style="color:#64748b;margin-bottom:20px;">處理客戶退款申請</p>
-            <div class="empty">
-              <div class="empty-icon">💸</div>
-              <p>暫無退款申請</p>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-    
-    // =====================
-    // COUPONS
-    // =====================
     function renderCoupons() {
-      let html = `
-        <div class="toolbar">
-          <button class="btn btn-primary" onclick="openCouponModal()">➕ 新增優惠碼</button>
-        </div>
-        <div class="card">
-          <table>
-            <thead><tr><th>優惠碼</th><th>類型</th><th>值</th><th>最低消費</th><th>到期日</th><th>狀態</th><th>操作</th></tr></thead>
-            <tbody>
-              ${coupons.length ? coupons.map(c => `
-                <tr>
-                  <td><strong>${c.code}</strong></td>
-                  <td>${c.type === 'percent' ? '%' : c.type === 'fixed' ? '$' : '免運'}</td>
-                  <td>${c.discount}</td>
-                  <td>$${c.min||0}</td>
-                  <td>${c.expire||'無限'}</td>
-                  <td><span class="badge badge-completed">啟用</span></td>
-                  <td><button class="btn btn-danger btn-sm" onclick="deleteCoupon('${c.code}')">刪除</button></td>
-                </tr>
-              `).join('') : '<tr><td colspan="7">暫無優惠碼</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-      `;
+      let html = '<div class="card"><button class="btn btn-primary" onclick="addCoupon()">➕ 新增優惠碼</button></div>';
+      html += '<table><tr><th>優惠碼</th><th>操作</th></tr>';
+      coupons.forEach(c => {
+        html += '<tr><td>' + c.code + '</td><td><button class="btn btn-danger" style="padding:4px 8px;font-size:12px" onclick="delCoupon(\'' + c.code + '\')">刪除</button></td></tr>';
+      });
+      html += '</table>';
       document.getElementById('content').innerHTML = html;
     }
     
-    // =====================
-    // PROMOTIONS
-    // =====================
-    function renderPromotions() {
-      document.getElementById('content').innerHTML = `
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">⚡ 閃購促銷</span></div>
-            <div class="card-body">
-              <p style="color:#64748b;margin-bottom:15px;">設定限時特價</p>
-              <button class="btn btn-primary" onclick="alert('閃購功能即將推出')">建立閃購</button>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">🎁 加價購</span></div>
-            <div class="card-body">
-              <p style="color:#64748b;margin-bottom:15px">設定組合優惠</p>
-              <button class="btn btn-secondary" onclick="alert('加價購即將推出')">建立組合</button>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">🎫 禮品卡</span></div>
-          <div class="card-body">
-            <p style="color:#64748b;margin-bottom:15px">發行電子禮品卡</p>
-            <button class="btn btn-secondary" onclick="alert('禮品卡功能即將推出')">發行禮品卡</button>
-          </div>
-        </div>
-      `;
-    }
-    
-    // =====================
-    // ANALYTICS
-    // =====================
-    function renderAnalytics() {
-      const totalRevenue = analytics.totalRevenue || 0;
-      const avgOrder = analytics.totalOrders ? Math.round(totalRevenue / analytics.totalOrders) : 0;
-      
-      document.getElementById('content').innerHTML = `
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">總銷售額</div>
-            <div class="stat-value success">$${totalRevenue}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">總訂單</div>
-            <div class="stat-value">${analytics.totalOrders || 0}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">平均訂單額</div>
-            <div class="stat-value">$${avgOrder}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">轉化率</div>
-            <div class="stat-value">-</div>
-          </div>
-        </div>
-        
-        <div class="card">
-          <div class="card-header"><span class="card-title">📊 訂單狀態分佈</span></div>
-          <div class="card-body">
-            ${(analytics.ordersByStatus || []).map(s => `
-              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                <span><span class="badge badge-${s.status}">${s.status}</span></span>
-                <span>${s.count} 訂單</span>
-              </div>
-            `).join('') || '<p>暂无数据</p>'}
-          </div>
-        </div>
-      `;
-    }
-    
-    // =====================
-    // PAYMENTS
-    // =====================
-    function renderPayments() {
-      document.getElementById('content').innerHTML = `
-        <div class="card">
-          <div class="card-header"><span class="card-title">💳 付款方式設定</span></div>
-          <div class="card-body">
-            <div class="form-group">
-              <label>銀行轉帳</label>
-              <input type="text" value="恆生銀行 123-456789-001">
-            </div>
-            <div class="form-group">
-              <label>FPS 轉數快</label>
-              <input type="text" value="0123456">
-            </div>
-            <button class="btn btn-primary">儲存設定</button>
-          </div>
-        </div>
-      `;
-    }
-    
-    // =====================
-    // SHIPPING
-    // =====================
-    function renderShipping() {
-      document.getElementById('content').innerHTML = `
-        <div class="card">
-          <div class="card-header"><span class="card-title">🚚 運費設定</span></div>
-          <div class="card-body">
-            <div class="grid-2">
-              <div class="form-group">
-                <label>免運門檻 (HK$)</label>
-                <input type="number" value="300">
-              </div>
-              <div class="form-group">
-                <label>基本運費 (HK$)</label>
-                <input type="number" value="30">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>偏遠地區額外運費 (HK$)</label>
-              <input type="number" value="20">
-            </div>
-            <button class="btn btn-primary">儲存設定</button>
-          </div>
-        </div>
-      `;
-    }
-    
-    // =====================
-    // SETTINGS
-    // =====================
     function renderSettings() {
-      document.getElementById('content').innerHTML = `
-        <div class="card">
-          <div class="card-header"><span class="card-title">⚙️ 系統設定</span></div>
-          <div class="card-body">
-            <div class="form-group">
-              <label>商店名稱</label>
-              <input type="text" value="OHYA2.0">
-            </div>
-            <div class="form-group">
-              <label>聯繫 Email</label>
-              <input type="email" value="admin@ohya2.com">
-            </div>
-            <div class="form-group">
-              <label>時區</label>
-              <select><option>Asia/Hong_Kong</option></select>
-            </div>
-            <button class="btn btn-primary">儲存設定</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">👥 管理員權限</span></div>
-          <div class="card-body">
-            <p style="color:#64748b;margin-bottom:15px">管理後台用戶權限</p>
-            <table>
-              <thead><tr><th>用戶</th><th>權限</th><th>操作</th></tr></thead>
-              <tbody>
-                <tr><td>admin@ohya2.com</td><td><span class="badge badge-vip">超級管理員</span></td><td>-</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
+      document.getElementById('content').innerHTML = '<div class="card"><h3>💳 付款設定</h3><p>恆生銀行 123-456789-001</p></div><div class="card"><h3>🚚 運費設定</h3><p>免運: $300 | 運費: $30</p></div>';
     }
     
-    // =====================
-    // CATEGORIES
-    // =====================
-    function renderCategories() {
-      const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
-      document.getElementById('content').innerHTML = `
-        <div class="toolbar">
-          <button class="btn btn-primary">➕ 新增分類</button>
-        </div>
-        <div class="card">
-          <table>
-            <thead><tr><th>分類名稱</th><th>產品數量</th><th>操作</th></tr></thead>
-            <tbody>
-              ${cats.map(cat => `
-                <tr>
-                  <td>${cat}</td>
-                  <td>${products.filter(p => p.category === cat).length}</td>
-                  <td><button class="btn btn-secondary btn-sm">編輯</button></td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
-    }
-    
-    // =====================
-    // MODAL FUNCTIONS
-    // =====================
-    function openProductModal(id) {
+    // Modal functions
+    function openProduct(id) {
       const p = id ? products.find(x => x.id === id) : null;
-      document.getElementById('product-modal-title').innerText = id ? '編輯產品' : '新增產品';
       document.getElementById('p-id').value = id || '';
       document.getElementById('p-code').value = p ? p.product_code : '';
       document.getElementById('p-name').value = p ? p.name : '';
       document.getElementById('p-price').value = p ? p.price : '';
       document.getElementById('p-stock').value = p ? p.stock : '';
       document.getElementById('p-category').value = p ? p.category : 'オナホール';
-      document.getElementById('p-image').value = p ? p.image_url : '';
-      document.getElementById('p-desc').value = p ? p.description : '';
       document.getElementById('product-modal').classList.add('active');
     }
+    function editProduct(id) { openProduct(id); }
     
-    function openCustomerModal(id) {
-      const c = id ? customers.find(x => x.id === id) : null;
-      document.getElementById('customer-modal-title').innerText = id ? '編輯客戶' : '新增客戶';
-      document.getElementById('c-id').value = id || '';
-      document.getElementById('c-name').value = c ? c.name : '';
-      document.getElementById('c-email').value = c ? c.email : '';
-      document.getElementById('c-phone').value = c ? c.phone : '';
-      document.getElementById('c-address').value = c ? c.address : '';
-      document.getElementById('c-level').value = (c && (c.total||0) >= 1000) ? 'vip' : (c && (c.total||0) >= 500) ? 'silver' : 'bronze';
-      document.getElementById('customer-modal').classList.add('active');
-    }
-    
-    function openCouponModal() {
-      document.getElementById('coupon-form').reset();
-      document.getElementById('coupon-modal').classList.add('active');
-    }
-    
-    function openNewOrderModal() {
-      const customerSelect = document.getElementById('new-o-customer');
-      customerSelect.innerHTML = '<option value="">-- 選擇客戶 --</option>';
-      customers.forEach(c => { customerSelect.innerHTML += '<option value="' + c.id + '">' + (c.name || c.email) + '</option>'; });
+    function openOrder(id) {
+      const sel = document.getElementById('o-customer');
+      sel.innerHTML = '<option value="">-- 客戶 --</option>';
+      customers.forEach(c => { sel.innerHTML += '<option value="' + c.id + '">' + (c.name||c.email) + '</option>'; });
       
-      const productSelect = document.getElementById('new-o-product');
-      productSelect.innerHTML = '<option value="">-- 選擇產品 --</option>';
-      products.forEach(p => { productSelect.innerHTML += '<option value="' + p.id + '" data-price="' + p.price + '">' + (p.name || p.product_code).substring(0,25) + ' - $' + p.price + '</option>'; });
+      const sel2 = document.getElementById('o-product');
+      sel2.innerHTML = '<option value="">-- 產品 --</option>';
+      products.forEach(p => { sel2.innerHTML += '<option value="' + p.id + '" data-price="' + p.price + '">' + (p.name||p.product_code).substring(0,20) + ' $' + p.price + '</option>'; });
       
-      document.getElementById('new-order-form').reset();
-      document.getElementById('new-o-modal').classList.add('active');
-      document.getElementById('new-order-modal').classList.add('active');
+      document.getElementById('o-id').value = id || '';
+      document.getElementById('o-qty').value = 1;
+      document.getElementById('o-total').value = '';
+      document.getElementById('order-modal').classList.add('active');
+    }
+    function editOrder(id) { openOrder(id); }
+    
+    function calcTotal() {
+      const sel = document.getElementById('o-product');
+      const opt = sel.options[sel.selectedIndex];
+      const price = parseInt(opt.dataset.price) || 0;
+      const qty = parseInt(document.getElementById('o-qty').value) || 1;
+      document.getElementById('o-total').value = price * qty;
     }
     
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     
-    // Save functions
-    async function saveProduct() {
+    // Form submissions
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
       const id = document.getElementById('p-id').value;
       const data = {
         product_code: document.getElementById('p-code').value,
         name: document.getElementById('p-name').value,
         price: parseInt(document.getElementById('p-price').value) || 0,
         stock: parseInt(document.getElementById('p-stock').value) || 0,
-        category: document.getElementById('p-category').value,
-        image_url: document.getElementById('p-image').value,
-        description: document.getElementById('p-desc').value
+        category: document.getElementById('p-category').value
       };
-      const method = id ? 'PUT' : 'POST';
-      const url = id ? '/api/products/' + id : '/api/products';
-      await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      await fetch(id ? '/api/products/' + id : '/api/products', { method: id ? 'PUT' : 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
       closeModal('product-modal');
       location.reload();
-    }
+    });
     
-    async function saveCustomer() {
-      const id = document.getElementById('c-id').value;
-      const data = {
-        name: document.getElementById('c-name').value,
-        email: document.getElementById('c-email').value,
-        phone: document.getElementById('c-phone').value,
-        address: document.getElementById('c-address').value
-      };
-      if (id) {
-        await fetch('/api/customers/' + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-      } else {
-        await fetch('/api/customers', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-      }
-      closeModal('customer-modal');
-      location.reload();
-    }
-    
-    function saveCoupon() {
-      coupons.push({
-        code: document.getElementById('coupon-code').value,
-        type: document.getElementById('coupon-type').value,
-        discount: document.getElementById('coupon-value').value,
-        min: document.getElementById('coupon-min').value,
-        expire: document.getElementById('coupon-expire').value
-      });
-      closeModal('coupon-modal');
-      renderCoupons();
-    }
-    
-    async function saveOrder() {
-      const status = document.getElementById('o-status').value;
-      const tracking = document.getElementById('o-tracking').value;
-      // TODO: Save to API
-      closeModal('order-modal');
-      alert('訂單已更新');
-    }
-    
-    async function createOrder() {
-      const customerId = document.getElementById('new-o-customer').value;
-      const productId = document.getElementById('new-o-product').value;
-      const qty = parseInt(document.getElementById('new-o-qty').value) || 1;
-      const total = parseInt(document.getElementById('new-o-total').innerText.replace('$','')) || 0;
+    document.getElementById('order-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('o-id').value;
+      const productId = document.getElementById('o-product').value;
+      const qty = parseInt(document.getElementById('o-qty').value) || 1;
+      const total = parseInt(document.getElementById('o-total').value) || 0;
       
-      if (!productId) { alert('請選擇產品'); return; }
-      
-      const data = {
-        user_id: parseInt(customerId) || null,
+      await fetch('/api/orders', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
+        user_id: parseInt(document.getElementById('o-customer').value) || null,
         total: total,
-        status: 'pending',
-        items: [{ product_id: parseInt(productId), quantity: qty, price: total }]
-      };
-      
-      await fetch('/api/orders', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-      closeModal('new-order-modal');
+        status: document.getElementById('o-status').value,
+        items: productId ? [{ product_id: parseInt(productId), quantity: qty, price: total }] : []
+      })});
+      closeModal('order-modal');
       location.reload();
+    });
+    
+    function addCoupon() {
+      const code = prompt('優惠碼:');
+      if (code) { coupons.push({ code: code }); renderCoupons(); }
     }
-    
-    function updateOrderCalc() {
-      const productSelect = document.getElementById('new-o-product');
-      const selectedOption = productSelect.options[productSelect.selectedIndex];
-      const price = parseInt(selectedOption.dataset.price) || 0;
-      const qty = parseInt(document.getElementById('new-o-qty').value) || 1;
-      const shipping = parseInt(document.getElementById('new-o-shipping').value) || 0;
-      
-      document.getElementById('new-o-price').value = price;
-      document.getElementById('new-o-subtotal').innerText = '$' + (price * qty);
-      document.getElementById('new-o-ship-cost').innerText = '$' + shipping;
-      document.getElementById('new-o-discount').innerText = '-$0';
-      document.getElementById('new-o-total').innerText = '$' + ((price * qty) + shipping);
-    }
-    
-    // Quick actions
-    function editProduct(id) { openProductModal(id); }
-    function editCustomer(id) { openCustomerModal(id); }
-    
-    async function deleteProduct(id) {
-      if (confirm('確定刪除?')) {
-        await fetch('/api/products/' + id, { method: 'DELETE' });
-        location.reload();
-      }
-    }
-    
-    function deleteCoupon(code) {
-      if (confirm('確定刪除?')) {
-        coupons = coupons.filter(c => c.code !== code);
-        renderCoupons();
-      }
-    }
-    
-    async function quickRestock(id) {
-      const p = products.find(x => x.id === id);
-      if (!p) return;
-      const newStock = Math.max(10, (p.stock||0) * 2);
-      await fetch('/api/products/' + id, { 
-        method: 'PUT', 
-        headers: {'Content-Type': 'application/json'}, 
-        body: JSON.stringify({ stock: newStock }) 
-      });
-      location.reload();
-    }
-    
-    function filterTable(query, tableId) {
-      const rows = document.querySelectorAll('#' + tableId + ' tbody tr');
-      const q = query.toLowerCase();
-      rows.forEach(row => { row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none'; });
-    }
-    
-    function filterOrders() {
-      // Simple filter implementation
-    }
-    
+    function delCoupon(code) { if (confirm('刪除?')) { coupons = coupons.filter(c => c.code !== code); renderCoupons(); } }
     function logout() { location.href = '/'; }
   </script>
 </body>
