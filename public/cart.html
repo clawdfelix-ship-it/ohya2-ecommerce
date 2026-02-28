@@ -44,15 +44,26 @@
     .checkout-btn { width: 100%; margin-top: 1rem; }
     .empty-cart { text-align: center; padding: 3rem; color: var(--text-muted); }
     
+    .add-on-section { margin-top: 2rem; }
+    .add-on-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; }
+    .add-on-item { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .add-on-item label { font-weight: 600; }
+    
+    .coupon-section { margin-top: 2rem; }
+    .coupon-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; }
+    .coupon-input { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.9375rem; font-family: inherit; }
+    .coupon-input + .btn { margin-top: 0.5rem; }
+    
+    .sticky-summary { position: sticky; bottom: 20px; background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 0.5rem; width: 100%; }
+    .sticky-summary-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; }
+    
     footer { background: var(--text); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
     .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
     .footer-section h3 { font-size: 1rem; margin-bottom: 0.5rem; }
     .footer-section a { display: block; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.875rem; }
     .footer-bottom { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.75rem; }
     
-    @media (max-width: 768px) {
-      .cart-layout { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 768px) { .cart-layout { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -83,12 +94,60 @@
           <span>運費</span>
           <span>到付</span>
         </div>
+        <div class="summary-row">
+          <span>地區選擇</span>
+          <select id="shipping-area" onchange="updateShippingCost()">
+            <option value="local">本地</option>
+            <option value="domestic">國內</option>
+            <option value="international">國際</option>
+          </select>
+          <span id="shipping-cost">¥0</span>
+        </div>
         <div class="summary-row summary-total">
           <span>總計</span>
           <span id="total">¥0</span>
         </div>
         <a href="/checkout.html" class="btn btn-primary checkout-btn" id="checkout-btn">前往結帳</a>
       </div>
+    </div>
+    
+    <div class="add-on-section">
+      <h3 class="add-on-title">附加選項</h3>
+      <div class="add-on-item">
+        <label>禮品包裝：<input type="checkbox" id="gift-wrap" onchange="updateTotal()"></label>
+        <span id="gift-wrap-cost">¥0</span>
+      </div>
+      <div class="add-on-item">
+        <label>特快送貨：<input type="checkbox" id="express-delivery" onchange="updateTotal()"></label>
+        <span id="express-delivery-cost">¥0</span>
+      </div>
+    </div>
+    
+    <div class="coupon-section">
+      <h3 class="coupon-title">優惠碼</h3>
+      <input type="text" id="coupon-code" placeholder="輸入優惠碼" onkeyup="applyCoupon()">
+      <button class="btn btn-secondary" onclick="applyCoupon()">兌換</button>
+    </div>
+    
+    <div class="sticky-summary">
+      <h3 class="sticky-summary-title">訂單摘要</h3>
+      <div class="summary-row">
+        <span>小計</span>
+        <span id="sticky-subtotal">¥0</span>
+      </div>
+      <div class="summary-row">
+        <span>運費</span>
+        <span id="sticky-shipping-cost">¥0</span>
+      </div>
+      <div class="summary-row">
+        <span>折後金額</span>
+        <span id="sticky-discount">¥0</span>
+      </div>
+      <div class="summary-row summary-total">
+        <span>總計</span>
+        <span id="sticky-total">¥0</span>
+      </div>
+      <a href="/checkout.html" class="btn btn-primary checkout-btn" id="sticky-checkout-btn">前往結帳</a>
     </div>
   </main>
 
@@ -115,18 +174,18 @@
         
         container.innerHTML = cart.map((item, i) => `
           <div class="cart-item">
-            <img src="${item.image_url || ''}" alt="${item.name}">
+            <img src="$${item.image_url || ''}" alt="$${item.name}">
             <div class="cart-item-info">
-              <div class="cart-item-name">${item.name}</div>
-              <div class="cart-item-code">${item.productId}</div>
-              <div class="cart-item-price">¥${item.price}</div>
+              <div class="cart-item-name">$${item.name}</div>
+              <div class="cart-item-code">$${item.productId}</div>
+              <div class="cart-item-price">¥$${item.price}</div>
             </div>
             <div class="cart-item-qty">
-              <button class="qty-btn" onclick="updateQty(${i}, -1)">-</button>
-              <span>${item.quantity}</span>
-              <button class="qty-btn" onclick="updateQty(${i}, 1)">+</button>
+              <button class="qty-btn" onclick="updateQty($${i}, -1)" id="decrease-$${i}">-</button>
+              <span id="quantity-$${i}">$${item.quantity}</span>
+              <button class="qty-btn" onclick="updateQty($${i}, 1)" id="increase-$${i}">+</button>
             </div>
-            <button class="remove-btn" onclick="removeItem(${i})">✕</button>
+            <button class="remove-btn" onclick="removeItem($${i})">✕</button>
           </div>
         `).join('');
         
@@ -138,10 +197,29 @@
     
     function updateTotal() {
       fetch('/api/cart').then(r => r.json()).then(cart => {
-        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        let total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        let shippingCost = 0;
+        const shippingArea = document.getElementById('shipping-area').value;
+        if (shippingArea === 'domestic') shippingCost = 50;
+        else if (shippingArea === 'international') shippingCost = 100;
+        
+        const giftWrapCost = document.getElementById('gift-wrap').checked ? 20 : 0;
+        const expressDeliveryCost = document.getElementById('express-delivery').checked ? 30 : 0;
+        const discount = applyCoupon();
+        
+        total += shippingCost + giftWrapCost + expressDeliveryCost - discount;
+        
         document.getElementById('subtotal').textContent = '¥' + total.toLocaleString();
         document.getElementById('total').textContent = '¥' + total.toLocaleString();
+        document.getElementById('sticky-subtotal').textContent = '¥' + total.toLocaleString();
+        document.getElementById('sticky-shipping-cost').textContent = '¥' + shippingCost.toLocaleString();
+        document.getElementById('sticky-discount').textContent = '¥' + discount.toLocaleString();
+        document.getElementById('sticky-total').textContent = '¥' + total.toLocaleString();
       });
+    }
+    
+    function updateShippingCost() {
+      updateTotal();
     }
     
     async function updateQty(index, delta) {
@@ -150,12 +228,14 @@
       cart[index].quantity += delta;
       if (cart[index].quantity < 1) cart[index].quantity = 1;
       
+      document.getElementById(`quantity-${index}`).textContent = cart[index].quantity;
+      
       await fetch('/api/cart', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(cart[index])
       });
-      loadCart();
+      updateTotal();
     }
     
     async function removeItem(index) {
@@ -172,6 +252,16 @@
         });
       }
       loadCart();
+    }
+    
+    function applyCoupon() {
+      const couponCode = document.getElementById('coupon-code').value.trim();
+      let discount = 0;
+      if (couponCode === 'SUMMER10') discount = 100;
+      else if (couponCode === 'WELCOME20') discount = 200;
+      
+      document.getElementById('sticky-discount').textContent = '¥' + discount.toLocaleString();
+      return discount;
     }
     
     loadCart();
