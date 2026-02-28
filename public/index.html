@@ -133,7 +133,42 @@
       z-index: 200;
     }
 
-    .nav-dropdown:hover .dropdown-menu { display: block; }
+    .dropdown-menu.wide {
+      min-width: 400px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      padding: 0;
+    }
+
+    .dropdown-section {
+      padding: 1rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .dropdown-section:last-child {
+      border-right: none;
+    }
+
+    .dropdown-section h4 {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 0.375rem 0;
+      color: var(--text);
+      font-size: 0.875rem;
+    }
+
+    .dropdown-menu a:hover {
+      color: var(--primary);
+    }
+
+    .nav-dropdown:hover .dropdown-menu { display: grid; }
 
     .dropdown-menu a {
       display: block;
@@ -486,6 +521,22 @@
       border-bottom: 1px solid var(--border);
     }
 
+    .mobile-nav-section {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mobile-nav-section h4 {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .mobile-nav-section a {
+      padding-left: 1rem;
+    }
+
     @media (max-width: 768px) {
       .hero h1 { font-size: 2rem; }
       nav, .search-box { display: none; }
@@ -526,20 +577,32 @@
 
       <nav>
         <div class="nav-dropdown">
-          <a href="#" class="nav-link">產品分類 ▾</a>
-          <div class="dropdown-menu">
-            <a href="/?category=101">オナホール</a>
-            <a href="/?category=102">ダッチワイフ</a>
-            <a href="/?category=70">おっぱいグッズ</a>
-            <a href="/?category=103">性感クッション</a>
-            <a href="/?category=120">Tokyo Libido</a>
-            <a href="/?category=130">空気少女</a>
-            <a href="/?category=71">ショート</a>
-            <a href="/?category=72">ボブ</a>
-            <a href="/?category=73">ロング</a>
+          <a href="#" class="nav-link">全部產品 ▾</a>
+          <div class="dropdown-menu wide">
+            <div class="dropdown-section">
+              <h4>人氣分類</h4>
+              <a href="/?category=101">オナホール</a>
+              <a href="/?category=102">ダッチワイフ</a>
+              <a href="/?category=70">おっぱいグッズ</a>
+              <a href="/?category=103">性感クッション</a>
+            </div>
+            <div class="dropdown-section">
+              <h4>品牌分類</h4>
+              <a href="/?category=120">Tokyo Libido</a>
+              <a href="/?category=130">空気少女</a>
+              <a href="/?category=354">プラチナガイズ</a>
+              <a href="/?category=341">STYLISH AVENUE</a>
+            </div>
+            <div class="dropdown-section">
+              <h4>假陽具</h4>
+              <a href="/?category=71">ショート</a>
+              <a href="/?category=72">ボブ</a>
+              <a href="/?category=73">ロング</a>
+            </div>
           </div>
         </div>
-        <a href="#products">熱門產品</a>
+        <a href="#products">暢銷產品</a>
+        <a href="#products">最新產品</a>
         <a href="#about">關於我們</a>
       </nav>
 
@@ -566,11 +629,28 @@
   </header>
 
   <div class="mobile-nav" id="mobile-nav">
-    <a href="#categories" onclick="document.getElementById('mobile-nav').classList.remove('active')">產品分類</a>
-    <a href="#products" onclick="document.getElementById('mobile-nav').classList.remove('active')">熱門產品</a>
-    <a href="#about" onclick="document.getElementById('mobile-nav').classList.remove('active')">關於我們</a>
-    <a href="/login.html">登入</a>
-    <a href="/register.html">註冊</a>
+    <div class="mobile-nav-section">
+      <h4>全部產品</h4>
+      <a href="/?category=101" onclick="document.getElementById('mobile-nav').classList.remove('active')">オナホール</a>
+      <a href="/?category=102" onclick="document.getElementById('mobile-nav').classList.remove('active')">ダッチワイフ</a>
+      <a href="/?category=70" onclick="document.getElementById('mobile-nav').classList.remove('active')">おっぱいグッズ</a>
+      <a href="/?category=103" onclick="document.getElementById('mobile-nav').classList.remove('active')">性感クッション</a>
+    </div>
+    <div class="mobile-nav-section">
+      <h4>假陽具</h4>
+      <a href="/?category=71" onclick="document.getElementById('mobile-nav').classList.remove('active')">ショート</a>
+      <a href="/?category=72" onclick="document.getElementById('mobile-nav').classList.remove('active')">ボブ</a>
+      <a href="/?category=73" onclick="document.getElementById('mobile-nav').classList.remove('active')">ロング</a>
+    </div>
+    <div class="mobile-nav-section">
+      <a href="#products" onclick="document.getElementById('mobile-nav').classList.remove('active')">🔥 暢銷產品</a>
+      <a href="#products" onclick="document.getElementById('mobile-nav').classList.remove('active')">✨ 最新產品</a>
+      <a href="#about" onclick="document.getElementById('mobile-nav').classList.remove('active')">關於我們</a>
+    </div>
+    <div class="mobile-nav-section">
+      <a href="/login.html">登入</a>
+      <a href="/register.html">註冊</a>
+    </div>
   </div>
 
   <section class="hero">
