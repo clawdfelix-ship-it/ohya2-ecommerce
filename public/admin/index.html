@@ -13,24 +13,32 @@
     .nav a { color: #9ca3af; padding: 10px; text-decoration: none; border-radius: 6px; }
     .nav a:hover, .nav a.active { background: #374151; color: white; }
     .main { margin-left: 200px; padding: 20px; }
-    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .stat { font-size: 28px; font-weight: bold; color: #1f2937; }
     .stat-label { color: #6b7280; font-size: 14px; }
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; margin-bottom: 15px; }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
     th { background: #f9fafb; font-weight: 600; }
-    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: inline-block; }
     .btn-primary { background: #6366f1; color: white; }
+    .btn-secondary { background: #9ca3af; color: white; }
     .btn-danger { background: #ef4444; color: white; }
+    .btn-success { background: #10b981; color: white; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; margin-bottom: 4px; font-weight: 500; }
-    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
-    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
     .modal.active { display: flex; }
     .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
     .actions { display: flex; gap: 5px; }
+    .search-box { padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; width: 300px; margin-right: 10px; }
+    .toolbar { display: flex; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-completed { background: #d1fae5; color: #065f46; }
+    .badge-cancelled { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
@@ -42,25 +50,26 @@
       <a href="#" onclick="show('orders')">🛒 訂單</a>
       <a href="#" onclick="show('customers')">👥 客戶</a>
       <a href="#" onclick="show('marketing')">🎟️ 營銷</a>
+      <a href="#" onclick="show('import')">📥 匯入/匯出</a>
       <a href="#" onclick="show('settings')">⚙️ 設定</a>
     </div>
   </div>
   <div class="main">
     <div class="header">
       <h1 id="title">Dashboard</h1>
-      <button class="btn btn-primary" onclick="logout()">登出</button>
+      <button class="btn btn-secondary" onclick="logout()">登出</button>
     </div>
     <div id="content">
       <p>Loading...</p>
     </div>
   </div>
 
-  <!-- Product Edit Modal -->
+  <!-- Product Modal -->
   <div class="modal" id="product-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>產品資料</h2>
-        <button onclick="closeModal()">&times;</button>
+        <h2 id="product-modal-title">產品資料</h2>
+        <button onclick="closeModal('product-modal')">&times;</button>
       </div>
       <form id="product-form">
         <input type="hidden" id="p-id">
@@ -89,95 +98,269 @@
             <option value="性感クッション">性感クッション</option>
           </select>
         </div>
+        <div class="form-group">
+          <label>圖片 URL</label>
+          <input type="text" id="p-image">
+        </div>
+        <div class="form-group">
+          <label>描述</label>
+          <textarea id="p-desc" rows="3"></textarea>
+        </div>
         <button type="submit" class="btn btn-primary">儲存</button>
       </form>
     </div>
   </div>
 
+  <!-- Order Modal -->
+  <div class="modal" id="order-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>訂單資料</h2>
+        <button onclick="closeModal('order-modal')">&times;</button>
+      </div>
+      <form id="order-form">
+        <input type="hidden" id="o-id">
+        <div class="form-group">
+          <label>客戶 (ID)</label>
+          <input type="number" id="o-customer-id">
+        </div>
+        <div class="form-group">
+          <label>總額</label>
+          <input type="number" id="o-total" required>
+        </div>
+        <div class="form-group">
+          <label>狀態</label>
+          <select id="o-status">
+            <option value="pending">待處理</option>
+            <option value="completed">已完成</option>
+            <option value="cancelled">已取消</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">儲存</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Customer Modal -->
+  <div class="modal" id="customer-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>客戶資料</h2>
+        <button onclick="closeModal('customer-modal')">&times;</button>
+      </div>
+      <form id="customer-form">
+        <input type="hidden" id="c-id">
+        <div class="form-group">
+          <label>姓名</label>
+          <input type="text" id="c-name" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="c-email" required>
+        </div>
+        <div class="form-group">
+          <label>電話</label>
+          <input type="text" id="c-phone">
+        </div>
+        <div class="form-group">
+          <label>地址</label>
+          <textarea id="c-address" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">儲存</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Coupon Modal -->
+  <div class="modal" id="coupon-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>優惠碼</h2>
+        <button onclick="closeModal('coupon-modal')">&times;</button>
+      </div>
+      <form id="coupon-form">
+        <div class="form-group">
+          <label>優惠碼</label>
+          <input type="text" id="coupon-code" required placeholder="e.g. SAVE10">
+        </div>
+        <div class="form-group">
+          <label>折扣 (%)</label>
+          <input type="number" id="coupon-discount" required placeholder="10">
+        </div>
+        <div class="form-group">
+          <label>到期日</label>
+          <input type="date" id="coupon-expire">
+        </div>
+        <button type="submit" class="btn btn-primary">新增</button>
+      </form>
+    </div>
+  </div>
+
   <script>
-    // Load all data immediately
+    let products = [], orders = [], customers = [], coupons = [];
+    
+    // Load all data
     Promise.all([
       fetch('/api/products').then(r => r.json()),
       fetch('/api/orders').then(r => r.json()),
       fetch('/api/customers').then(r => r.json())
     ]).then(([p, o, c]) => {
-      window.products = p;
-      window.orders = o;
-      window.customers = c;
+      products = p; orders = o; customers = c;
       renderDashboard();
     }).catch(e => {
       document.getElementById('content').innerHTML = '<div style="color:red">Error: ' + e.message + '</div>';
     });
     
-    function renderDashboard() {
-      document.getElementById('title').innerText = 'Dashboard';
-      document.getElementById('content').innerHTML = 
-        '<div class="card"><div class="stat-label">總產品</div><div class="stat">' + window.products.length + '</div></div>' +
-        '<div class="card"><div class="stat-label">總訂單</div><div class="stat">' + window.orders.length + '</div></div>' +
-        '<div class="card"><div class="stat-label">總客戶</div><div class="stat">' + window.customers.length + '</div></div>';
-    }
-    
     function show(page) {
-      document.getElementById('title').innerText = page.charAt(0).toUpperCase() + page.slice(1);
+      document.getElementById('title').innerText = {
+        dashboard: 'Dashboard', products: '產品管理', orders: '訂單管理',
+        customers: '客戶管理', marketing: '營銷推廣', import: '匯入/匯出', settings: '系統設定'
+      }[page] || page;
       
-      if (page === 'dashboard') {
-        renderDashboard();
-      } else if (page === 'products') {
-        let html = '<div class="card"><button class="btn btn-primary" onclick="openProductModal()">➕ 新增產品</button></div>';
-        html += '<table><thead><tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>';
-        window.products.slice(0,50).forEach(p => {
-          html += '<tr><td>' + (p.product_code||'') + '</td><td>' + (p.name||'').substring(0,20) + '</td><td>$' + (p.price||0) + '</td><td>' + (p.stock||0) + '</td><td class="actions"><button class="btn btn-primary" style="padding:4px 8px;font-size:12px" onclick="editProduct(' + p.id + ')">編輯</button></td></tr>';
-        });
-        html += '</tbody></table>';
-        document.getElementById('content').innerHTML = html;
-      } else if (page === 'orders') {
-        let html = '<table><thead><tr><th>ID</th><th>總額</th><th>狀態</th></tr></thead><tbody>';
-        if (window.orders.length === 0) {
-          html += '<tr><td colspan="3">暫無訂單</td></tr>';
-        } else {
-          window.orders.forEach(o => {
-            html += '<tr><td>#' + o.id + '</td><td>$' + (o.total||0) + '</td><td>' + (o.status||'pending') + '</td></tr>';
-          });
-        }
-        html += '</tbody></table>';
-        document.getElementById('content').innerHTML = html;
-      } else if (page === 'customers') {
-        let html = '<table><thead><tr><th>姓名</th><th>Email</th><th>電話</th></tr></thead><tbody>';
-        if (window.customers.length === 0) {
-          html += '<tr><td colspan="3">暫無客戶</td></tr>';
-        } else {
-          window.customers.slice(0,20).forEach(c => {
-            html += '<tr><td>' + (c.name||'') + '</td><td>' + (c.email||'') + '</td><td>' + (c.phone||'-') + '</td></tr>';
-          });
-        }
-        html += '</tbody></table>';
-        document.getElementById('content').innerHTML = html;
-      } else if (page === 'marketing') {
-        document.getElementById('content').innerHTML = '<div class="card"><p>營銷功能即將推出</p></div>';
-      } else if (page === 'settings') {
-        document.getElementById('content').innerHTML = '<div class="card"><h3>💳 付款設定</h3><p>恆生銀行 123-456789-001</p></div><div class="card"><h3>🚚 運費設定</h3><p>免運: $300 | 運費: $30</p></div>';
-      }
+      if (page === 'dashboard') renderDashboard();
+      else if (page === 'products') renderProducts();
+      else if (page === 'orders') renderOrders();
+      else if (page === 'customers') renderCustomers();
+      else if (page === 'marketing') renderMarketing();
+      else if (page === 'import') renderImport();
+      else if (page === 'settings') renderSettings();
       
-      // Update active nav
+      // Update nav
       document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
       event.target.classList.add('active');
     }
     
-    // Product editing
+    function renderDashboard() {
+      const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+      document.getElementById('content').innerHTML = 
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;">' +
+        '<div class="card"><div class="stat-label">總產品</div><div class="stat">' + products.length + '</div></div>' +
+        '<div class="card"><div class="stat-label">總訂單</div><div class="stat">' + orders.length + '</div></div>' +
+        '<div class="card"><div class="stat-label">總客戶</div><div class="stat">' + customers.length + '</div></div>' +
+        '<div class="card"><div class="stat-label">總銷售額</div><div class="stat">$' + totalRevenue + '</div></div>' +
+        '</div>';
+    }
+    
+    function renderProducts() {
+      let html = '<div class="toolbar"><input type="text" class="search-box" placeholder="搜尋產品..." onkeyup="filterProducts(this.value)"><button class="btn btn-primary" onclick="openProductModal()">➕ 新增產品</button></div>';
+      html += '<table><thead><tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody id="product-list">';
+      products.slice(0,50).forEach(p => {
+        html += '<tr><td>' + (p.product_code||'') + '</td><td>' + (p.name||'').substring(0,25) + '</td><td>$' + (p.price||0) + '</td><td>' + (p.stock||0) + '</td><td class="actions"><button class="btn btn-primary" style="padding:4px 8px;font-size:12px" onclick="editProduct(' + p.id + ')">編輯</button> <button class="btn btn-danger" style="padding:4px 8px;font-size:12px" onclick="deleteProduct(' + p.id + ')">刪除</button></td></tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('content').innerHTML = html;
+    }
+    
+    function renderOrders() {
+      let html = '<div class="toolbar"><button class="btn btn-primary" onclick="openOrderModal()">➕ 新增訂單</button></div>';
+      html += '<table><thead><tr><th>ID</th><th>客戶ID</th><th>總額</th><th>狀態</th><th>日期</th><th>操作</th></tr></thead><tbody>';
+      if (orders.length === 0) {
+        html += '<tr><td colspan="6">暫無訂單</td></tr>';
+      } else {
+        orders.forEach(o => {
+          const statusClass = o.status === 'completed' ? 'badge-completed' : o.status === 'cancelled' ? 'badge-cancelled' : 'badge-pending';
+          html += '<tr><td>#' + o.id + '</td><td>' + (o.user_id||'-') + '</td><td>$' + (o.total||0) + '</td><td><span class="badge ' + statusClass + '">' + (o.status||'pending') + '</span></td><td>' + (o.created_at ? o.created_at.substring(0,10) : '-') + '</td><td class="actions"><button class="btn btn-primary" style="padding:4px 8px;font-size:12px" onclick="editOrder(' + o.id + ')">編輯</button></td></tr>';
+        });
+      }
+      html += '</tbody></table>';
+      document.getElementById('content').innerHTML = html;
+    }
+    
+    function renderCustomers() {
+      let html = '<div class="toolbar"><button class="btn btn-primary" onclick="openCustomerModal()">➕ 新增客戶</button></div>';
+      html += '<table><thead><tr><th>ID</th><th>姓名</th><th>Email</th><th>電話</th><th>操作</th></tr></thead><tbody>';
+      if (customers.length === 0) {
+        html += '<tr><td colspan="5">暫無客戶</td></tr>';
+      } else {
+        customers.slice(0,30).forEach(c => {
+          html += '<tr><td>' + c.id + '</td><td>' + (c.name||'') + '</td><td>' + (c.email||'') + '</td><td>' + (c.phone||'-') + '</td><td class="actions"><button class="btn btn-primary" style="padding:4px 8px;font-size:12px" onclick="editCustomer(' + c.id + ')">編輯</button></td></tr>';
+        });
+      }
+      html += '</tbody></table>';
+      document.getElementById('content').innerHTML = html;
+    }
+    
+    function renderMarketing() {
+      let html = '<div class="toolbar"><button class="btn btn-primary" onclick="openCouponModal()">➕ 新增優惠碼</button></div>';
+      html += '<table><thead><tr><th>優惠碼</th><th>折扣</th><th>到期日</th><th>操作</th></tr></thead><tbody>';
+      if (coupons.length === 0) {
+        html += '<tr><td colspan="4">暫無優惠碼 (本地端)</td></tr>';
+      } else {
+        coupons.forEach(c => {
+          html += '<tr><td>' + c.code + '</td><td>' + c.discount + '%</td><td>' + (c.expire||'-') + '</td><td><button class="btn btn-danger" style="padding:4px 8px;font-size:12px" onclick="deleteCoupon(\'' + c.code + '\')">刪除</button></td></tr>';
+        });
+      }
+      html += '</tbody></table>';
+      document.getElementById('content').innerHTML = html;
+    }
+    
+    function renderImport() {
+      document.getElementById('content').innerHTML = 
+        '<div class="card"><h3>📥 匯入產品</h3><p>由 JSON 匯入產品數據到數據庫</p><button class="btn btn-primary" onclick="importProducts()">執行匯入</button></div>' +
+        '<div class="card"><h3>📤 匯出數據</h3><div style="display:flex;gap:10px;margin-top:10px;"><button class="btn btn-secondary" onclick="window.open(\'/api/products\')">產品 (JSON)</button><button class="btn btn-secondary" onclick="window.open(\'/api/orders\')">訂單 (JSON)</button><button class="btn btn-secondary" onclick="window.open(\'/api/customers\')">客戶 (JSON)</button></div></div>';
+    }
+    
+    function renderSettings() {
+      document.getElementById('content').innerHTML = 
+        '<div class="card"><h3>💳 付款設定</h3><div class="form-group"><label>銀行名稱</label><input type="text" value="恆生銀行"></div><div class="form-group"><label>帳戶號碼</label><input type="text" value="123-456789-001"></div><button class="btn btn-primary">儲存</button></div>' +
+        '<div class="card"><h3>🚚 運費設定</h3><div class="form-group"><label>免運門檻 (HK$)</label><input type="number" value="300"></div><div class="form-group"><label>運費 (HK$)</label><input type="number" value="30"></div><button class="btn btn-primary">儲存</button></div>';
+    }
+    
+    // Product functions
     function openProductModal(id) {
-      const p = id ? window.products.find(x => x.id === id) : null;
+      const p = id ? products.find(x => x.id === id) : null;
+      document.getElementById('product-modal-title').innerText = id ? '編輯產品' : '新增產品';
       document.getElementById('p-id').value = id || '';
       document.getElementById('p-code').value = p ? p.product_code : '';
       document.getElementById('p-name').value = p ? p.name : '';
       document.getElementById('p-price').value = p ? p.price : '';
       document.getElementById('p-stock').value = p ? p.stock : '';
       document.getElementById('p-category').value = p ? p.category : 'オナホール';
+      document.getElementById('p-image').value = p ? p.image_url : '';
+      document.getElementById('p-desc').value = p ? p.description : '';
       document.getElementById('product-modal').classList.add('active');
     }
-    
     function editProduct(id) { openProductModal(id); }
-    function closeModal() { document.getElementById('product-modal').classList.remove('active'); }
     
+    // Order functions
+    function openOrderModal(id) {
+      const o = id ? orders.find(x => x.id === id) : null;
+      document.getElementById('o-id').value = id || '';
+      document.getElementById('o-customer-id').value = o ? o.user_id : '';
+      document.getElementById('o-total').value = o ? o.total : '';
+      document.getElementById('o-status').value = o ? o.status : 'pending';
+      document.getElementById('order-modal').classList.add('active');
+    }
+    function editOrder(id) { openOrderModal(id); }
+    
+    // Customer functions
+    function openCustomerModal(id) {
+      const c = id ? customers.find(x => x.id === id) : null;
+      document.getElementById('c-id').value = id || '';
+      document.getElementById('c-name').value = c ? c.name : '';
+      document.getElementById('c-email').value = c ? c.email : '';
+      document.getElementById('c-phone').value = c ? c.phone : '';
+      document.getElementById('c-address').value = c ? c.address : '';
+      document.getElementById('customer-modal').classList.add('active');
+    }
+    function editCustomer(id) { openCustomerModal(id); }
+    
+    // Coupon functions
+    function openCouponModal() {
+      document.getElementById('coupon-form').reset();
+      document.getElementById('coupon-modal').classList.add('active');
+    }
+    function deleteCoupon(code) {
+      if (confirm('確定刪除?')) {
+        coupons = coupons.filter(c => c.code !== code);
+        renderMarketing();
+      }
+    }
+    
+    // Close modal
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    
+    // Form submissions
     document.getElementById('product-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('p-id').value;
@@ -186,17 +369,75 @@
         name: document.getElementById('p-name').value,
         price: parseInt(document.getElementById('p-price').value) || 0,
         stock: parseInt(document.getElementById('p-stock').value) || 0,
-        category: document.getElementById('p-category').value
+        category: document.getElementById('p-category').value,
+        image_url: document.getElementById('p-image').value,
+        description: document.getElementById('p-desc').value
       };
-      
       const method = id ? 'PUT' : 'POST';
       const url = id ? '/api/products/' + id : '/api/products';
-      
       await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-      closeModal();
-      // Reload
+      closeModal('product-modal');
       location.reload();
     });
+    
+    document.getElementById('order-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('o-id').value;
+      const data = {
+        user_id: parseInt(document.getElementById('o-customer-id').value) || null,
+        total: parseInt(document.getElementById('o-total').value) || 0,
+        status: document.getElementById('o-status').value
+      };
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? '/api/orders/' + id : '/api/orders';
+      await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      closeModal('order-modal');
+      location.reload();
+    });
+    
+    document.getElementById('customer-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alert('客戶API未完成，請稍後再用');
+      closeModal('customer-modal');
+    });
+    
+    document.getElementById('coupon-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      coupons.push({
+        code: document.getElementById('coupon-code').value,
+        discount: parseInt(document.getElementById('coupon-discount').value),
+        expire: document.getElementById('coupon-expire').value
+      });
+      closeModal('coupon-modal');
+      renderMarketing();
+    });
+    
+    // Delete product
+    async function deleteProduct(id) {
+      if (confirm('確定刪除?')) {
+        await fetch('/api/products/' + id, { method: 'DELETE' });
+        location.reload();
+      }
+    }
+    
+    // Import products
+    async function importProducts() {
+      if (confirm('確定匯入400件產品?')) {
+        const res = await fetch('/api/admin/import-products', { method: 'POST' });
+        const data = await res.json();
+        alert('已匯入 ' + data.imported + ' 件產品');
+        location.reload();
+      }
+    }
+    
+    // Search
+    function filterProducts(query) {
+      const rows = document.querySelectorAll('#product-list tr');
+      const q = query.toLowerCase();
+      rows.forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
     
     function logout() { location.href = '/'; }
   </script>
