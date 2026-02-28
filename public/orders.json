@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "customer_name": "陳大文",
+    "total": 1280,
+    "status": "pending",
+    "items": [
+      { "product_id": 1, "quantity": 1, "price": 1280, "name": "極上名器" }
+    ],
+    "created_at": "2023-10-27T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "customer_name": "李小龍",
+    "total": 450,
+    "status": "completed",
+    "items": [
+      { "product_id": 2, "quantity": 2, "price": 225, "name": "潤滑液" }
+    ],
+    "created_at": "2023-10-26T15:30:00Z"
+  }
+]

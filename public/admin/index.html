@@ -117,6 +117,10 @@
           </select>
         </div>
         <div class="form-group">
+          <label>圖片 URL</label>
+          <input type="text" id="p-image">
+        </div>
+        <div class="form-group">
           <label>描述</label>
           <textarea id="p-desc" rows="4"></textarea>
         </div>
@@ -132,10 +136,25 @@
     let coupons = [];
     let currentPage = 'dashboard';
 
-    function showPage(page) {
+    async function loadData() {
+      try {
+        const [pRes, oRes, cRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/orders'),
+          fetch('/api/customers')
+        ]);
+        products = await pRes.json();
+        orders = await oRes.json();
+        customers = await cRes.json();
+      } catch (e) {
+        console.error('Error loading data:', e);
+      }
+    }
+
+    async function showPage(page) {
       currentPage = page;
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      event.target.classList.add('active');
+      if (event) event.target.classList.add('active');
       const content = document.getElementById('page-content');
       document.getElementById('page-title').textContent = {
         dashboard: 'Dashboard', products: '產品管理', categories: '分類管理',
@@ -143,6 +162,8 @@
         analytics: '數據分析', settings: '系統設定', import: '匯入/匯出'
       }[page] || page;
       
+      await loadData();
+
       if (page === 'dashboard') renderDashboard();
       else if (page === 'products') renderProducts();
       else if (page === 'orders') renderOrders();
@@ -199,43 +220,62 @@
       document.getElementById('p-stock').value = id ? products.find(p=>p.id===id)?.stock || '' : '';
       document.getElementById('p-category').value = id ? products.find(p=>p.id===id)?.category || '' : 'オナホール';
       document.getElementById('p-desc').value = id ? products.find(p=>p.id===id)?.description || '' : '';
+      document.getElementById('p-image').value = id ? products.find(p=>p.id===id)?.image_url || '' : '';
       document.getElementById('product-modal').classList.add('active');
     }
 
     function editProduct(id) { openProductModal(id); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-    function deleteProduct(id) {
+    
+    async function deleteProduct(id) {
       if (confirm('確定要刪除?')) {
-        products = products.filter(p => p.id !== id);
+        await fetch(\`/api/products/\${id}\`, { method: 'DELETE' });
+        await loadData();
         renderProductList();
       }
     }
 
-    document.getElementById('product-form').addEventListener('submit', (e) => {
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('p-id').value;
       const data = {
-        id: id ? parseInt(id) : Date.now(),
         product_code: document.getElementById('p-code').value,
         name: document.getElementById('p-name').value,
         price: parseInt(document.getElementById('p-price').value) || 0,
         stock: parseInt(document.getElementById('p-stock').value) || 0,
         category: document.getElementById('p-category').value,
-        description: document.getElementById('p-desc').value
+        description: document.getElementById('p-desc').value,
+        image_url: document.getElementById('p-image').value
       };
-      if (id) {
-        products = products.map(p => p.id === parseInt(id) ? data : p);
-      } else {
-        products.push(data);
-      }
+      
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? \`/api/products/\${id}\` : '/api/products';
+      
+      await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
       closeModal('product-modal');
+      await loadData();
       renderProductList();
     });
 
     function renderOrders() {
       document.getElementById('page-content').innerHTML = `
-        <div class="data-table"><table><thead><tr><th>訂單ID</th><th>客戶</th><th>產品</th><th>總額</th><th>狀態</th><th>操作</th></tr></thead><tbody>${orders.map(o => `<tr><td>#${o.id}</td><td>${o.customer_name || 'Guest'}</td><td>${o.items?.length || 0}件</td><td>$${o.total}</td><td><span class="status status-${o.status}">${o.status}</span></td><td><button class="btn btn-primary" style="padding:0.25rem 0.5rem;font-size:0.75rem" onclick="updateOrderStatus(${o.id})">更新狀態</button></td></tr>`).join('') || '<tr><td colspan="6">暫無訂單</td></tr>'}</tbody></table></div>
+        <div class="data-table"><table><thead><tr><th>訂單ID</th><th>客戶</th><th>產品</th><th>總額</th><th>狀態</th><th>操作</th></tr></thead><tbody>${orders.map(o => `<tr><td>#${o.id}</td><td>${o.customer_name || 'Guest'}</td><td>${o.items?.length || 0}件</td><td>$${o.total}</td><td><span class="status status-${o.status}">${o.status}</span></td><td><button class="btn btn-primary" style="padding:0.25rem 0.5rem;font-size:0.75rem" onclick="updateOrderStatus(${o.id}, '${o.status === 'pending' ? 'completed' : 'pending'}')">${o.status === 'pending' ? '完成' : '重置'}訂單</button></td></tr>`).join('') || '<tr><td colspan="6">暫無訂單</td></tr>'}</tbody></table></div>
       `;
+    }
+
+    async function updateOrderStatus(id, status) {
+      await fetch(\`/api/orders/\${id}\`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      await loadData();
+      renderOrders();
     }
 
     function renderCustomers() {
@@ -245,6 +285,7 @@
     }
 
     function renderMarketing() {
+      // Coupon logic remains local for now as backend doesn't have coupon endpoint yet
       document.getElementById('page-content').innerHTML = `
         <div class="tabs">
           <div class="tab active">優惠碼</div>
@@ -325,28 +366,7 @@
 
     function logout() { location.href = '/'; }
 
-    // Load data from localStorage or use default
-    products = JSON.parse(localStorage.getItem('admin_products') || [
-      { id: 1, product_code: 'OH-3642', name: 'ぶっ挿しWロード', price: 1650, stock: 10, category: 'オナホール' },
-      { id: 2, product_code: 'DW-0233', name: 'ダッチワイフ Premium', price: 4500, stock: 5, category: 'ダッチワイフ' }
-    ]);
-    orders = JSON.parse(localStorage.getItem('admin_orders')) || [
-      { id: 1, customer_name: '陳生', total: 1650, status: 'pending', items: [] }
-    ];
-    customers = JSON.parse(localStorage.getItem('admin_customers')) || [];
-    coupons = JSON.parse(localStorage.getItem('admin_coupons')) || [
-      { code: 'WELCOME10', discount: 10 },
-      { code: 'VIP20', discount: 20 }
-    ];
-
-    // Auto-save
-    setInterval(() => {
-      localStorage.setItem('admin_products', JSON.stringify(products));
-      localStorage.setItem('admin_orders', JSON.stringify(orders));
-      localStorage.setItem('admin_customers', JSON.stringify(customers));
-      localStorage.setItem('admin_coupons', JSON.stringify(coupons));
-    }, 5000);
-
+    // Init
     showPage('dashboard');
   </script>
 </body>

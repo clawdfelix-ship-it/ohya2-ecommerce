@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "陳大文",
+    "email": "chan@example.com",
+    "phone": "91234567",
+    "orders": 5,
+    "total": 6500
+  },
+  {
+    "id": 2,
+    "name": "李小龍",
+    "email": "lee@example.com",
+    "phone": "98765432",
+    "orders": 2,
+    "total": 900
+  }
+]
