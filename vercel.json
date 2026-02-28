@@ -5,8 +5,5 @@
       "src": "server.js",
       "use": "@vercel/node"
     }
-  ],
-  "env": {
-    "POSTGRES_URL": "@ohya2-postgres"
-  }
+  ]
 }
