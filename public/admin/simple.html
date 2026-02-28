@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - OHYA2.0</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, sans-serif; background: #f5f5f5; }
+    .sidebar { width: 200px; background: #1a1a2e; color: white; position: fixed; height: 100%; padding: 15px; }
+    .sidebar h2 { margin-bottom: 15px; font-size: 18px; }
+    .nav { display: flex; flex-direction: column; gap: 5px; }
+    .nav a { color: #aaa; padding: 10px; text-decoration: none; border-radius: 5px; }
+    .nav a:hover, .nav a.active { background: #16213e; color: white; }
+    .main { margin-left: 200px; padding: 20px; }
+    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+    .stat { font-size: 24px; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+    #error { color: red; padding: 20px; }
+    .loading { color: #666; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>OHYA2.0</h2>
+    <div class="nav">
+      <a href="#" class="active" onclick="show('dashboard')">📊 Dashboard</a>
+      <a href="#" onclick="show('products')">📦 產品</a>
+      <a href="#" onclick="show('orders')">🛒 訂單</a>
+    </div>
+  </div>
+  <div class="main">
+    <h1 id="title">Dashboard</h1>
+    <div id="content">
+      <p class="loading">Loading...</p>
+    </div>
+  </div>
+
+  <script>
+    // Load data immediately
+    fetch('/api/products').then(r => r.json()).then(d => {
+      window.products = d;
+      document.getElementById('content').innerHTML = '<div class="card"><div>總產品</div><div class="stat">' + d.length + '</div></div>';
+    }).catch(e => {
+      document.getElementById('content').innerHTML = '<div id="error">Error: ' + e.message + '</div>';
+    });
+    
+    function show(page) {
+      document.getElementById('title').innerText = page;
+      if (page === 'dashboard') {
+        document.getElementById('content').innerHTML = '<div class="card"><div>總產品</div><div class="stat">' + (window.products?.length || 0) + '</div></div>';
+      } else if (page === 'products') {
+        let html = '<table><tr><th>名稱</th><th>價格</th></tr>';
+        (window.products || []).slice(0,10).forEach(p => {
+          html += '<tr><td>' + (p.name||'').substring(0,25) + '</td><td>$' + (p.price||0) + '</td></tr>';
+        });
+        html += '</table>';
+        document.getElementById('content').innerHTML = html;
+      }
+    }
+  </script>
+</body>
+</html>
