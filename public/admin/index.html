@@ -640,6 +640,207 @@
       
       renderCategories();
       renderInventory();
+      
+      // Load marketing data
+      loadCoupons();
+      loadFlashSales();
+    }
+    
+    // ========== Marketing Functions ==========
+    function loadCoupons() {
+      const stored = localStorage.getItem('ohya_coupons');
+      coupons = stored ? JSON.parse(stored) : [];
+      renderCoupons();
+    }
+    
+    function saveCoupons() {
+      localStorage.setItem('ohya_coupons', JSON.stringify(coupons));
+    }
+    
+    function renderCoupons() {
+      const tbody = document.getElementById('coupon-list');
+      if (!tbody) return;
+      if (coupons.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">暫無優惠券</td></tr>';
+        return;
+      }
+      tbody.innerHTML = coupons.map(c => `
+        <tr>
+          <td style="font-weight: 600; color: var(--primary);">${c.code}</td>
+          <td>${c.type === 'percentage' ? '百分比' : '固定金額'}</td>
+          <td>${c.type === 'percentage' ? c.value + '%' : 'HK$' + c.value}</td>
+          <td>HK$ ${c.minSpend}</td>
+          <td>${c.used}/${c.limit}</td>
+          <td>${c.expiry}</td>
+          <td><span class="status ${c.active ? 'status-completed' : 'status-cancelled'}">${c.active ? '啟用' : '停用'}</span></td>
+          <td>
+            <button class="action-btn ${c.active ? 'delete-btn' : 'edit-btn'}" onclick="toggleCoupon('${c.code}')">${c.active ? '停用' : '啟用'}</button>
+            <button class="action-btn delete-btn" onclick="deleteCoupon('${c.code}')">刪除</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    document.getElementById('coupon-form')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const coupon = {
+        code: document.getElementById('c-code').value.toUpperCase(),
+        type: document.getElementById('c-type').value,
+        value: parseFloat(document.getElementById('c-value').value),
+        minSpend: parseFloat(document.getElementById('c-min').value) || 0,
+        limit: parseInt(document.getElementById('c-limit').value) || 100,
+        expiry: document.getElementById('c-expiry').value,
+        used: 0,
+        active: true,
+        createdAt: new Date().toISOString()
+      };
+      
+      if (coupons.find(c => c.code === coupon.code)) {
+        alert('此優惠碼已存在');
+        return;
+      }
+      
+      coupons.push(coupon);
+      saveCoupons();
+      renderCoupons();
+      hideModal('coupon-modal');
+      this.reset();
+      alert('優惠券已建立');
+    });
+    
+    function toggleCoupon(code) {
+      const coupon = coupons.find(c => c.code === code);
+      if (coupon) {
+        coupon.active = !coupon.active;
+        saveCoupons();
+        renderCoupons();
+      }
+    }
+    
+    function deleteCoupon(code) {
+      if (confirm('確定要刪除此優惠券嗎？')) {
+        coupons = coupons.filter(c => c.code !== code);
+        saveCoupons();
+        renderCoupons();
+      }
+    }
+    
+    // Flash Sales
+    function loadFlashSales() {
+      const stored = localStorage.getItem('ohya_flashsales');
+      flashSales = stored ? JSON.parse(stored) : [];
+      renderFlashSales();
+    }
+    
+    function saveFlashSales() {
+      localStorage.setItem('ohya_flashsales', JSON.stringify(flashSales));
+    }
+    
+    function renderFlashSales() {
+      const tbody = document.getElementById('flashsale-list');
+      if (!tbody) return;
+      if (flashSales.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">暫無閃購優惠</td></tr>';
+        return;
+      }
+      tbody.innerHTML = flashSales.map(fs => {
+        const now = new Date();
+        const start = new Date(fs.startDate);
+        const end = new Date(fs.endDate);
+        let status = 'status-pending';
+        let statusText = '即將開始';
+        
+        if (now >= start && now <= end) {
+          status = 'status-completed';
+          statusText = '進行中';
+        } else if (now > end) {
+          status = 'status-cancelled';
+          statusText = '已結束';
+        }
+        
+        return `
+          <tr>
+            <td>${fs.name}</td>
+            <td style="font-weight: 600; color: var(--secondary);">${fs.discount}%</td>
+            <td>${fs.startDate.replace('T', ' ')}</td>
+            <td>${fs.endDate.replace('T', ' ')}</td>
+            <td>${fs.scope === 'all' ? '全部產品' : (fs.categories || []).join(', ')}</td>
+            <td><span class="status ${status}">${statusText}</span></td>
+            <td>
+              <button class="action-btn delete-btn" onclick="deleteFlashSale('${fs.name}')">刪除</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    document.getElementById('flashsale-form')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const categorySelect = document.getElementById('fs-categories');
+      const selectedCategories = categorySelect ? Array.from(categorySelect.selectedOptions).map(o => o.value) : [];
+      
+      const flashSale = {
+        name: document.getElementById('fs-name').value,
+        discount: parseInt(document.getElementById('fs-discount').value),
+        startDate: document.getElementById('fs-start').value,
+        endDate: document.getElementById('fs-end').value,
+        scope: document.getElementById('fs-scope').value,
+        categories: selectedCategories,
+        active: true,
+        createdAt: new Date().toISOString()
+      };
+      
+      if (flashSales.find(fs => fs.name === flashSale.name)) {
+        alert('此活動名稱已存在');
+        return;
+      }
+      
+      flashSales.push(flashSale);
+      saveFlashSales();
+      renderFlashSales();
+      hideModal('flashsale-modal');
+      this.reset();
+      alert('閃購優惠已建立');
+    });
+    
+    function deleteFlashSale(name) {
+      if (confirm('確定要刪除此閃購優惠嗎？')) {
+        flashSales = flashSales.filter(fs => fs.name !== name);
+        saveFlashSales();
+        renderFlashSales();
+      }
+    }
+    
+    // Email Templates
+    function showEmailTemplate(type) {
+      document.getElementById('email-welcome').style.display = 'none';
+      document.getElementById('email-order').style.display = 'none';
+      document.getElementById('email-cart').style.display = 'none';
+      const el = document.getElementById('email-' + type);
+      if (el) el.style.display = 'block';
+      
+      document.querySelectorAll('#marketing-emails .tabs .tab').forEach(t => t.classList.remove('active'));
+      if (event && event.target) event.target.classList.add('active');
+    }
+    
+    function saveEmailTemplate(type) {
+      const subject = document.getElementById('email-' + type + '-subject');
+      const body = document.getElementById('email-' + type + '-body');
+      if (!subject || !body) return;
+      
+      emailTemplates[type] = { subject: subject.value, body: body.value };
+      localStorage.setItem('ohya_email_templates', JSON.stringify(emailTemplates));
+      alert('電郵範本已儲存');
+    }
+    
+    function showMarketingTab(tab) {
+      document.getElementById('marketing-coupons').style.display = 'none';
+      document.getElementById('marketing-flashsales').style.display = 'none';
+      document.getElementById('marketing-emails').style.display = 'none';
+      document.getElementById('marketing-' + tab).style.display = 'block';
+      
+      document.querySelectorAll('#page-marketing .tabs:first-child .tab').forEach(t => t.classList.remove('active'));
+      if (event && event.target) event.target.classList.add('active');
     }
     
     function getSampleProducts() {
