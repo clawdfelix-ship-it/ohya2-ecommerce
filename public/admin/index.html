@@ -61,15 +61,15 @@
     <aside class="sidebar">
       <div class="sidebar-header"><div class="logo">OHYA<span>2.0</span> Admin</div></div>
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</a>
-        <a href="#" class="nav-item" onclick="showPage('products')">📦 產品管理</a>
-        <a href="#" class="nav-item" onclick="showPage('categories')">🏷️ 分類管理</a>
-        <a href="#" class="nav-item" onclick="showPage('orders')">🛒 訂單管理</a>
-        <a href="#" class="nav-item" onclick="showPage('customers')">👥 客戶管理</a>
-        <a href="#" class="nav-item" onclick="showPage('marketing')">🎟️ 營銷推廣</a>
-        <a href="#" class="nav-item" onclick="showPage('analytics')">📈 數據分析</a>
-        <a href="#" class="nav-item" onclick="showPage('settings')">⚙️ 系統設定</a>
-        <a href="#" class="nav-item" onclick="showPage('import')">📥 匯入/匯出</a>
+        <a href="#" class="nav-item active" onclick="showPage('dashboard',event)">📊 Dashboard</a>
+        <a href="#" class="nav-item" onclick="showPage('products',event)">📦 產品管理</a>
+        <a href="#" class="nav-item" onclick="showPage('categories',event)">🏷️ 分類管理</a>
+        <a href="#" class="nav-item" onclick="showPage('orders',event)">🛒 訂單管理</a>
+        <a href="#" class="nav-item" onclick="showPage('customers',event)">👥 客戶管理</a>
+        <a href="#" class="nav-item" onclick="showPage('marketing',event)">🎟️ 營銷推廣</a>
+        <a href="#" class="nav-item" onclick="showPage('analytics',event)">📈 數據分析</a>
+        <a href="#" class="nav-item" onclick="showPage('settings',event)">⚙️ 系統設定</a>
+        <a href="#" class="nav-item" onclick="showPage('import',event)">📥 匯入/匯出</a>
         <a href="/" class="nav-item">🏠 返回網站</a>
       </nav>
     </aside>
@@ -151,26 +151,39 @@
       }
     }
 
-    async function showPage(page) {
+    async function showPage(page, evt) {
       currentPage = page;
+      // Update active nav state
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      if (event) event.target.classList.add('active');
+      if (evt && evt.target) evt.target.classList.add('active');
+      
       const content = document.getElementById('page-content');
-      document.getElementById('page-title').textContent = {
+      const titles = {
         dashboard: 'Dashboard', products: '產品管理', categories: '分類管理',
         orders: '訂單管理', customers: '客戶管理', marketing: '營銷推廣',
         analytics: '數據分析', settings: '系統設定', import: '匯入/匯出'
-      }[page] || page;
+      };
+      document.getElementById('page-title').textContent = titles[page] || page;
       
-      await loadData();
+      // Show loading
+      content.innerHTML = '<p>載入中...</p>';
+      
+      try {
+        await loadData();
 
-      if (page === 'dashboard') renderDashboard();
-      else if (page === 'products') renderProducts();
-      else if (page === 'orders') renderOrders();
-      else if (page === 'customers') renderCustomers();
-      else if (page === 'marketing') renderMarketing();
-      else if (page === 'settings') renderSettings();
-      else if (page === 'import') renderImport();
+        if (page === 'dashboard') renderDashboard();
+        else if (page === 'products') renderProducts();
+        else if (page === 'categories') renderCategories();
+        else if (page === 'orders') renderOrders();
+        else if (page === 'customers') renderCustomers();
+        else if (page === 'marketing') renderMarketing();
+        else if (page === 'analytics') renderAnalytics();
+        else if (page === 'settings') renderSettings();
+        else if (page === 'import') renderImport();
+      } catch (e) {
+        content.innerHTML = `<p style="color:red">Error: ${e.message}</p>`;
+        console.error(e);
+      }
     }
 
     function renderDashboard() {
@@ -312,6 +325,55 @@
     function deleteCoupon(code) {
       coupons = coupons.filter(c => c.code !== code);
       renderMarketing();
+    }
+
+    function renderCategories() {
+      // Get unique categories from products
+      const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+      document.getElementById('page-content').innerHTML = `
+        <div style="display:flex;justify-content:space-between;margin-bottom:1rem;">
+          <input type="text" id="new-category" placeholder="新分類名稱" style="padding:0.5rem;border:1px solid var(--border);border-radius:0.5rem;">
+          <button class="btn btn-primary" onclick="alert('分類功能即將推出')">新增分類</button>
+        </div>
+        <div class="data-table"><table><thead><tr><th>分類名稱</th><th>產品數量</th><th>操作</th></tr></thead><tbody>
+          ${categories.map(cat => `<tr><td>${cat}</td><td>${products.filter(p => p.category === cat).length}</td><td><button class="btn btn-secondary" style="padding:0.25rem 0.5rem;font-size:0.75rem">編輯</button></td></tr>`).join('')}
+        </tbody></table></div>
+      `;
+    }
+
+    function renderAnalytics() {
+      const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+      const avgOrder = orders.length ? Math.round(totalRevenue / orders.length) : 0;
+      document.getElementById('page-content').innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">總銷售額</div><div class="stat-value">$${totalRevenue}</div></div>
+          <div class="stat-card"><div class="stat-label">平均訂單</div><div class="stat-value">$${avgOrder}</div></div>
+          <div class="stat-card"><div class="stat-label">總產品</div><div class="stat-value">${products.length}</div></div>
+          <div class="stat-card"><div class="stat-label">總客戶</div><div class="stat-value">${customers.length}</div></div>
+        </div>
+        <h3 style="margin:1.5rem 0 1rem;">暢銷產品 (Top 10)</h3>
+        <div class="data-table"><table><thead><tr><th>產品</th><th>價格</th><th>庫存</th></tr></thead><tbody>
+          ${products.slice(0,10).map(p => `<tr><td>${p.name}</td><td>$${p.price}</td><td>${p.stock}</td></tr>`).join('')}
+        </tbody></table></div>
+      `;
+    }
+
+    function renderImport() {
+      document.getElementById('page-content').innerHTML = `
+        <div class="form-container">
+          <h3>📥 匯入產品</h3>
+          <p style="color:var(--text-muted);margin-bottom:1rem;">從 JSON 檔案匯入產品數據</p>
+          <button class="btn btn-primary" onclick="alert('請使用 API: POST /api/admin/import-products')">執行匯入</button>
+        </div>
+        <div class="form-container" style="margin-top:1.5rem;">
+          <h3>📤 匯出數據</h3>
+          <div style="display:flex;gap:1rem;margin-top:1rem;">
+            <button class="btn btn-secondary" onclick="window.open('/api/products','_blank')">匯出產品</button>
+            <button class="btn btn-secondary" onclick="window.open('/api/orders','_blank')">匯出訂單</button>
+            <button class="btn btn-secondary" onclick="window.open('/api/customers','_blank')">匯出客戶</button>
+          </div>
+        </div>
+      `;
     }
 
     function renderSettings() {
