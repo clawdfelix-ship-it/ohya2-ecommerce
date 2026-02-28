@@ -167,10 +167,14 @@
       document.getElementById('page-title').textContent = titles[page] || page;
       
       // Show loading
-      content.innerHTML = '<p>載入中...</p>';
+      content.innerHTML = '<p id="debug-loading">🔄 載入緊... (page: ' + page + ')</p>';
+      console.log('Loading data for:', page);
       
       try {
+        console.log('Calling loadData...');
         await loadData();
+        console.log('Data loaded, products:', products.length, 'orders:', orders.length);
+        alert('Data loaded! products: ' + products.length);
 
         if (page === 'dashboard') renderDashboard();
         else if (page === 'products') renderProducts();
@@ -182,6 +186,7 @@
         else if (page === 'settings') renderSettings();
         else if (page === 'import') renderImport();
       } catch (e) {
+        alert('Error: ' + e.message);
         content.innerHTML = `<p style="color:red">Error: ${e.message}</p>`;
         console.error(e);
       }
