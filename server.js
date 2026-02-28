@@ -1,129 +1,202 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
+const { initDatabase, sql } = require('./database');
 
 const app = express();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Helper to read/write JSON
-const readJson = (file) => {
-  const filePath = path.join(__dirname, 'public', file);
-  if (fs.existsSync(filePath)) {
-    try {
-      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    } catch (e) {
-      console.error(`Error reading ${file}:`, e);
-      return [];
-    }
-  }
-  return [];
-};
-
-const writeJson = (file, data) => {
-  const filePath = path.join(__dirname, 'public', file);
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (e) {
-    console.error(`Error writing ${file}:`, e);
-  }
-};
+// Initialize database on startup
+initDatabase().catch(console.error);
 
 // --- Products API ---
 
-app.get('/api/products', (req, res) => {
-  const products = readJson('products.json');
-  // Transform for frontend
-  const transformed = products.map((p, i) => ({
-    id: p.id || p.product_id || i + 1, // Prefer existing ID, fallback to index
-    product_code: p.code || p.product_code,
-    name: p.name,
-    price: typeof p.shopPrice === 'number' ? p.shopPrice : parseInt((p.shopPrice || '0').replace(/[^\d]/g, '')),
-    shopPrice: p.shopPrice, // Keep original string
-    stock: p.stock === '有貨' ? 10 : (parseInt(p.stock) || 0),
-    category: p.category || (p.categories?.[0]) || 'オナホール',
-    description: p.description || '',
-    image_url: p.image_url || `http://www.nipporigift.net/upload/save_image/${p.code}_500.jpg`
-  }));
-  res.json(transformed);
-});
-
-app.post('/api/products', (req, res) => {
-  const products = readJson('products.json');
-  const newProduct = {
-    product_id: Date.now(),
-    code: req.body.product_code,
-    name: req.body.name,
-    shopPrice: req.body.price,
-    stock: req.body.stock,
-    category: req.body.category,
-    description: req.body.description,
-    image_url: req.body.image_url
-  };
-  products.push(newProduct);
-  writeJson('products.json', products);
-  res.json({ success: true, product: newProduct });
-});
-
-app.put('/api/products/:id', (req, res) => {
-  const products = readJson('products.json');
-  const id = req.params.id;
-  const index = products.findIndex(p => (p.id || p.product_id || -1) == id);
-  
-  if (index !== -1) {
-    // Merge updates
-    const updated = { ...products[index], ...req.body };
-    // Map frontend fields back to storage fields
-    if (req.body.product_code) updated.code = req.body.product_code;
-    if (req.body.price) updated.shopPrice = req.body.price;
-    if (req.body.category) updated.category = req.body.category; // Ensure category is saved
-    
-    products[index] = updated;
-    writeJson('products.json', products);
-    res.json({ success: true });
-  } else {
-    res.status(404).json({ error: 'Product not found' });
+app.get('/api/products', async (req, res) => {
+  try {
+    const products = await sql`SELECT * FROM products WHERE active = 1 ORDER BY id DESC`;
+    res.json(products.map(p => ({
+      id: p.id,
+      product_code: p.product_code,
+      name: p.name,
+      price: p.price,
+      stock: p.stock,
+      category: p.category,
+      description: p.description,
+      image_url: p.image_url
+    })));
+  } catch (e) {
+    console.error('Error fetching products:', e);
+    res.status(500).json({ error: e.message });
   }
 });
 
-app.delete('/api/products/:id', (req, res) => {
-  let products = readJson('products.json');
-  const id = req.params.id;
-  const initialLength = products.length;
-  products = products.filter(p => (p.id || p.product_id || -1) != id);
-  
-  if (products.length < initialLength) {
-    writeJson('products.json', products);
+app.post('/api/products', async (req, res) => {
+  try {
+    const { product_code, name, price, stock, category, description, image_url } = req.body;
+    await sql`
+      INSERT INTO products (product_code, name, price, stock, category, description, image_url)
+      VALUES (${product_code}, ${name}, ${price}, ${stock}, ${category}, ${description}, ${image_url})
+    `;
     res.json({ success: true });
-  } else {
-    res.status(404).json({ error: 'Product not found' });
+  } catch (e) {
+    console.error('Error creating product:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/products/:id', async (req, res) => {
+  try {
+    const { product_code, name, price, stock, category, description, image_url } = req.body;
+    await sql`
+      UPDATE products 
+      SET product_code = ${product_code}, name = ${name}, price = ${price}, 
+          stock = ${stock}, category = ${category}, description = ${description}, 
+          image_url = ${image_url}
+      WHERE id = ${req.params.id}
+    `;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error updating product:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    // Soft delete - set active = 0
+    await sql`UPDATE products SET active = 0 WHERE id = ${req.params.id}`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error deleting product:', e);
+    res.status(500).json({ error: e.message });
   }
 });
 
 // --- Orders API ---
 
-app.get('/api/orders', (req, res) => {
-  res.json(readJson('orders.json'));
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await sql`
+      SELECT o.*, u.name as customer_name, u.email as customer_email
+      FROM orders o 
+      LEFT JOIN users u ON o.user_id = u.id 
+      ORDER BY o.id DESC
+    `;
+    res.json(orders);
+  } catch (e) {
+    console.error('Error fetching orders:', e);
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.put('/api/orders/:id', (req, res) => {
-  const orders = readJson('orders.json');
-  const index = orders.findIndex(o => o.id == req.params.id);
-  if (index !== -1) {
-    orders[index] = { ...orders[index], ...req.body };
-    writeJson('orders.json', orders);
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { user_id, total, items } = req.body;
+    const result = await sql`
+      INSERT INTO orders (user_id, total, status)
+      VALUES (${user_id}, ${total}, 'pending')
+      RETURNING id
+    `;
+    const orderId = result[0].id;
+    
+    // Insert order items
+    for (const item of items) {
+      await sql`
+        INSERT INTO order_items (order_id, product_id, quantity, price)
+        VALUES (${orderId}, ${item.product_id}, ${item.quantity}, ${item.price})
+      `;
+    }
+    
+    res.json({ success: true, order_id: orderId });
+  } catch (e) {
+    console.error('Error creating order:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/orders/:id', async (req, res) => {
+  try {
+    const { status } = req.body;
+    await sql`UPDATE orders SET status = ${status} WHERE id = ${req.params.id}`;
     res.json({ success: true });
-  } else {
-    res.status(404).json({ error: 'Order not found' });
+  } catch (e) {
+    console.error('Error updating order:', e);
+    res.status(500).json({ error: e.message });
   }
 });
 
 // --- Customers API ---
 
-app.get('/api/customers', (req, res) => {
-  res.json(readJson('customers.json'));
+app.get('/api/customers', async (req, res) => {
+  try {
+    const customers = await sql`
+      SELECT u.*, 
+             COUNT(o.id) as orders, 
+             COALESCE(SUM(o.total), 0) as total
+      FROM users u
+      LEFT JOIN orders o ON u.id = o.user_id
+      WHERE u.is_admin = 0
+      GROUP BY u.id
+      ORDER BY u.id DESC
+    `;
+    res.json(customers);
+  } catch (e) {
+    console.error('Error fetching customers:', e);
+    res.status(500).json({ error: e.message });
+  }
 });
+
+// --- Auth API ---
+
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const bcrypt = require('bcryptjs');
+    const users = await sql`SELECT * FROM users WHERE email = ${email}`;
+    
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+    
+    const user = users[0];
+    const valid = await bcrypt.compare(password, user.password);
+    
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+    
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      is_admin: user.is_admin
+    });
+  } catch (e) {
+    console.error('Error logging in:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/register', async (req, res) => {
+  try {
+    const { email, password, name, phone } = req.body;
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    await sql`
+      INSERT INTO users (email, password, name, phone)
+      VALUES (${email}, ${hashedPassword}, ${name}, ${phone})
+    `;
+    
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error registering:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- Test API ---
 
 app.get('/api/test', (req, res) => {
   res.json({ status: 'ok' });
