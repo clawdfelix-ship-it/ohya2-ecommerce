@@ -60,10 +60,21 @@
     th { background: var(--background); font-weight: 600; font-size: 0.875rem; }
     td { font-size: 0.9375rem; }
     tr:hover { background: var(--background); }
+    /* Status badges */
     .status { padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; display: inline-block; }
     .status-pending { background: #fef3c7; color: #92400e; }
+    .status-paid { background: #dbeafe; color: #1e40af; }
+    .status-processing { background: #e0e7ff; color: #3730a3; }
+    .status-shipped { background: #c7d2fe; color: #4338ca; }
     .status-completed { background: #d1fae5; color: #065f46; }
     .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .status-refunded { background: #f3f4f6; color: #6b7280; }
+    
+    /* Payment status */
+    .payment-paid { background: #d1fae5; color: #065f46; }
+    .payment-pending { background: #fef3c7; color: #92400e; }
+    .payment-failed { background: #fee2e2; color: #991b1b; }
+    .payment-refunded { background: #f3f4f6; color: #6b7280; }
     
     .action-btn { padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; cursor: pointer; border: none; }
     .edit-btn { background: var(--primary); color: white; }
@@ -307,6 +318,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           匯入/匯出
         </a>
+        <a href="#" class="nav-item" onclick="showPage('marketing')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          營銷推廣
+        </a>
         <a href="/" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           返回網站
@@ -361,7 +376,7 @@
       <div id="page-analytics">
         <div class="analytics-tabs">
           <button class="analytics-tab active" onclick="showAnalyticsTab('realtime')">實時數據</button>
-          <button class="analytics-tab"Tab('sales') onclick="showAnalytics">銷售報告</button>
+          <button class="analytics-tab" onclick="showAnalyticsTab('sales')">銷售報告</button>
           <button class="analytics-tab" onclick="showAnalyticsTab('customers')">客戶分析</button>
         </div>
 
@@ -581,15 +596,89 @@
 
       <!-- Orders Page -->
       <div id="page-orders" style="display:none;">
-        <div class="tabs">
-          <div class="tab active" onclick="filterOrders('all')">全部</div>
-          <div class="tab" onclick="filterOrders('pending')">待處理</div>
-          <div class="tab" onclick="filterOrders('completed')">已完成</div>
+        <!-- Order Stats -->
+        <div class="stats-grid" style="margin-bottom: 1.5rem;">
+          <div class="stat-card">
+            <div class="stat-label">總訂單</div>
+            <div class="stat-value purple" id="order-stat-total">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">待付款</div>
+            <div class="stat-value orange" id="order-stat-pending-payment">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">處理中</div>
+            <div class="stat-value" id="order-stat-processing">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">已發貨</div>
+            <div class="stat-value" id="order-stat-shipped">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">已完成</div>
+            <div class="stat-value green" id="order-stat-completed">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">已取消</div>
+            <div class="stat-value" id="order-stat-cancelled">-</div>
+          </div>
         </div>
+
+        <!-- Order Filters & Search -->
+        <div class="search-filter">
+          <div class="search-box" style="flex: 1; min-width: 280px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="order-search" placeholder="搜尋訂單 ID、客戶名稱、電話..." oninput="filterOrders()">
+          </div>
+          <div class="filter-group">
+            <select id="order-status-filter" class="filter-btn" style="border-radius: 0.5rem;" onchange="filterOrders()">
+              <option value="all">全部狀態</option>
+              <option value="pending">待付款</option>
+              <option value="paid">已付款</option>
+              <option value="processing">處理中</option>
+              <option value="shipped">已發貨</option>
+              <option value="completed">已完成</option>
+              <option value="cancelled">已取消</option>
+            </select>
+            <select id="order-payment-filter" class="filter-btn" style="border-radius: 0.5rem;" onchange="filterOrders()">
+              <option value="all">全部付款狀態</option>
+              <option value="paid">已付款</option>
+              <option value="pending">待付款</option>
+              <option value="failed">付款失敗</option>
+              <option value="refunded">已退款</option>
+            </select>
+          </div>
+          <div class="date-range">
+            <input type="date" id="order-date-start" onchange="filterOrders()">
+            <span>至</span>
+            <input type="date" id="order-date-end" onchange="filterOrders()">
+          </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="bulk-actions" style="display: none; gap: 0.5rem; margin-bottom: 1rem; padding: 0.75rem; background: #e0e7ff; border-radius: 0.5rem; align-items: center;">
+          <span id="selected-count" style="font-weight: 600; color: #3730a3;">0 個訂單已選擇</span>
+          <button class="btn btn-sm" style="background: #10b981; color: white;" onclick="bulkMarkPaid()">✅ 標記為已付款</button>
+          <button class="btn btn-sm" style="background: #6366f1; color: white;" onclick="bulkMarkShipped()">📦 標記為已發貨</button>
+          <button class="btn btn-sm" style="background: #f59e0b; color: white;" onclick="bulkCancel()">❌ 取消訂單</button>
+          <button class="btn btn-sm" style="background: #6b7280; color: white;" onclick="clearSelection()">清除選擇</button>
+        </div>
+
+        <!-- Orders Table -->
         <div class="data-table">
           <table>
             <thead>
-              <tr><th>訂單ID</th><th>客戶</th><th>產品</th><th>總額</th><th>狀態</th><th>操作</th></tr>
+              <tr>
+                <th style="width: 40px;"><input type="checkbox" id="select-all-orders" onchange="toggleSelectAll()"></th>
+                <th>訂單ID</th>
+                <th>客戶</th>
+                <th>產品</th>
+                <th>總額</th>
+                <th>付款狀態</th>
+                <th>訂單狀態</th>
+                <th>日期</th>
+                <th>操作</th>
+              </tr>
             </thead>
             <tbody id="order-list"></tbody>
           </table>
@@ -656,6 +745,97 @@
             <h3 style="margin-bottom: 1rem;">📤 匯出產品 (CSV)</h3>
             <p style="color: var(--text-muted); margin-bottom: 1rem;">匯出所有產品資料為CSV檔案</p>
             <button class="btn btn-primary" onclick="exportProducts()">匯出CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Marketing Page -->
+      <div id="page-marketing" style="display:none;">
+        <div class="tabs">
+          <div class="tab active" onclick="showMarketingTab('coupons')">優惠券</div>
+          <div class="tab" onclick="showMarketingTab('flash-sales')">閃購優惠</div>
+          <div class="tab" onclick="showMarketingTab('email-templates')">郵件範本</div>
+        </div>
+
+        <!-- Coupons Section -->
+        <div class="marketing-section active" id="marketing-coupons">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3>優惠券管理</h3>
+            <button class="btn btn-primary" onclick="showModal('coupon-modal')">➕ 新增優惠券</button>
+          </div>
+          <div class="data-table">
+            <table>
+              <thead>
+                <tr><th>優惠碼</th><th>類型</th><th>價值</th><th>最低消費</th><th>已使用</th><th>使用限制</th><th>有效期</th><th>狀態</th><th>操作</th></tr>
+              </thead>
+              <tbody id="coupon-list"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Flash Sales Section -->
+        <div class="marketing-section" id="marketing-flash-sales">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3>閃購優惠管理</h3>
+            <button class="btn btn-primary" onclick="showModal('flashsale-modal')">➕ 新增閃購</button>
+          </div>
+          <div class="data-table">
+            <table>
+              <thead>
+                <tr><th>名稱</th><th>折扣</th><th>開始日期</th><th>結束日期</th><th>適用範圍</th><th>狀態</th><th>操作</th></tr>
+              </thead>
+              <tbody id="flashsale-list"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Email Templates Section -->
+        <div class="marketing-section" id="marketing-email-templates">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div class="form-container">
+              <h3 style="margin-bottom: 1rem;">📧 訂單確認郵件範本</h3>
+              <div class="form-group">
+                <label>郵件主題</label>
+                <input type="text" id="email-order-subject" value="【OHYA2.0】您的訂單已確認 - 訂單 #{order_id}">
+              </div>
+              <div class="form-group">
+                <label>郵件內容 (HTML)</label>
+                <textarea id="email-order-content" rows="15" style="font-family: monospace; font-size: 0.875rem;">親愛的 {customer_name}，<br><br>
+感謝您的訂單！<br><br>
+<b>訂單詳情：</b><br>
+訂單編號：{order_id}<br>
+訂單日期：{order_date}<br>
+訂單總額：{order_total}<br><br>
+<b>送貨地址：</b><br>
+{shipping_address}<br><br>
+我們會盡快處理您的訂單。如有任何問題，請聯繫我們的客戶服務。<br><br>
+謝謝！<br>
+OHYA2.0 團隊</textarea>
+              </div>
+              <button class="btn btn-primary" onclick="saveEmailTemplate('order')">儲存範本</button>
+            </div>
+            <div class="form-container">
+              <h3 style="margin-bottom: 1rem;">📦 發貨通知郵件範本</h3>
+              <div class="form-group">
+                <label>郵件主題</label>
+                <input type="text" id="email-shipment-subject" value="【OHYA2.0】您的訂單已發貨 - 訂單 #{order_id}">
+              </div>
+              <div class="form-group">
+                <label>郵件內容 (HTML)</label>
+                <textarea id="email-shipment-content" rows="15" style="font-family: monospace; font-size: 0.875rem;">親愛的 {customer_name}，<br><br>
+您的訂單已經發貨了！<br><br>
+<b>發貨詳情：</b><br>
+訂單編號：{order_id}<br>
+快遞公司：{courier}<br>
+追蹤號碼：{tracking_number}<br><br>
+您可以通過以下連結追蹤您的包裹：<br>
+{tracking_link}<br><br>
+預計送達日期：{estimated_delivery}<br><br>
+謝謝您的購買！<br>
+OHYA2.0 團隊</textarea>
+              </div>
+              <button class="btn btn-primary" onclick="saveEmailTemplate('shipment')">儲存範本</button>
+            </div>
           </div>
         </div>
       </div>
@@ -731,6 +911,122 @@
       </div>
       <div class="section-title">現有標籤</div>
       <div class="tags-grid" id="tags-list"></div>
+    </div>
+  </div>
+
+  <!-- Order Details Modal -->
+  <div class="modal" id="order-modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h2>📦 訂單詳情 <span id="order-detail-id">#</span></h2>
+        <button class="modal-close" onclick="hideModal('order-modal')">&times;</button>
+      </div>
+      <div id="order-detail-content"></div>
+    </div>
+  </div>
+
+  <!-- Refund Modal -->
+  <div class="modal" id="refund-modal">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2>💰 退款</h2>
+        <button class="modal-close" onclick="hideModal('refund-modal')">&times;</button>
+      </div>
+      <div id="refund-content"></div>
+    </div>
+  </div>
+
+  <!-- Coupon Modal -->
+  <div class="modal" id="coupon-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>➕ 新增優惠券</h2>
+        <button class="modal-close" onclick="hideModal('coupon-modal')">&times;</button>
+      </div>
+      <form id="coupon-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>優惠碼</label>
+            <input type="text" id="c-code" placeholder="例如：SAVE20" required style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>優惠類型</label>
+            <select id="c-type">
+              <option value="percent">百分比 (%)</option>
+              <option value="fixed">固定金額 (HK$)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>優惠值</label>
+            <input type="number" id="c-value" placeholder="20" required min="0">
+          </div>
+          <div class="form-group">
+            <label>最低消費 (HK$)</label>
+            <input type="number" id="c-min-spend" placeholder="100" value="0" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>使用次數限制</label>
+            <input type="number" id="c-usage-limit" placeholder="100" value="100" min="1">
+          </div>
+          <div class="form-group">
+            <label>過期日期</label>
+            <input type="date" id="c-expiry" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">儲存優惠券</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Flash Sale Modal -->
+  <div class="modal" id="flashsale-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>➕ 新增閃購優惠</h2>
+        <button class="modal-close" onclick="hideModal('flashsale-modal')">&times;</button>
+      </div>
+      <form id="flashsale-form">
+        <div class="form-group">
+          <label>活動名稱</label>
+          <input type="text" id="fs-name" placeholder="例如：新年大特價" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>折扣百分比 (%)</label>
+            <input type="number" id="fs-discount" placeholder="20" required min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label>適用範圍</label>
+            <select id="fs-scope">
+              <option value="all">全部產品</option>
+              <option value="category">指定分類</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="fs-category-group" style="display:none;">
+          <label>選擇分類</label>
+          <select id="fs-category">
+            <option value="オナホール">オナホール</option>
+            <option value="ダッチワイフ">ダッチワイフ</option>
+            <option value="おっぱいグッズ">おっぱいグッズ</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>開始日期</label>
+            <input type="datetime-local" id="fs-start" required>
+          </div>
+          <div class="form-group">
+            <label>結束日期</label>
+            <input type="datetime-local" id="fs-end" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">儲存閃購</button>
+      </form>
     </div>
   </div>
 
