@@ -1753,3 +1753,28 @@ OHYA2.0 團隊</textarea>
   </script>
 </body>
 </html>
+
+<script>
+function editProduct(id) {
+  const product = products.find(p => p.id === id);
+  if (!product) return;
+  document.getElementById('p-id').value = product.id;
+  document.getElementById('p-code').value = product.product_code || '';
+  document.getElementById('p-name').value = product.name || '';
+  document.getElementById('p-price').value = product.price || 0;
+  document.getElementById('p-desc').value = product.description || '';
+  document.getElementById('p-stock').value = product.stock || 0;
+  document.getElementById('p-category').value = product.category || '';
+  document.getElementById('p-barcode').value = product.barcode || '';
+  document.getElementById('p-image').value = product.image_url || '';
+  document.getElementById('product-modal').classList.add('active');
+}
+
+function deleteProduct(id) {
+  if (confirm('確定要刪除呢件產品?')) {
+    products = products.filter(p => p.id !== id);
+    renderProducts();
+    saveProducts();
+  }
+}
+</script>
