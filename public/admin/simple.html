@@ -39,9 +39,17 @@
 
   <script>
     // Load data immediately
-    fetch('/api/products').then(r => r.json()).then(d => {
-      window.products = d;
-      document.getElementById('content').innerHTML = '<div class="card"><div>總產品</div><div class="stat">' + d.length + '</div></div>';
+    Promise.all([
+      fetch('/api/products').then(r => r.json()),
+      fetch('/api/orders').then(r => r.json()),
+      fetch('/api/customers').then(r => r.json())
+    ]).then(([p, o, c]) => {
+      window.products = p;
+      window.orders = o;
+      window.customers = c;
+      document.getElementById('content').innerHTML = '<div class="card"><div>總產品</div><div class="stat">' + p.length + '</div></div>' +
+        '<div class="card"><div>總訂單</div><div class="stat">' + o.length + '</div></div>' +
+        '<div class="card"><div>總客戶</div><div class="stat">' + c.length + '</div></div>';
     }).catch(e => {
       document.getElementById('content').innerHTML = '<div id="error">Error: ' + e.message + '</div>';
     });
@@ -49,13 +57,24 @@
     function show(page) {
       document.getElementById('title').innerText = page;
       if (page === 'dashboard') {
-        document.getElementById('content').innerHTML = '<div class="card"><div>總產品</div><div class="stat">' + (window.products?.length || 0) + '</div></div>';
+        document.getElementById('content').innerHTML = 
+          '<div class="card"><div>總產品</div><div class="stat">' + (window.products?.length || 0) + '</div></div>' +
+          '<div class="card"><div>總訂單</div><div class="stat">' + (window.orders?.length || 0) + '</div></div>' +
+          '<div class="card"><div>總客戶</div><div class="stat">' + (window.customers?.length || 0) + '</div></div>';
       } else if (page === 'products') {
         let html = '<table><tr><th>名稱</th><th>價格</th></tr>';
-        (window.products || []).slice(0,10).forEach(p => {
+        (window.products || []).slice(0,20).forEach(p => {
           html += '<tr><td>' + (p.name||'').substring(0,25) + '</td><td>$' + (p.price||0) + '</td></tr>';
         });
         html += '</table>';
+        document.getElementById('content').innerHTML = html;
+      } else if (page === 'orders') {
+        let html = '<table><tr><th>ID</th><th>總額</th><th>狀態</th></tr>';
+        (window.orders || []).forEach(o => {
+          html += '<tr><td>#' + o.id + '</td><td>$' + (o.total||0) + '</td><td>' + (o.status||'') + '</td></tr>';
+        });
+        html += '</table>';
+        if ((window.orders || []).length === 0) html = '<p>暫無訂單</p>';
         document.getElementById('content').innerHTML = html;
       }
     }
