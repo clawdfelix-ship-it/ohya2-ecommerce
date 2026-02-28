@@ -1256,17 +1256,33 @@ OHYA2.0 團隊</textarea>
       } catch(e) { console.log('No products'); }
       
       // Load orders
-      try {
-        const oRes = await fetch('/api/orders');
-        orders = await oRes.json();
-      } catch(e) { 
-        console.log('No orders, using sample data'); 
-        orders = sampleOrders;
+      async function loadData() {
+        try {
+          const oRes = await fetch('/api/orders');
+          orders = await oRes.json();
+        } catch (e) { 
+          console.log('No orders, using sample data'); 
+          orders = sampleOrders;
+        }
+        renderOrders();
+        updateOrderStats();
+        document.getElementById('order-stat-total').textContent = orders.length;
+        document.getElementById('order-stat-pending-payment').textContent = orders.filter(o => o.payment_status === 'pending').length;
+        document.getElementById('order-stat-processing').textContent = orders.filter(o => o.status === 'processing').length;
+        document.getElementById('order-stat-shipped').textContent = orders.filter(o => o.status === 'shipped').length;
+        document.getElementById('order-stat-completed').textContent = orders.filter(o => o.status === 'completed').length;
+        document.getElementById('order-stat-cancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
       }
-      renderOrders();
-      updateOrderStats();
-      document.getElementById('stat-orders').textContent = orders.length;
-      document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'pending').length;
+
+      // Function to update order stats
+      function updateOrderStats() {
+        document.getElementById('order-stat-total').textContent = orders.length;
+        document.getElementById('order-stat-pending-payment').textContent = orders.filter(o => o.payment_status === 'pending').length;
+        document.getElementById('order-stat-processing').textContent = orders.filter(o => o.status === 'processing').length;
+        document.getElementById('order-stat-shipped').textContent = orders.filter(o => o.status === 'shipped').length;
+        document.getElementById('order-stat-completed').textContent = orders.filter(o => o.status === 'completed').length;
+        document.getElementById('order-stat-cancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
+      }
 
       // Load customers
       customers = sampleCustomers;
