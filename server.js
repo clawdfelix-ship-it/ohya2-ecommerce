@@ -130,6 +130,7 @@ app.get('/api/orders', async (req, res) => {
         LEFT JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = ${order.id}
       `;
+      console.log('Order', order.id, 'has', items.length, 'items');
       return { ...order, items };
     }));
     
