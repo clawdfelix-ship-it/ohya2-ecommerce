@@ -11,9 +11,20 @@
     .nav a.active { background: #ec4899; border-radius: 5px; }
     .main { padding: 15px; }
     h2 { margin: 0 0 10px 0; font-size: 16px; }
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    .toolbar-left { flex: 1; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; }
     th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-    .btn { padding: 8px 12px; background: #6366f1; color: #fff; border: none; border-radius: 5px; }
+    th { background: #f9fafb; }
+    .btn { padding: 8px 14px; background: #6366f1; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; }
+    .btn:hover { background: #4f46e5; }
+    .btn-secondary { background: #9ca3af; }
+    .btn-danger { background: #ef4444; }
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+    .checkbox { width: 18px; height: 18px; }
+    .selected-bar { display: none; background: #e0e7ff; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; }
+    .selected-bar.active { display: flex; align-items: center; gap: 10px; }
+    .selected-count { font-weight: bold; color: #3730a3; }
   </style>
 </head>
 <body>
@@ -27,18 +38,161 @@
     <a href="settings.html">⚙️ 設定</a>
   </div>
   <div class="main">
-    <h2>訂單 Management</h2>
-    <p><a href="order-new.html" class="btn">+ New Order</a></p>
-    <table id="orders-table"><tr><td>載入中...</td></tr></table>
+    <h2>🛒 訂單管理</h2>
+    
+    <!-- 批次操作Bar -->
+    <div class="selected-bar" id="selected-bar">
+      <span class="selected-count">已選擇 <span id="selected-count">0</span> 張訂單</span>
+      <button class="btn" onclick="batchUpdateStatus()">改狀態</button>
+      <button class="btn btn-danger" onclick="batchDelete()">刪除所選</button>
+      <button class="btn btn-secondary" onclick="clearSelection()">清除選擇</button>
+    </div>
+    
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <a href="order-new.html" class="btn">+ 新增訂單</a>
+      </div>
+      <select id="filter-status" onchange="filterOrders()" style="padding:8px;border:1px solid #ddd;border-radius:5px;">
+        <option value="">全部狀態</option>
+        <option value="pending">待處理</option>
+        <option value="processing">處理中</option>
+        <option value="shipped">已發貨</option>
+        <option value="completed">已完成</option>
+        <option value="cancelled">已取消</option>
+      </select>
+    </div>
+    
+    <table id="orders-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" class="checkbox" onchange="toggleAll(this)"></th>
+          <th>ID</th>
+          <th>客戶</th>
+          <th>產品</th>
+          <th>總額</th>
+          <th>狀態</th>
+          <th>日期</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="orders-body">
+        <tr><td colspan="8">載入中...</td></tr>
+      </tbody>
+    </table>
   </div>
+  
   <script>
+    var orders = [];
+    var selectedIds = [];
+    
     fetch('/api/orders').then(function(r){return r.json();}).then(function(d){
-      var html = '<tr><th>ID</th><th>客戶</th><th>總額</th><th>狀態</th><th>日期</th><th>操作</th></tr>';
-      d.forEach(function(o){
-        html += '<tr><td>#'+o.id+'</td><td>'+(o.customer_name||'Guest')+'</td><td>$'+(o.total||0)+'</td><td>'+(o.status||'pending')+'</td><td>'+(o.created_at||'-').substring(0,10)+'</td><td><a href="order-edit.html?id='+o.id+'" class="btn" style="padding:4px 8px;font-size:11px;">編輯</a></td></tr>';
-      });
-      document.getElementById('orders-table').innerHTML = html;
+      orders = d;
+      renderOrders(d);
     });
+    
+    function renderOrders(list) {
+      var html = '';
+      list.forEach(function(o){
+        var items = o.items || [];
+        var productsText = items.slice(0,2).map(function(i){return i.product_name || 'Product';}).join(', ');
+        if(items.length > 2) productsText += '...';
+        
+        var checked = selectedIds.indexOf(o.id) >= 0 ? 'checked' : '';
+        
+        html += '<tr>' +
+          '<td><input type="checkbox" class="checkbox" ' + checked + ' onchange="toggleSelect(' + o.id + ')"></td>' +
+          '<td>#' + o.id + '</td>' +
+          '<td>' + (o.customer_name || 'Guest') + '</td>' +
+          '<td>' + (productsText || '-') + '</td>' +
+          '<td>$' + (o.total || 0) + '</td>' +
+          '<td><span class="badge badge-' + (o.status || 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
+          '<td>' + (o.created_at || '-').substring(0,10) + '</td>' +
+          '<td><a href="order-edit.html?id=' + o.id + '" class="btn btn-sm">編輯</a></td>' +
+        '</tr>';
+      });
+      document.getElementById('orders-body').innerHTML = html || '<tr><td colspan="8">暫無訂單</td></tr>';
+    }
+    
+    function toggleSelect(id) {
+      var idx = selectedIds.indexOf(id);
+      if(idx >= 0) {
+        selectedIds.splice(idx, 1);
+      } else {
+        selectedIds.push(id);
+      }
+      updateSelectedBar();
+    }
+    
+    function toggleAll(checkbox) {
+      if(checkbox.checked) {
+        var filtered = getFilteredOrders();
+        selectedIds = filtered.map(function(o){return o.id;});
+      } else {
+        selectedIds = [];
+      }
+      renderOrders(getFilteredOrders());
+      updateSelectedBar();
+    }
+    
+    function updateSelectedBar() {
+      var bar = document.getElementById('selected-bar');
+      var count = document.getElementById('selected-count');
+      count.innerText = selectedIds.length;
+      if(selectedIds.length > 0) {
+        bar.classList.add('active');
+      } else {
+        bar.classList.remove('active');
+      }
+    }
+    
+    function clearSelection() {
+      selectedIds = [];
+      renderOrders(getFilteredOrders());
+      updateSelectedBar();
+    }
+    
+    function getFilteredOrders() {
+      var status = document.getElementById('filter-status').value;
+      if(!status) return orders;
+      return orders.filter(function(o){return o.status === status;});
+    }
+    
+    function filterOrders() {
+      renderOrders(getFilteredOrders());
+    }
+    
+    function batchUpdateStatus() {
+      var status = prompt('輸入新狀態 (pending/processing/shipped/completed/cancelled):');
+      if(!status) return;
+      
+      var promises = selectedIds.map(function(id){
+        return fetch('/api/orders/' + id, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({status: status})
+        });
+      });
+      
+      Promise.all(promises).then(function(){
+        alert('已更新 ' + selectedIds.length + ' 張訂單');
+        clearSelection();
+        location.reload();
+      });
+    }
+    
+    function batchDelete() {
+      if(!confirm('確定要刪除 ' + selectedIds.length + ' 張訂單嗎？')) return;
+      
+      var promises = selectedIds.map(function(id){
+        return fetch('/api/orders/' + id, { method: 'DELETE' });
+      });
+      
+      Promise.all(promises).then(function(){
+        alert('已刪除 ' + selectedIds.length + ' 張訂單');
+        clearSelection();
+        location.reload();
+      });
+    }
   </script>
 </body>
 </html>
