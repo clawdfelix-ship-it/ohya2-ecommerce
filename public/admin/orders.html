@@ -25,6 +25,13 @@
     .selected-bar { display: none; background: #e0e7ff; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; }
     .selected-bar.active { display: flex; align-items: center; gap: 10px; }
     .selected-count { font-weight: bold; color: #3730a3; }
+    .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-processing { background: #dbeafe; color: #1e40af; }
+    .badge-shipped { background: #e0e7ff; color: #3730a3; }
+    .badge-completed { background: #d1fae5; color: #065f46; }
+    .badge-refunded { background: #fee2e2; color: #991b1b; }
+    .badge-cancelled { background: #f3f4f6; color: #6b7280; }
   </style>
 </head>
 <body>
@@ -59,6 +66,7 @@
         <option value="processing">處理中</option>
         <option value="shipped">已發貨</option>
         <option value="completed">已完成</option>
+        <option value="refunded">已退款</option>
         <option value="cancelled">已取消</option>
       </select>
     </div>
@@ -72,6 +80,7 @@
           <th>產品</th>
           <th>總額</th>
           <th>狀態</th>
+          <th>物流單號</th>
           <th>日期</th>
           <th>操作</th>
         </tr>
@@ -99,6 +108,7 @@
         if(items.length > 2) productsText += '...';
         
         var checked = selectedIds.indexOf(o.id) >= 0 ? 'checked' : '';
+        var trackingText = o.tracking_number ? '<span style="color:#10b981;font-size:11px;">' + o.tracking_number + '</span>' : '-';
         
         html += '<tr>' +
           '<td><input type="checkbox" class="checkbox" ' + checked + ' onchange="toggleSelect(' + o.id + ')"></td>' +
@@ -107,11 +117,12 @@
           '<td>' + (productsText || '-') + '</td>' +
           '<td>$' + (o.total || 0) + '</td>' +
           '<td><span class="badge badge-' + (o.status || 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
+          '<td>' + trackingText + '</td>' +
           '<td>' + (o.created_at || '-').substring(0,10) + '</td>' +
           '<td><a href="order-edit.html?id=' + o.id + '" class="btn btn-sm">編輯</a></td>' +
         '</tr>';
       });
-      document.getElementById('orders-body').innerHTML = html || '<tr><td colspan="8">暫無訂單</td></tr>';
+      document.getElementById('orders-body').innerHTML = html || '<tr><td colspan="9">暫無訂單</td></tr>';
     }
     
     function toggleSelect(id) {
@@ -163,7 +174,7 @@
     }
     
     function batchUpdateStatus() {
-      var status = prompt('輸入新狀態 (pending/processing/shipped/completed/cancelled):');
+      var status = prompt('輸入新狀態 (pending/processing/shipped/completed/refunded/cancelled):');
       if(!status) return;
       
       var promises = selectedIds.map(function(id){

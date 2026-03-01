@@ -317,8 +317,8 @@ app.post('/api/orders', async (req, res) => {
 
 app.put('/api/orders/:id', async (req, res) => {
   try {
-    const { status } = req.body;
-    await sql`UPDATE orders SET status = ${status} WHERE id = ${req.params.id}`;
+    const { status, user_id, tracking_number, internal_notes } = req.body;
+    await sql`UPDATE orders SET status = ${status}, user_id = ${user_id}, tracking_number = ${tracking_number}, internal_notes = ${internal_notes} WHERE id = ${req.params.id}`;
     res.json({ success: true });
   } catch (e) {
     console.error('Error updating order:', e);

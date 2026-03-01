@@ -25,6 +25,13 @@
     .product-item select { flex: 1; }
     .product-item input { width: 80px; }
     .total { font-size: 24px; font-weight: bold; text-align: right; padding: 15px; background: #e8f5e9; border-radius: 8px; margin-top: 15px; }
+    .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-processing { background: #dbeafe; color: #1e40af; }
+    .badge-shipped { background: #e0e7ff; color: #3730a3; }
+    .badge-completed { background: #d1fae5; color: #065f46; }
+    .badge-refunded { background: #fee2e2; color: #991b1b; }
+    .badge-cancelled { background: #f3f4f6; color: #6b7280; }
   </style>
 </head>
 <body>
@@ -45,6 +52,7 @@
           <option value="processing">處理中</option>
           <option value="shipped">已發貨</option>
           <option value="completed">已完成</option>
+          <option value="refunded">已退款</option>
           <option value="cancelled">已取消</option>
         </select>
       </div>
@@ -53,6 +61,24 @@
         <select id="order-customer">
           <option value="">-- 散客 --</option>
         </select>
+      </div>
+    </div>
+    
+    <!-- 物流資訊 -->
+    <div class="card">
+      <h3>📮 物流資訊</h3>
+      <div class="form-group">
+        <label>物流單號</label>
+        <input type="text" id="order-tracking" placeholder="輸入快遞追蹤號碼">
+      </div>
+      <div id="tracking-link" style="margin-top:8px;"></div>
+    </div>
+    
+    <!-- 內部備註 -->
+    <div class="card">
+      <h3>📝 內部備註</h3>
+      <div class="form-group">
+        <textarea id="order-notes" rows="3" placeholder="僅內部可見的備註..."></textarea>
       </div>
     </div>
     
@@ -97,6 +123,13 @@
       // Set status
       document.getElementById('order-status').value = order.status || 'pending';
       
+      // Load tracking number
+      document.getElementById('order-tracking').value = order.tracking_number || '';
+      updateTrackingLink(order.tracking_number);
+      
+      // Load internal notes
+      document.getElementById('order-notes').value = order.internal_notes || '';
+      
       // Load customers
       var custSel = document.getElementById('order-customer');
       customers.forEach(function(c){
@@ -109,6 +142,33 @@
       // Load items
       renderItems(order.items || []);
     });
+    
+    // Track tracking number changes
+    document.getElementById('order-tracking').addEventListener('input', function(e) {
+      updateTrackingLink(e.target.value);
+    });
+    
+    function updateTrackingLink(tracking) {
+      var linkDiv = document.getElementById('tracking-link');
+      if(tracking && tracking.trim()) {
+        // Common courier tracking URLs
+        var url = '';
+        var t = tracking.trim().toUpperCase();
+        if(t.indexOf('SF') === 0 || t.indexOf('SF') >= 0) {
+          url = 'https://www.sf-express.com/hk/tc/dynamic_function/waybill/';
+        } else if(t.indexOf('JT') === 0) {
+          url = 'https://www.jtexpress.com.hk/tc/';
+        } else if(t.indexOf('HKP') === 0) {
+          url = 'https://www.hkop.com/';
+        } else {
+          // Generic search
+          url = 'https://www.google.com/search?q=快遞追蹤+' + encodeURIComponent(tracking);
+        }
+        linkDiv.innerHTML = '<a href="' + url + '" target="_blank" class="btn btn-sm" style="background:#10b981;display:inline-block;margin-top:5px;">🔗 追蹤快遞</a>';
+      } else {
+        linkDiv.innerHTML = '';
+      }
+    }
     
     function renderItems(items) {
       var html = '';
@@ -133,13 +193,17 @@
     function saveOrder() {
       var status = document.getElementById('order-status').value;
       var customerId = document.getElementById('order-customer').value;
+      var trackingNumber = document.getElementById('order-tracking').value;
+      var internalNotes = document.getElementById('order-notes').value;
       
       fetch('/api/orders/' + orderId, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           status: status,
-          user_id: customerId ? parseInt(customerId) : null
+          user_id: customerId ? parseInt(customerId) : null,
+          tracking_number: trackingNumber,
+          internal_notes: internalNotes
         })
       }).then(function(){
         alert('訂單已更新！');

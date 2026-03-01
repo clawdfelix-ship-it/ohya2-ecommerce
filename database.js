@@ -89,6 +89,8 @@ async function initDatabase() {
         total INTEGER NOT NULL,
         status TEXT DEFAULT 'pending',
         bank_transfer_proof TEXT,
+        tracking_number TEXT,
+        internal_notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
