@@ -3,82 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - OHYA2.0</title>
+  <title>Dashboard - OHYA2.0 Admin</title>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-    .nav { background: #1a1a2e; padding: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-    .nav a { color: #fff; text-decoration: none; padding: 8px 12px; background: #333; border-radius: 5px; font-size: 12px; }
-    .nav a.active { background: #ec4899; }
-    .main { padding: 10px; }
-    h1 { font-size: 16px; margin: 10px 0; }
-    .card { background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
+    .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
+    .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
+    .nav a.active { background: #ec4899; border-radius: 5px; }
+    .main { padding: 15px; }
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat { background: #fff; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-label { color: #666; font-size: 12px; }
+    .stat-value { font-size: 24px; font-weight: bold; }
+    .card { background: #fff; padding: 15px; border-radius: 8px; margin-top: 15px; }
+    h2 { margin: 0 0 10px 0; font-size: 16px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
-    .btn { padding: 6px 10px; background: #6366f1; color: #fff; border: none; border-radius: 4px; font-size: 11px; }
+    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+    .btn { padding: 8px 12px; background: #6366f1; color: #fff; border: none; border-radius: 5px; }
   </style>
 </head>
 <body>
   <div class="nav">
-    <a href="#" onclick="nav('dashboard')" class="active" id="nav-dashboard">📊 Dashboard</a>
-    <a href="#" onclick="nav('orders')" id="nav-orders">🛒 Orders</a>
-    <a href="#" onclick="nav('products')" id="nav-products">📦 Products</a>
-    <a href="#" onclick="nav('customers')" id="nav-customers">👥 Customers</a>
+    <a href="index.html" class="active">📊 Dashboard</a>
+    <a href="orders.html">🛒 Orders</a>
+    <a href="products.html">📦 Products</a>
+    <a href="customers.html">👥 Customers</a>
+    <a href="inventory.html">📈 Inventory</a>
+    <a href="coupons.html">🎟️ Coupons</a>
+    <a href="settings.html">⚙️ Settings</a>
   </div>
   <div class="main">
-    <h1 id="title">Dashboard</h1>
-    <div id="content"></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Products</div><div class="stat-value" id="p-count">...</div></div>
+      <div class="stat"><div class="stat-label">Orders</div><div class="stat-value" id="o-count">...</div></div>
+      <div class="stat"><div class="stat-label">Customers</div><div class="stat-value" id="c-count">...</div></div>
+      <div class="stat"><div class="stat-label">Revenue</div><div class="stat-value" id="r-count">...</div></div>
+    </div>
+    <div class="card">
+      <h2>Recent Orders</h2>
+      <table id="orders-table"><tr><td>Loading...</td></tr></table>
+    </div>
   </div>
   <script>
-    function nav(page) {
-      document.querySelectorAll('.nav a').forEach(function(a){a.classList.remove('active');});
-      document.getElementById('nav-'+page).classList.add('active');
-      document.getElementById('title').innerText = page;
-      
-      if(page==='dashboard') loadDashboard();
-      else if(page==='orders') loadOrders();
-      else if(page==='products') loadProducts();
-      else if(page==='customers') loadCustomers();
-    }
-    
-    function loadDashboard() {
-      fetch('/api/analytics').then(function(r){return r.json();}).then(function(d){
-        document.getElementById('content').innerHTML = 
-          '<div class="card">📦 Products: '+d.totalProducts+'</div>' +
-          '<div class="card">🛒 Orders: '+d.totalOrders+'</div>' +
-          '<div class="card">👥 Customers: '+d.totalCustomers+'</div>' +
-          '<div class="card">💰 Revenue: $'+(d.totalRevenue||0)+'</div>';
+    fetch('/api/analytics').then(function(r){return r.json();}).then(function(d){
+      document.getElementById('p-count').innerText = d.totalProducts || 0;
+      document.getElementById('o-count').innerText = d.totalOrders || 0;
+      document.getElementById('c-count').innerText = d.totalCustomers || 0;
+      document.getElementById('r-count').innerText = '$' + (d.totalRevenue || 0);
+    });
+    fetch('/api/orders').then(function(r){return r.json();}).then(function(d){
+      var html = '<tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th></tr>';
+      d.slice(0,5).forEach(function(o){
+        html += '<tr><td>#'+o.id+'</td><td>'+(o.customer_name||'Guest')+'</td><td>$'+(o.total||0)+'</td><td>'+(o.status||'pending')+'</td></tr>';
       });
-    }
-    
-    function loadOrders() {
-      fetch('/api/orders').then(function(r){return r.json();}).then(function(d){
-        var html = '<table><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th></tr>';
-        html += d.slice(0,10).map(function(o){return '<tr><td>#'+o.id+'</td><td>'+(o.customer_name||'Guest')+'</td><td>$'+(o.total||0)+'</td><td>'+(o.status||'pending')+'</td></tr>';}).join('');
-        html += '</table>';
-        document.getElementById('content').innerHTML = html;
-      });
-    }
-    
-    function loadProducts() {
-      fetch('/api/products').then(function(r){return r.json();}).then(function(d){
-        var html = '<table><tr><th>Code</th><th>Name</th><th>Price</th><th>Stock</th></tr>';
-        html += d.slice(0,10).map(function(p){return '<tr><td>'+(p.product_code||'')+'</td><td>'+(p.name||'').substring(0,15)+'</td><td>$'+(p.price||0)+'</td><td>'+(p.stock||0)+'</td></tr>';}).join('');
-        html += '</table>';
-        document.getElementById('content').innerHTML = html;
-      });
-    }
-    
-    function loadCustomers() {
-      fetch('/api/customers').then(function(r){return r.json();}).then(function(d){
-        var html = '<table><tr><th>Name</th><th>Email</th><th>Total</th></tr>';
-        html += d.slice(0,10).map(function(c){return '<tr><td>'+(c.name||'-')+'</td><td>'+(c.email||'-')+'</td><td>$'+(c.total||0)+'</td></tr>';}).join('');
-        html += '</table>';
-        document.getElementById('content').innerHTML = html;
-      });
-    }
-    
-    // Load dashboard on start
-    loadDashboard();
+      document.getElementById('orders-table').innerHTML = html;
+    });
   </script>
 </body>
 </html>

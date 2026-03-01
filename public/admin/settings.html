@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - OHYA2.0 Admin</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
+    .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
+    .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
+    .nav a.active { background: #ec4899; border-radius: 5px; }
+    .main { padding: 15px; }
+    h2 { margin: 0 0 10px 0; font-size: 16px; }
+    .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; margin-bottom: 5px; }
+    .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+    .btn { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="index.html">📊 Dashboard</a>
+    <a href="orders.html">🛒 Orders</a>
+    <a href="products.html">📦 Products</a>
+    <a href="customers.html">👥 Customers</a>
+    <a href="inventory.html">📈 Inventory</a>
+    <a href="coupons.html">🎟️ Coupons</a>
+    <a href="settings.html" class="active">⚙️ Settings</a>
+  </div>
+  <div class="main">
+    <h2>System Settings</h2>
+    
+    <div class="card">
+      <h3>💳 Payment Settings</h3>
+      <div class="form-group">
+        <label>Bank Name</label>
+        <input type="text" value="恆生銀行">
+      </div>
+      <div class="form-group">
+        <label>Account Number</label>
+        <input type="text" value="123-456789-001">
+      </div>
+      <div class="form-group">
+        <label>FPS ID</label>
+        <input type="text" value="0123456">
+      </div>
+    </div>
+    
+    <div class="card">
+      <h3>🚚 Shipping Settings</h3>
+      <div class="form-group">
+        <label>Free Shipping Threshold (HK$)</label>
+        <input type="number" value="300">
+      </div>
+      <div class="form-group">
+        <label>Shipping Fee (HK$)</label>
+        <input type="number" value="30">
+      </div>
+    </div>
+    
+    <div class="card">
+      <h3>🏪 Store Info</h3>
+      <div class="form-group">
+        <label>Store Name</label>
+        <input type="text" value="OHYA2.0">
+      </div>
+      <div class="form-group">
+        <label>Contact Email</label>
+        <input type="email" value="admin@ohya2.com">
+      </div>
+    </div>
+    
+    <button class="btn" onclick="alert('Settings saved!')">Save Settings</button>
+  </div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders - OHYA2.0 Admin</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
+    .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
+    .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
+    .nav a.active { background: #ec4899; border-radius: 5px; }
+    .main { padding: 15px; }
+    h2 { margin: 0 0 10px 0; font-size: 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; }
+    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+    .btn { padding: 8px 12px; background: #6366f1; color: #fff; border: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="index.html">📊 Dashboard</a>
+    <a href="orders.html" class="active">🛒 Orders</a>
+    <a href="products.html">📦 Products</a>
+    <a href="customers.html">👥 Customers</a>
+    <a href="inventory.html">📈 Inventory</a>
+    <a href="coupons.html">🎟️ Coupons</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </div>
+  <div class="main">
+    <h2>Orders Management</h2>
+    <p><a href="order-new.html" class="btn">+ New Order</a></p>
+    <table id="orders-table"><tr><td>Loading...</td></tr></table>
+  </div>
+  <script>
+    fetch('/api/orders').then(function(r){return r.json();}).then(function(d){
+      var html = '<tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr>';
+      d.forEach(function(o){
+        html += '<tr><td>#'+o.id+'</td><td>'+(o.customer_name||'Guest')+'</td><td>$'+(o.total||0)+'</td><td>'+(o.status||'pending')+'</td><td>'+(o.created_at||'-').substring(0,10)+'</td></tr>';
+      });
+      document.getElementById('orders-table').innerHTML = html;
+    });
+  </script>
+</body>
+</html>
