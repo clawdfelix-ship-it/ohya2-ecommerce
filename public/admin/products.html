@@ -36,6 +36,9 @@
     
     <div class="toolbar">
       <input type="text" class="search" placeholder="🔍 搜尋產品..." id="search" onkeyup="filterProducts()">
+      <select id="filter-category" onchange="filterProducts()" style="padding:8px;border:1px solid #ddd;border-radius:5px;">
+        <option value="">全部分類</option>
+      </select>
       <a href="product-edit.html" class="btn">+ 新增產品</a>
     </div>
     
@@ -60,10 +63,24 @@
   
   <script>
     var products = [];
+    var categories = [];
     
-    fetch('/api/products').then(function(r){return r.json();}).then(function(d){
-      products = d;
-      renderProducts(d);
+    // Load products and categories
+    Promise.all([
+      fetch('/api/products').then(function(r){return r.json();}),
+      fetch('/api/categories').then(function(r){return r.json();}).catch(function(){return [];})
+    ]).then(function(results){
+      products = results[0];
+      categories = results[1] || [];
+      
+      // Populate category filter
+      var catSelect = document.getElementById('filter-category');
+      var mainCats = categories.filter(function(c){return !c.parent_id;});
+      mainCats.forEach(function(c){
+        catSelect.innerHTML += '<option value="'+c.name+'">'+c.name+'</option>';
+      });
+      
+      renderProducts(products);
     });
     
     function renderProducts(list) {
@@ -85,10 +102,13 @@
     
     function filterProducts() {
       var q = document.getElementById('search').value.toLowerCase();
+      var cat = document.getElementById('filter-category').value;
       var filtered = products.filter(function(p){
-        return (p.name||'').toLowerCase().indexOf(q) >= 0 || 
-               (p.product_code||'').toLowerCase().indexOf(q) >= 0 ||
-               (p.category||'').toLowerCase().indexOf(q) >= 0;
+        var matchSearch = (p.name||'').toLowerCase().indexOf(q) >= 0 || 
+                        (p.product_code||'').toLowerCase().indexOf(q) >= 0 ||
+                        (p.jan_code||'').toLowerCase().indexOf(q) >= 0;
+        var matchCat = !cat || p.category === cat;
+        return matchSearch && matchCat;
       });
       renderProducts(filtered);
     }
