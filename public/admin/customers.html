@@ -96,6 +96,10 @@
           <input type="email" id="cust-email" style="background:#fff;">
         </div>
         <div class="form-group">
+          <label>密碼 (新增時必填)</label>
+          <input type="text" id="cust-password" placeholder="留空則使用預設密碼">
+        </div>
+        <div class="form-group">
           <label>電話</label>
           <input type="text" id="cust-phone">
         </div>
@@ -344,6 +348,7 @@
       var email = document.getElementById('cust-email').value;
       var phone = document.getElementById('cust-phone').value;
       var address = document.getElementById('cust-address').value;
+      var password = document.getElementById('cust-password').value;
       
       if (!name || !email) {
         alert('請輸入名稱和Email');
@@ -351,6 +356,8 @@
       }
       
       var data = { name: name, email: email, phone: phone, address: address };
+      if (password) data.password = password;
+      
       var url = '/api/customers';
       var method = 'POST';
       
@@ -364,10 +371,17 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then(function(r) { return r.json(); }).then(function(d) {
-        alert(id ? '客戶已更新！' : '客戶已新增！');
-        closeModal();
-        loadCustomers();
+        if (d.error) {
+          alert('❌ 錯誤: ' + d.error);
+        } else {
+          alert(id ? '✅ 客戶已更新！' : '✅ 客戶已新增！');
+          closeModal();
+          loadCustomers();
+        }
       }).catch(function(e) {
+        alert('❌ 網絡錯誤: ' + e.message);
+      });
+    }
         alert('錯誤: ' + e.message);
       });
     }
