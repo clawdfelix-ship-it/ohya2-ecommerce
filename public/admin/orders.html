@@ -33,9 +33,9 @@
   </div>
   <script>
     fetch('/api/orders').then(function(r){return r.json();}).then(function(d){
-      var html = '<tr><th>ID</th><th>Customer</th><th>總額</th><th>狀態</th><th>Date</th></tr>';
+      var html = '<tr><th>ID</th><th>客戶</th><th>總額</th><th>狀態</th><th>日期</th><th>操作</th></tr>';
       d.forEach(function(o){
-        html += '<tr><td>#'+o.id+'</td><td>'+(o.customer_name||'Guest')+'</td><td>$'+(o.total||0)+'</td><td>'+(o.status||'pending')+'</td><td>'+(o.created_at||'-').substring(0,10)+'</td></tr>';
+        html += '<tr><td>#'+o.id+'</td><td>'+(o.customer_name||'Guest')+'</td><td>$'+(o.total||0)+'</td><td>'+(o.status||'pending')+'</td><td>'+(o.created_at||'-').substring(0,10)+'</td><td><a href="order-edit.html?id='+o.id+'" class="btn" style="padding:4px 8px;font-size:11px;">編輯</a></td></tr>';
       });
       document.getElementById('orders-table').innerHTML = html;
     });

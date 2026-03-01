@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>編輯訂單 - OHYA2.0 Admin</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
+    .nav { background: #1a1a2e; padding: 10px; }
+    .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
+    .main { padding: 15px; }
+    .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    h2 { margin: 0 0 15px 0; font-size: 18px; }
+    h3 { margin: 0 0 10px 0; font-size: 14px; color: #333; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; }
+    .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+    .btn { padding: 12px 24px; background: #6366f1; color: #fff; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; }
+    .btn-danger { background: #ef4444; }
+    .btn-secondary { background: #9ca3af; }
+    .btn-sm { padding: 8px 12px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+    .product-item { display: flex; gap: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px; margin-bottom: 8px; }
+    .product-item select { flex: 1; }
+    .product-item input { width: 80px; }
+    .total { font-size: 24px; font-weight: bold; text-align: right; padding: 15px; background: #e8f5e9; border-radius: 8px; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="index.html">📊 總覽</a>
+    <a href="orders.html">← 返回訂單</a>
+  </div>
+  <div class="main">
+    <h2>📝 編輯訂單 #<span id="order-id"></span></h2>
+    
+    <!-- 訂單狀態 -->
+    <div class="card">
+      <h3>訂單狀態</h3>
+      <div class="form-group">
+        <label>狀態</label>
+        <select id="order-status">
+          <option value="pending">待處理</option>
+          <option value="processing">處理中</option>
+          <option value="shipped">已發貨</option>
+          <option value="completed">已完成</option>
+          <option value="cancelled">已取消</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>客戶</label>
+        <select id="order-customer">
+          <option value="">-- 散客 --</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- 訂單產品 -->
+    <div class="card">
+      <h3>📦 訂單產品</h3>
+      <div id="order-items"></div>
+    </div>
+    
+    <!-- 總額 -->
+    <div class="total">總額: $<span id="order-total">0</span></div>
+    
+    <div style="display:flex;gap:10px;margin-top:15px;">
+      <button class="btn" onclick="saveOrder()">💾 儲存變更</button>
+      <button class="btn btn-danger" onclick="deleteOrder()">🗑️ 刪除訂單</button>
+    </div>
+  </div>
+  
+  <script>
+    var orderId = new URLSearchParams(window.location.search).get('id');
+    var order = {};
+    var products = [];
+    var customers = [];
+    
+    if(!orderId) {
+      alert('沒有訂單ID');
+      location.href = 'orders.html';
+    }
+    
+    document.getElementById('order-id').innerText = orderId;
+    
+    // Load all data
+    Promise.all([
+      fetch('/api/orders/' + orderId).then(function(r){return r.json();}),
+      fetch('/api/products').then(function(r){return r.json();}),
+      fetch('/api/customers').then(function(r){return r.json();})
+    ]).then(function(results) {
+      order = results[0];
+      products = results[1];
+      customers = results[2];
+      
+      // Set status
+      document.getElementById('order-status').value = order.status || 'pending';
+      
+      // Load customers
+      var custSel = document.getElementById('order-customer');
+      customers.forEach(function(c){
+        custSel.innerHTML += '<option value="'+c.id+'">'+(c.name||c.email)+'</option>';
+      });
+      if(order.user_id) {
+        custSel.value = order.user_id;
+      }
+      
+      // Load items
+      renderItems(order.items || []);
+    });
+    
+    function renderItems(items) {
+      var html = '';
+      var total = 0;
+      
+      items.forEach(function(item, idx) {
+        var p = products.find(function(x){return x.id === item.product_id;}) || {};
+        var subtotal = item.price || 0;
+        total += subtotal;
+        
+        html += '<div class="product-item">' +
+          '<div style="flex:1;font-size:13px;">'+(p.name||p.product_code||'產品 #'+item.product_id)+'<br><span style="color:#666">單價: $'+item.price+'</span></div>' +
+          '<div style="font-size:14px;">數量: '+item.quantity+'</div>' +
+          '<div style="font-size:14px;font-weight:bold;">$'+subtotal+'</div>' +
+        '</div>';
+      });
+      
+      document.getElementById('order-items').innerHTML = html || '<p style="color:#999">無產品資料</p>';
+      document.getElementById('order-total').innerText = order.total || total || 0;
+    }
+    
+    function saveOrder() {
+      var status = document.getElementById('order-status').value;
+      var customerId = document.getElementById('order-customer').value;
+      
+      fetch('/api/orders/' + orderId, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          status: status,
+          user_id: customerId ? parseInt(customerId) : null
+        })
+      }).then(function(){
+        alert('訂單已更新！');
+        location.href = 'orders.html';
+      }).catch(function(e){
+        alert('錯誤: ' + e.message);
+      });
+    }
+    
+    function deleteOrder() {
+      if(confirm('確定要刪除這個訂單嗎？')) {
+        fetch('/api/orders/' + orderId, {
+          method: 'DELETE'
+        }).then(function(){
+          alert('訂單已刪除');
+          location.href = 'orders.html';
+        });
+      }
+    }
+  </script>
+</body>
+</html>

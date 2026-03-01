@@ -128,6 +128,35 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
+// Get single order with items
+app.get('/api/orders/:id', async (req, res) => {
+  try {
+    const orders = await sql`
+      SELECT o.*, u.name as customer_name, u.email as customer_email
+      FROM orders o 
+      LEFT JOIN users u ON o.user_id = u.id 
+      WHERE o.id = ${req.params.id}
+    `;
+    if (orders.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    const order = orders[0];
+    
+    // Get order items
+    const items = await sql`
+      SELECT oi.*, p.name as product_name, p.product_code
+      FROM order_items oi
+      LEFT JOIN products p ON oi.product_id = p.id
+      WHERE oi.order_id = ${req.params.id}
+    `;
+    
+    res.json({ ...order, items: items });
+  } catch (e) {
+    console.error('Error fetching order:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post('/api/orders', async (req, res) => {
   try {
     const { user_id, total, items } = req.body;
