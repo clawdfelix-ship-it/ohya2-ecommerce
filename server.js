@@ -800,6 +800,147 @@ app.get('/api/analytics', async (req, res) => {
   }
 });
 
+// === Phase 5: Data Analytics ===
+
+// Sales trend data (last 7 or 30 days)
+app.get('/api/analytics/sales-trend', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    
+    const salesByDate = await sql`
+      SELECT DATE(created_at) as date, COUNT(*) as orders, COALESCE(SUM(total), 0) as revenue
+      FROM orders 
+      WHERE created_at >= ${startDate.toISOString().split('T')[0]}
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `;
+    
+    res.json(salesByDate);
+  } catch (e) {
+    console.error('Error fetching sales trend:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Hot products ranking (TOP 10)
+app.get('/api/analytics/top-products', async (req, res) => {
+  try {
+    const topProducts = await sql`
+      SELECT p.id, p.name, p.category, p.image_url,
+             SUM(oi.quantity) as total_sold, 
+             COUNT(DISTINCT oi.order_id) as order_count,
+             SUM(oi.quantity * oi.price) as revenue
+      FROM order_items oi
+      JOIN products p ON oi.product_id = p.id
+      GROUP BY p.id, p.name, p.category, p.image_url
+      ORDER BY total_sold DESC
+      LIMIT 10
+    `;
+    
+    res.json(topProducts);
+  } catch (e) {
+    console.error('Error fetching top products:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Dashboard stats: today vs yesterday, top categories, customer growth
+app.get('/api/analytics/dashboard', async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    // Today's orders
+    const todayOrders = await sql`
+      SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as revenue
+      FROM orders 
+      WHERE DATE(created_at) = ${today}
+    `;
+    
+    // Yesterday's orders
+    const yesterdayOrders = await sql`
+      SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as revenue
+      FROM orders 
+      WHERE DATE(created_at) = ${yesterdayStr}
+    `;
+    
+    // This month vs last month
+    const thisMonth = new Date();
+    thisMonth.setDate(1);
+    const lastMonth = new Date(thisMonth);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    
+    const thisMonthOrders = await sql`
+      SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as revenue
+      FROM orders 
+      WHERE created_at >= ${thisMonth.toISOString().split('T')[0]}
+    `;
+    
+    const lastMonthOrders = await sql`
+      SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as revenue
+      FROM orders 
+      WHERE created_at >= ${lastMonth.toISOString().split('T')[0]} AND created_at < ${thisMonth.toISOString().split('T')[0]}
+    `;
+    
+    // Top categories
+    const topCategories = await sql`
+      SELECT p.category, SUM(oi.quantity) as total_sold
+      FROM order_items oi
+      JOIN products p ON oi.product_id = p.id
+      WHERE p.category IS NOT NULL AND p.category != ''
+      GROUP BY p.category
+      ORDER BY total_sold DESC
+      LIMIT 5
+    `;
+    
+    // Customer growth (new customers this month vs last month)
+    const newCustomersThisMonth = await sql`
+      SELECT COUNT(*) as count FROM users 
+      WHERE is_admin = 0 AND created_at >= ${thisMonth.toISOString().split('T')[0]}
+    `;
+    
+    const newCustomersLastMonth = await sql`
+      SELECT COUNT(*) as count FROM users 
+      WHERE is_admin = 0 AND created_at >= ${lastMonth.toISOString().split('T')[0]} AND created_at < ${thisMonth.toISOString().split('T')[0]}
+    `;
+    
+    // Total customers
+    const totalCustomers = await sql`SELECT COUNT(*) as count FROM users WHERE is_admin = 0`;
+    
+    res.json({
+      today: {
+        orders: todayOrders[0].count,
+        revenue: todayOrders[0].revenue
+      },
+      yesterday: {
+        orders: yesterdayOrders[0].count,
+        revenue: yesterdayOrders[0].revenue
+      },
+      thisMonth: {
+        orders: thisMonthOrders[0].count,
+        revenue: thisMonthOrders[0].revenue
+      },
+      lastMonth: {
+        orders: lastMonthOrders[0].count,
+        revenue: lastMonthOrders[0].revenue
+      },
+      topCategories: topCategories,
+      customerGrowth: {
+        thisMonth: newCustomersThisMonth[0].count,
+        lastMonth: newCustomersLastMonth[0].count,
+        total: totalCustomers[0].count
+      }
+    });
+  } catch (e) {
+    console.error('Error fetching dashboard:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Auth API ---
 
 app.post('/api/login', async (req, res) => {
