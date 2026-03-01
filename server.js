@@ -15,15 +15,18 @@ initDatabase().catch(console.error);
 app.get('/api/products', async (req, res) => {
   try {
     const products = await sql`SELECT * FROM products WHERE active = 1 ORDER BY id DESC`;
+    // Convert JPY to HKD (approx 1 HKD = 19 JPY)
+    const exchangeRate = 0.053;
     res.json(products.map(p => ({
       id: p.id,
       product_code: p.product_code,
       name: p.name,
-      price: p.price,
+      price: Math.round(p.price * exchangeRate), // Convert JPY to HKD
       stock: p.stock,
       category: p.category,
       description: p.description,
-      image_url: p.image_url
+      image_url: p.image_url,
+      price_jpy: p.price // Keep original JPY price for reference
     })));
   } catch (e) {
     console.error('Error fetching products:', e);
