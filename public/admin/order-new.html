@@ -20,8 +20,8 @@
 </head>
 <body>
   <div class="nav">
-    <a href="index.html">📊 Dashboard</a>
-    <a href="orders.html">← Back to Orders</a>
+    <a href="index.html">📊 總覽</a>
+    <a href="orders.html">← Back to 訂單</a>
   </div>
   <div class="main">
     <h2>Create New Order</h2>
@@ -35,10 +35,10 @@
         <input type="number" id="qty" value="1" min="1" onchange="calc()">
       </div>
       <div class="form-group">
-        <label>Unit Price</label>
+        <label>Unit 價格</label>
         <input type="text" id="unit" readonly>
       </div>
-      <div class="total">Total: $<span id="total">0</span></div>
+      <div class="total">總額: $<span id="total">0</span></div>
     </div>
     <button class="btn" onclick="createOrder()">Create Order</button>
   </div>
