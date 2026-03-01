@@ -10,7 +10,42 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Initialize database on startup
 initDatabase().catch(console.error);
 
-// --- Products API ---
+// --- Exchange Rate API ---
+let exchangeRate = 0.053; // Default: 1 JPY = 0.053 HKD (approx 1:19)
+
+// Get current exchange rate
+app.get('/api/exchange-rate', (req, res) => {
+  res.json({ rate: exchangeRate, updated: 'manual' });
+});
+
+// Update exchange rate from external API
+app.post('/api/exchange-rate/update', async (req, res) => {
+  try {
+    // Try to fetch live rate
+    const response = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
+    const data = await response.json();
+    exchangeRate = data.rates.HKD || 0.053;
+    res.json({ success: true, rate: exchangeRate, source: 'live' });
+  } catch (e) {
+    // Fallback to default rate
+    exchangeRate = 0.053;
+    res.json({ success: true, rate: exchangeRate, source: 'fallback', error: e.message });
+  }
+});
+
+// Cron job endpoint (for Vercel Cron)
+app.get('/api/cron/exchange-rate', async (req, res) => {
+  try {
+    const response = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
+    const data = await response.json();
+    exchangeRate = data.rates.HKD || 0.053;
+    console.log('Exchange rate updated:', exchangeRate);
+    res.json({ success: true, rate: exchangeRate });
+  } catch (e) {
+    console.error('Exchange rate update failed:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
 
 app.get('/api/products', async (req, res) => {
   try {
