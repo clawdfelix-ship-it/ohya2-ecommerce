@@ -340,6 +340,70 @@ app.delete('/api/orders/:id', async (req, res) => {
   }
 });
 
+// ============================================
+// Privacy Features - Order Sanitization
+// ============================================
+
+// Adult categories that need sanitization on shipping labels
+const ADULT_CATEGORIES = ['オナホール', 'ダッチワイフ', 'おっぱいグッズ', '性感クッション', '成人用品'];
+const SANITIZED_NAMES = ['禮品', '日用品', '精品', '飾物', '禮物'];
+
+function sanitizeProductName(productName, category) {
+  if (ADULT_CATEGORIES.some(cat => category && category.includes(cat))) {
+    return SANITIZED_NAMES[Math.floor(Math.random() * SANITIZED_NAMES.length)];
+  }
+  return productName;
+}
+
+// Get sanitized shipping label data
+app.get('/api/orders/:id/shipping-label', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    
+    // Get order with user info
+    const orders = await sql`
+      SELECT o.*, u.name as customer_name, u.phone, u.address
+      FROM orders o
+      LEFT JOIN users u ON o.user_id = u.id
+      WHERE o.id = ${orderId}
+    `;
+    
+    if (orders.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    const order = orders[0];
+    
+    // Get order items with sanitized product names
+    const items = await sql`
+      SELECT oi.*, p.name as product_name, p.category
+      FROM order_items oi
+      LEFT JOIN products p ON oi.product_id = p.id
+      WHERE oi.order_id = ${orderId}
+    `;
+    
+    // Sanitize product names
+    const sanitizedItems = items.map(item => ({
+      ...item,
+      product_name: sanitizeProductName(item.product_name, item.category)
+    }));
+    
+    res.json({
+      order_id: order.id,
+      customer_name: order.customer_name || 'Guest',
+      phone: order.phone,
+      address: order.address,
+      items: sanitizedItems,
+      total: order.total,
+      status: order.status,
+      is_sanitized: true
+    });
+  } catch (e) {
+    console.error('Error generating shipping label:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Customers API ---
 
 app.get('/api/customers', async (req, res) => {

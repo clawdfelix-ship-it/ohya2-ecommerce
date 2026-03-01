@@ -33,42 +33,191 @@
       line-height: 1.6;
     }
 
-    /* Age Verification Modal */
+    /* Age Verification Modal - Enhanced */
     .age-modal {
       display: flex;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.9);
-      z-index: 1000;
+      background: rgba(0,0,0,0.95);
+      z-index: 999999;
       align-items: center;
       justify-content: center;
+      animation: fadeIn 0.3s ease;
     }
 
     .age-modal.hidden { display: none; }
 
-    .age-box {
-      background: var(--surface);
-      padding: 3rem;
-      border-radius: 1rem;
-      text-align: center;
-      max-width: 400px;
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
-    .age-box h2 { color: var(--error); margin-bottom: 1rem; }
+    .age-box {
+      background: linear-gradient(145deg, #1a1a2e, #16213e);
+      padding: 3rem 2.5rem;
+      border-radius: 1.5rem;
+      text-align: center;
+      max-width: 420px;
+      border: 2px solid var(--secondary);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .age-box h2 { 
+      color: #fff; 
+      margin-bottom: 1rem; 
+      font-size: 1.75rem;
+    }
+
+    .age-box > p {
+      color: #a0aec0;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
 
     .age-warning {
-      background: #fef3c7;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
       padding: 1rem;
-      border-radius: 0.5rem;
-      margin: 1rem 0;
-      font-size: 0.875rem;
+      border-radius: 0.75rem;
+      margin: 1.5rem 0;
+      font-size: 0.8rem;
+      color: #92400e;
+      font-weight: 500;
+      line-height: 1.6;
     }
 
     .age-buttons {
       display: flex;
-      gap: 1rem;
+      flex-direction: column;
+      gap: 0.75rem;
       justify-content: center;
       margin-top: 1.5rem;
+    }
+
+    .age-buttons .btn {
+      padding: 1rem 2rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .age-buttons .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .age-buttons .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .age-buttons .btn-secondary {
+      background: #374151;
+      color: #9ca3af;
+    }
+
+    .age-note {
+      color: #6b7280;
+      font-size: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    /* Panic Button */
+    .panic-btn-fixed {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+      z-index: 999998;
+      animation: pulse 2s infinite;
+      transition: transform 0.3s ease;
+    }
+
+    .panic-btn-fixed:hover {
+      transform: scale(1.1);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .panic-menu {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+      display: none;
+      min-width: 180px;
+    }
+
+    .panic-menu.show {
+      display: block;
+      animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panic-menu a {
+      display: block;
+      padding: 12px 16px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .panic-menu a:hover {
+      background: #f3f4f6;
+    }
+
+    /* Discreet Packaging Notice */
+    .discreet-notice {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .discreet-notice .discreet-icon {
+      font-size: 28px;
+    }
+
+    .discreet-notice .discreet-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .discreet-notice strong {
+      color: #065f46;
+      font-size: 14px;
+    }
+
+    .discreet-notice span {
+      color: #047857;
+      font-size: 12px;
     }
 
     /* Sticky Header */
@@ -1097,15 +1246,28 @@
   <!-- Age Verification -->
   <div class="age-modal" id="ageModal">
     <div class="age-box">
-      <h2>⚠️ 年齡限制</h2>
-      <p>此網站只適合18歲或以上人士</p>
+      <div style="font-size: 48px; margin-bottom: 10px;">🔞</div>
+      <h2>年齡確認</h2>
+      <p>本網站只適合 18 歲或以上人士瀏覽</p>
       <div class="age-warning">
-        警 告 : 本 物 品 內 容 可 能 令 人 反 感 ， 不 可 將 本 物 品 派 發 ， 傳 閱 ， 出 售 ， 出 租 ， 交 給 或 出 借 予 年 齡 未 滿 18歲 的 人 士
+        ⚠️ 警告 : 本 產 品 內 容 只 適 合 成 年 人 士 ， 不 可 將 本 產 品 派 發 、 傳 閱 、 出 售 、 出 租 、 交 給 或 出 借 予 未 滿 18 歲 之 人 士
       </div>
       <div class="age-buttons">
-        <button class="btn btn-secondary" onclick="rejectAge()">18歲以下 ✗</button>
-        <button class="btn btn-primary" onclick="acceptAge()">18歲以上 ✓</button>
+        <button class="btn btn-primary" onclick="acceptAge()">✅ 我年滿 18 歲</button>
+        <button class="btn btn-secondary" onclick="rejectAge()">❌ 我未滿 18 歲</button>
       </div>
+      <p class="age-note">按「我年滿 18 歲」即表示您同意瀏覽本網站</p>
+    </div>
+  </div>
+
+  <!-- Panic Button -->
+  <div style="position: fixed; bottom: 20px; right: 20px; z-index: 999998;">
+    <button class="panic-btn-fixed" onclick="togglePanicMenu()" title="緊急按鈕">⚡</button>
+    <div class="panic-menu" id="panicMenu">
+      <a href="https://www.google.com" target="_blank">🔍 Google 搜尋</a>
+      <a href="https://weather.gov.hk" target="_blank">🌤️ 香港天氣</a>
+      <a href="https://www.youtube.com" target="_blank">📺 YouTube</a>
+      <a href="https://news.google.com" target="_blank">📰 新聞</a>
     </div>
   </div>
 
@@ -1492,20 +1654,45 @@
   </footer>
 
   <script>
-    // Age Verification
+    // Age Verification - 30 days expiry
     function acceptAge() {
       document.getElementById('ageModal').classList.add('hidden');
-      localStorage.setItem('ageVerified', 'true');
+      // Save for 30 days
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
+      localStorage.setItem('ageVerified', expiryDate.toISOString());
     }
 
     function rejectAge() {
-      alert('對不起，此網站不適合您。');
+      alert('很抱歉，您需要年滿 18 歲才能瀏覽本網站。');
       window.location.href = 'https://www.google.com';
     }
 
-    if (localStorage.getItem('ageVerified') === 'true') {
-      document.getElementById('ageModal').classList.add('hidden');
+    // Check age verification with expiry
+    const ageVerified = localStorage.getItem('ageVerified');
+    if (ageVerified) {
+      const expiryDate = new Date(ageVerified);
+      if (new Date() <= expiryDate) {
+        document.getElementById('ageModal').classList.add('hidden');
+      } else {
+        // Expired, remove and show again
+        localStorage.removeItem('ageVerified');
+      }
     }
+
+    // Panic Button Toggle
+    function togglePanicMenu() {
+      document.getElementById('panicMenu').classList.toggle('show');
+    }
+
+    // Close panic menu when clicking outside
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('panicMenu');
+      const btn = document.querySelector('.panic-btn-fixed');
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.remove('show');
+      }
+    });
 
     // Sticky Header
     window.addEventListener('scroll', () => {

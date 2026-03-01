@@ -64,6 +64,15 @@
     <h1 class="page-title">💳 結帳</h1>
     
     <form class="checkout-layout" id="checkout-form">
+      <!-- Discreet Packaging Notice -->
+      <div class="discreet-notice" style="display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+        <div style="font-size: 28px;">🔒</div>
+        <div style="display: flex; flex-direction: column;">
+          <strong style="color: #065f46; font-size: 14px;">隱私保護</strong>
+          <span style="color: #047857; font-size: 12px;">我們的包裝完全保密，包裹外觀不會顯示任何產品資訊</span>
+        </div>
+      </div>
+      
       <div class="checkout-form">
         <div class="form-section">
           <h3>👤 客戶資料</h3>
@@ -82,7 +91,20 @@
         </div>
         
         <div class="form-section">
-          <h3>📦 送貨資料</h3>
+          <h3>📦 送貨方式</h3>
+          <div class="form-group">
+            <label>選擇送貨方式 *</label>
+            <select id="shipping-method" required>
+              <option value="">請選擇...</option>
+              <option value="sf_cod">🚚 順豐速運 (到付)</option>
+              <option value="macau_cod">🚛 澳門速運 (到付)</option>
+              <option value="lalamove_cod">🛵 Lalamove (到付)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3>📍 送貨地址</h3>
           <div class="form-group">
             <label>送貨地址 *</label>
             <textarea id="address" required></textarea>
