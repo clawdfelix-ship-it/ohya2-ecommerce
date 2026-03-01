@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>編輯產品 - OHYA2.0 Admin</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
+    .nav { background: #1a1a2e; padding: 10px; }
+    .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
+    .main { padding: 15px; }
+    .card { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; }
+    h2 { margin: 0 0 15px 0; font-size: 18px; }
+    h3 { margin: 0 0 10px 0; font-size: 14px; color: #333; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; }
+    .formform-group select,-group input, . .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+    .btn { padding: 12px 24px; background: #6366f1; color: #fff; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; }
+    .btn-danger { background: #ef4444; }
+    .btn-secondary { background: #9ca3af; }
+    .row { display: flex; gap: 15px; }
+    .col { flex: 1; }
+    .info { background: #f0f7ff; padding: 10px; border-radius: 5px; font-size: 13px; color: #333; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="index.html">📊 總覽</a>
+    <a href="products.html">← 返回產品</a>
+  </div>
+  <div class="main">
+    <h2>📦 編輯產品</h2>
+    
+    <div class="card">
+      <h3>產品資訊</h3>
+      <input type="hidden" id="product-id">
+      
+      <div class="row">
+        <div class="col">
+          <div class="form-group">
+            <label>產品編碼</label>
+            <input type="text" id="p-code">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label>分類</label>
+            <select id="p-category">
+              <option value="オナホール">オナホール</option>
+              <option value="ダッチワイフ">ダッチワイフ</option>
+              <option value="おっぱいグッズ">おっぱいグッズ</option>
+              <option value="性感クッション">性感クッション</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>產品名稱</label>
+        <input type="text" id="p-name">
+      </div>
+      
+      <div class="row">
+        <div class="col">
+          <div class="form-group">
+            <label>成本 (日元 JPY)</label>
+            <input type="number" id="p-price-jpy">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label>售價 (港幣 HKD)</label>
+            <input type="number" id="p-price-hkd" readonly style="background:#f9f9f9">
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col">
+          <div class="form-group">
+            <label>庫存數量</label>
+            <input type="number" id="p-stock">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label>狀態</label>
+            <select id="p-active">
+              <option value="1">上架中</option>
+              <option value="0">下架</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>圖片 URL</label>
+        <input type="text" id="p-image">
+      </div>
+      
+      <div class="form-group">
+        <label>描述</label>
+        <textarea id="p-desc" rows="3"></textarea>
+      </div>
+      
+      <div class="info">
+        💡 售價會根據匯率自動由日元轉換
+      </div>
+    </div>
+    
+    <div style="display:flex;gap:10px;">
+      <button class="btn" onclick="saveProduct()">💾 儲存變更</button>
+      <button class="btn btn-danger" onclick="deleteProduct()">🗑️ 刪除產品</button>
+    </div>
+  </div>
+  
+  <script>
+    var productId = new URLSearchParams(window.location.search).get('id');
+    var product = {};
+    
+    if(!productId) {
+      alert('沒有產品ID');
+      location.href = 'products.html';
+    }
+    
+    document.getElementById('product-id').value = productId;
+    
+    // Load product
+    fetch('/api/products/' + productId).then(function(r){return r.json();}).then(function(p){
+      product = p;
+      document.getElementById('p-code').value = p.product_code || '';
+      document.getElementById('p-name').value = p.name || '';
+      document.getElementById('p-category').value = p.category || 'オナホール';
+      document.getElementById('p-price-jpy').value = p.price_jpy || p.price || 0;
+      document.getElementById('p-price-hkd').value = p.price || 0;
+      document.getElementById('p-stock').value = p.stock || 0;
+      document.getElementById('p-active').value = p.active === 0 ? '0' : '1';
+      document.getElementById('p-image').value = p.image_url || '';
+      document.getElementById('p-desc').value = p.description || '';
+    });
+    
+    // Calculate HKD when JPY changes
+    document.getElementById('p-price-jpy').addEventListener('input', function(){
+      var jpy = parseInt(this.value) || 0;
+      var hkd = Math.round(jpy * 0.053); // 1 JPY ≈ 0.053 HKD
+      document.getElementById('p-price-hkd').value = hkd;
+    });
+    
+    function saveProduct() {
+      var jpy = parseInt(document.getElementById('p-price-jpy').value) || 0;
+      var hkd = Math.round(jpy * 0.053);
+      
+      var data = {
+        product_code: document.getElementById('p-code').value,
+        name: document.getElementById('p-name').value,
+        category: document.getElementById('p-category').value,
+        price: hkd, // Store in HKD
+        price_jpy: jpy, // Also store original JPY
+        stock: parseInt(document.getElementById('p-stock').value) || 0,
+        active: parseInt(document.getElementById('p-active').value),
+        image_url: document.getElementById('p-image').value,
+        description: document.getElementById('p-desc').value
+      };
+      
+      fetch('/api/products/' + productId, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      }).then(function(){
+        alert('產品已更新！');
+        location.href = 'products.html';
+      }).catch(function(e){
+        alert('錯誤: ' + e.message);
+      });
+    }
+    
+    function deleteProduct() {
+      if(confirm('確定要刪除這個產品嗎？')) {
+        fetch('/api/products/' + productId, {
+          method: 'DELETE'
+        }).then(function(){
+          alert('產品已刪除');
+          location.href = 'products.html';
+        });
+      }
+    }
+  </script>
+</body>
+</html>

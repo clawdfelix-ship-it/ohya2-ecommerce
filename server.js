@@ -61,10 +61,37 @@ app.get('/api/products', async (req, res) => {
       category: p.category,
       description: p.description,
       image_url: p.image_url,
-      price_jpy: p.price // Keep original JPY price for reference
+      price_jpy: p.price, // Keep original JPY price for reference
+      active: p.active
     })));
   } catch (e) {
     console.error('Error fetching products:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Get single product
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const products = await sql`SELECT * FROM products WHERE id = ${req.params.id}`;
+    if (products.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    const p = products[0];
+    res.json({
+      id: p.id,
+      product_code: p.product_code,
+      name: p.name,
+      price: p.price,
+      price_jpy: p.price,
+      stock: p.stock,
+      category: p.category,
+      description: p.description,
+      image_url: p.image_url,
+      active: p.active
+    });
+  } catch (e) {
+    console.error('Error fetching product:', e);
     res.status(500).json({ error: e.message });
   }
 });

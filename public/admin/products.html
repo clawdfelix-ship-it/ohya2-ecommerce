@@ -11,9 +11,13 @@
     .nav a.active { background: #ec4899; border-radius: 5px; }
     .main { padding: 15px; }
     h2 { margin: 0 0 10px 0; font-size: 16px; }
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; }
     th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-    .btn { padding: 8px 12px; background: #6366f1; color: #fff; border: none; border-radius: 5px; }
+    .btn { padding: 8px 14px; background: #6366f1; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; }
+    .btn:hover { background: #4f46e5; }
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+    .search { padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; width: 200px; }
   </style>
 </head>
 <body>
@@ -27,18 +31,64 @@
     <a href="settings.html">⚙️ 設定</a>
   </div>
   <div class="main">
-    <h2>產品 Management</h2>
-    <p><button class="btn" onclick="alert('Use /api/products API')">+ 新增 Product</button></p>
-    <table id="products-table"><tr><td>載入中...</td></tr></table>
+    <h2>📦 產品管理</h2>
+    
+    <div class="toolbar">
+      <input type="text" class="search" placeholder="🔍 搜尋產品..." id="search" onkeyup="filterProducts()">
+      <a href="product-edit.html" class="btn">+ 新增產品</a>
+    </div>
+    
+    <table id="products-table">
+      <thead>
+        <tr>
+          <th>編碼</th>
+          <th>名稱</th>
+          <th>售價</th>
+          <th>成本</th>
+          <th>庫存</th>
+          <th>分類</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="products-body">
+        <tr><td colspan="7">載入中...</td></tr>
+      </tbody>
+    </table>
   </div>
+  
   <script>
+    var products = [];
+    
     fetch('/api/products').then(function(r){return r.json();}).then(function(d){
-      var html = '<tr><th>編碼</th><th>名稱</th><th>售價</th><th>成本(日元)</th><th>庫存</th><th>分類</th></tr>';
-      d.slice(0,50).forEach(function(p){
-        html += '<tr><td>'+(p.product_code||'')+'</td><td>'+(p.name||'').substring(0,25)+'</td><td>$'+(p.price||0)+' HKD</td><td>¥'+(p.price_jpy||p.price||0)+' JPY</td><td>'+(p.stock||0)+'</td><td>'+(p.category||'-')+'</td></tr>';
-      });
-      document.getElementById('products-table').innerHTML = html;
+      products = d;
+      renderProducts(d);
     });
+    
+    function renderProducts(list) {
+      var html = '';
+      list.slice(0,50).forEach(function(p){
+        html += '<tr>' +
+          '<td>'+(p.product_code||'')+'</td>' +
+          '<td>'+(p.name||'').substring(0,25)+'</td>' +
+          '<td>$'+(p.price||0)+' HKD</td>' +
+          '<td>¥'+(p.price_jpy||p.price||0)+' JPY</td>' +
+          '<td style="color:'+((p.stock||0)<5?'red':'')+'">'+(p.stock||0)+'</td>' +
+          '<td>'+(p.category||'-')+'</td>' +
+          '<td><a href="product-edit.html?id='+p.id+'" class="btn btn-sm">編輯</a></td>' +
+        '</tr>';
+      });
+      document.getElementById('products-body').innerHTML = html || '<tr><td colspan="7">暫無產品</td></tr>';
+    }
+    
+    function filterProducts() {
+      var q = document.getElementById('search').value.toLowerCase();
+      var filtered = products.filter(function(p){
+        return (p.name||'').toLowerCase().indexOf(q) >= 0 || 
+               (p.product_code||'').toLowerCase().indexOf(q) >= 0 ||
+               (p.category||'').toLowerCase().indexOf(q) >= 0;
+      });
+      renderProducts(filtered);
+    }
   </script>
 </body>
 </html>
