@@ -18,12 +18,22 @@
     .btn { padding: 12px 24px; background: #6366f1; color: #fff; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; }
     .btn-secondary { background: #9ca3af; }
     .btn-danger { background: #ef4444; }
-    .product-item { display: flex; gap: 10px; align-items: center; padding: 10px; background: #f9f9f9; border-radius: 5px; margin-bottom: 8px; }
-    .product-item select { flex: 1; }
-    .product-item input { width: 80px; }
-    .product-item button { padding: 8px 12px; }
-    .total { font-size: 24px; font-weight: bold; text-align: right; padding: 15px; background: #e8f5e9; border-radius: 8px; margin-top: 15px; }
-    .add-btn { display: inline-block; padding: 8px 16px; background: #10b981; color: #fff; border-radius: 5px; cursor: pointer; font-size: 13px; }
+    .btn-success { background: #10b981; }
+    .btn-sm { padding: 8px 12px; font-size: 12px; }
+    .search-box { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+    .product-list { max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; }
+    .product-item { display: flex; gap: 10px; align-items: center; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+    .product-item:hover { background: #f5f5f5; }
+    .product-item input[type="checkbox"] { width: 20px; height: 20px; }
+    .product-info { flex: 1; }
+    .product-name { font-size: 14px; font-weight: 500; }
+    .product-meta { font-size: 12px; color: #666; }
+    .product-price { font-size: 16px; font-weight: bold; color: #6366f1; }
+    .selected-list { margin-top: 15px; }
+    .selected-item { display: flex; gap: 10px; align-items: center; padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 8px; }
+    .selected-item input { width: 60px; padding: 5px; text-align: center; }
+    .total { font-size: 28px; font-weight: bold; text-align: right; padding: 20px; background: #1a1a2e; color: #fff; border-radius: 8px; margin-top: 15px; }
+    .customer-select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -37,119 +47,142 @@
     <!-- 客戶選擇 -->
     <div class="card">
       <h3>👥 選擇客戶</h3>
-      <div class="form-group">
-        <select id="customer">
-          <option value="">-- 選擇客戶 (可留空) --</option>
-        </select>
+      <select id="customer" class="customer-select">
+        <option value="">-- 選擇客戶 (留空則為散客) --</option>
+      </select>
+    </div>
+    
+    <!-- 產品搜尋 -->
+    <div class="card">
+      <h3>📦 選擇產品 (搜尋)</h3>
+      <input type="text" id="search" class="search-box" placeholder="🔍 搜尋產品名稱或編碼..." onkeyup="filterProducts()">
+      <div id="product-list" class="product-list">
+        <!-- Products loaded here -->
       </div>
     </div>
     
-    <!-- 產品選擇 -->
+    <!-- 已選產品 -->
     <div class="card">
-      <h3>📦 選擇產品</h3>
-      <div id="products-list">
-        <div class="product-item">
-          <select class="product-select" onchange="calc()">
-            <option value="">-- 選擇產品 --</option>
-          </select>
-          <input type="number" class="qty" value="1" min="1" onchange="calc()" placeholder="數量">
-          <button class="btn btn-danger" onclick="this.parentElement.remove();calc()">✕</button>
-        </div>
+      <h3>✅ 已選產品</h3>
+      <div id="selected-list">
+        <p style="color:#999;font-size:13px;">尚未選擇任何產品</p>
       </div>
-      <p><span class="add-btn" onclick="addProduct()">+ 添加產品</span></p>
-    </div>
-    
-    <!-- 費用明細 -->
-    <div class="card">
-      <h3>💰 費用明細</h3>
-      <div id="items-summary"></div>
     </div>
     
     <!-- 總額 -->
     <div class="total">訂單總額: $<span id="total">0</span></div>
     
-    <button class="btn" onclick="createOrder()">✅ 確認建立訂單</button>
+    <button class="btn" style="width:100%;margin-top:15px;font-size:16px;padding:15px;" onclick="createOrder()">✅ 確認建立訂單</button>
   </div>
   
   <script>
     var products = [];
-    var customers = [];
+    var selectedItems = [];
     
     // Load products
     fetch('/api/products').then(function(r){return r.json();}).then(function(d){
       products = d;
-      updateProductSelects();
+      renderProducts(d);
     });
     
     // Load customers
     fetch('/api/customers').then(function(r){return r.json();}).then(function(d){
-      customers = d;
       var sel = document.getElementById('customer');
       d.forEach(function(c){
         sel.innerHTML += '<option value="'+c.id+'">'+(c.name||c.email)+'</option>';
       });
     });
     
-    function updateProductSelects() {
-      document.querySelectorAll('.product-select').forEach(function(sel){
-        if(sel.options.length <= 1) {
-          products.forEach(function(p){
-            sel.innerHTML += '<option value="'+p.id+'" data-price="'+p.price+'">'+(p.name||p.product_code).substring(0,25)+' - $'+p.price+'</option>';
-          });
-        }
+    function renderProducts(list) {
+      var html = '';
+      list.forEach(function(p){
+        var checked = selectedItems.find(function(i){return i.id === p.id;}) ? 'checked' : '';
+        html += '<div class="product-item">' +
+          '<input type="checkbox" ' + checked + ' onchange="toggleProduct('+p.id+')" id="p'+p.id+'">' +
+          '<div class="product-info">' +
+            '<div class="product-name">'+(p.name||p.product_code)+'</div>' +
+            '<div class="product-meta">'+(p.category||'')+' | 庫存: '+p.stock+'</div>' +
+          '</div>' +
+          '<div class="product-price">$'+p.price+'</div>' +
+        '</div>';
       });
+      document.getElementById('product-list').innerHTML = html;
     }
     
-    function addProduct() {
-      var div = document.createElement('div');
-      div.className = 'product-item';
-      div.innerHTML = '<select class="product-select" onchange="calc()"><option value="">-- 選擇產品 --</option></select><input type="number" class="qty" value="1" min="1" onchange="calc()" placeholder="數量"><button class="btn btn-danger" onclick="this.parentElement.remove();calc()">✕</button>';
-      document.getElementById('products-list').appendChild(div);
-      updateProductSelects();
+    function filterProducts() {
+      var q = document.getElementById('search').value.toLowerCase();
+      var filtered = products.filter(function(p){
+        return (p.name||'').toLowerCase().indexOf(q) >= 0 || 
+               (p.product_code||'').toLowerCase().indexOf(q) >= 0;
+      });
+      renderProducts(filtered);
     }
     
-    function calc() {
+    function toggleProduct(id) {
+      var p = products.find(function(x){return x.id === id;});
+      var existing = selectedItems.find(function(i){return i.id === id;});
+      
+      if(existing) {
+        selectedItems = selectedItems.filter(function(i){return i.id !== id;});
+      } else {
+        selectedItems.push({id: p.id, name: p.name||p.product_code, price: p.price, qty: 1});
+      }
+      renderSelected();
+    }
+    
+    function updateQty(id, qty) {
+      var item = selectedItems.find(function(i){return i.id === id;});
+      if(item) {
+        item.qty = parseInt(qty) || 1;
+        renderSelected();
+      }
+    }
+    
+    function removeItem(id) {
+      selectedItems = selectedItems.filter(function(i){return i.id !== id;});
+      document.getElementById('p'+id).checked = false;
+      renderSelected();
+    }
+    
+    function renderSelected() {
+      if(selectedItems.length === 0) {
+        document.getElementById('selected-list').innerHTML = '<p style="color:#999;font-size:13px;">尚未選擇任何產品</p>';
+        document.getElementById('total').innerText = '0';
+        return;
+      }
+      
+      var html = '';
       var total = 0;
-      var summary = '';
-      
-      document.querySelectorAll('.product-item').forEach(function(item){
-        var sel = item.querySelector('.product-select');
-        var opt = sel.options[sel.selectedIndex];
-        var price = parseInt(opt.dataset.price) || 0;
-        var qty = parseInt(item.querySelector('.qty').value) || 0;
-        var subtotal = price * qty;
+      selectedItems.forEach(function(item){
+        var subtotal = item.price * item.qty;
         total += subtotal;
-        
-        if(opt.value) {
-          summary += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;"><span>'+opt.text+' x '+qty+'</span><span>$'+subtotal+'</span></div>';
-        }
+        html += '<div class="selected-item">' +
+          '<div style="flex:1;font-size:13px;">'+item.name+'</div>' +
+          '<input type="number" value="'+item.qty+'" min="1" style="width:60px;padding:5px;text-align:center;" onchange="updateQty('+item.id+',this.value)">' +
+          '<div style="font-size:14px;width:80px;text-align:right;">$'+subtotal+'</div>' +
+          '<button class="btn btn-danger btn-sm" onclick="removeItem('+item.id+')">✕</button>' +
+        '</div>';
       });
       
+      document.getElementById('selected-list').innerHTML = html;
       document.getElementById('total').innerText = total;
-      document.getElementById('items-summary').innerHTML = summary || '<p style="color:#999">請選擇產品</p>';
     }
     
     function createOrder() {
-      var items = [];
-      document.querySelectorAll('.product-item').forEach(function(item){
-        var sel = item.querySelector('.product-select');
-        var qty = parseInt(item.querySelector('.qty').value) || 0;
-        if(sel.value && qty > 0) {
-          var price = parseInt(sel.options[sel.selectedIndex].dataset.price) || 0;
-          items.push({
-            product_id: parseInt(sel.value),
-            quantity: qty,
-            price: price * qty
-          });
-        }
-      });
-      
-      if(items.length === 0) {
+      if(selectedItems.length === 0) {
         alert('請至少選擇一個產品');
         return;
       }
       
-      var total = items.reduce(function(s,i){return s + i.price;}, 0);
+      var items = selectedItems.map(function(i){
+        return {
+          product_id: i.id,
+          quantity: i.qty,
+          price: i.price * i.qty
+        };
+      });
+      
+      var total = selectedItems.reduce(function(s,i){return s + (i.price * i.qty);}, 0);
       var customerId = document.getElementById('customer').value;
       
       fetch('/api/orders', {
