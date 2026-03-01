@@ -4,81 +4,91 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>數據分析 - OHYA2.0 Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f5f5f5; }
-    .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
-    .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
-    .nav a.active { background: #ec4899; border-radius: 5px; }
-    .main { padding: 15px; max-width: 1200px; margin: 0 auto; }
-    h1 { font-size: 20px; margin: 0 0 15px 0; color: #333; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f0f2f5; }
+    .nav { background: #1a1a2e; padding: 12px; overflow-x: auto; white-space: nowrap; }
+    .nav a { color: #fff; text-decoration: none; padding: 10px 16px; display: inline-block; font-size: 14px; border-radius: 8px; transition: all 0.2s; }
+    .nav a:hover { background: rgba(255,255,255,0.1); }
+    .nav a.active { background: #ec4899; }
+    .main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+    h1 { font-size: 24px; margin: 0 0 20px 0; color: #1f2937; font-weight: 600; }
     
-    /* Stats Grid */
-    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-    .stat { background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .stat-label { color: #666; font-size: 12px; margin-bottom: 5px; }
-    .stat-value { font-size: 24px; font-weight: bold; color: #1a1a2e; }
-    .stat-value.positive { color: #10b981; }
-    .stat-value.negative { color: #ef4444; }
-    .stat-change { font-size: 12px; margin-top: 5px; }
+    /* KPI Cards */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .kpi-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .kpi-icon.orders { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .kpi-icon.revenue { background: linear-gradient(135deg, #10b981, #34d399); }
+    .kpi-icon.customers { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .kpi-icon.products { background: linear-gradient(135deg, #ec4899, #f472b6); }
+    .kpi-change { font-size: 12px; padding: 4px 8px; border-radius: 20px; font-weight: 500; }
+    .kpi-change.positive { background: #d1fae5; color: #065f46; }
+    .kpi-change.negative { background: #fee2e2; color: #991b1b; }
+    .kpi-label { font-size: 13px; color: #6b7280; margin-bottom: 4px; }
+    .kpi-value { font-size: 28px; font-weight: 700; color: #1f2937; }
     
-    /* Cards */
-    .card { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .card-title { font-size: 16px; font-weight: 600; margin: 0 0 15px 0; color: #333; display: flex; align-items: center; justify-content: space-between; }
+    /* Charts Row */
+    .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .card-title { font-size: 16px; font-weight: 600; color: #1f2937; display: flex; align-items: center; gap: 8px; }
     
-    /* Chart Container */
-    .chart-tabs { display: flex; gap: 10px; }
-    .chart-tab { padding: 5px 12px; border: none; background: #f3f4f6; border-radius: 15px; cursor: pointer; font-size: 12px; }
+    /* Chart Tabs */
+    .chart-tabs { display: flex; gap: 8px; }
+    .chart-tab { padding: 6px 14px; border: none; background: #f3f4f6; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500; color: #6b7280; transition: all 0.2s; }
+    .chart-tab:hover { background: #e5e7eb; }
     .chart-tab.active { background: #6366f1; color: #fff; }
     
-    /* Bar Chart */
-    .bar-chart { display: flex; align-items: flex-end; justify-content: space-between; height: 200px; padding: 10px 0; gap: 8px; }
-    .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
-    .bar { width: 100%; background: linear-gradient(to top, #6366f1, #8b5cf6); border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; position: relative; }
-    .bar:hover { background: linear-gradient(to top, #4f46e5, #7c3aed); }
-    .bar-label { font-size: 10px; color: #666; margin-top: 5px; text-align: center; }
-    .bar-value { font-size: 10px; font-weight: bold; color: #333; position: absolute; top: -18px; width: 100%; text-align: center; }
-    
-    /* Top Products Table */
-    .product-list { display: flex; flex-direction: column; gap: 10px; }
-    .product-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: #f9fafb; border-radius: 8px; }
-    .product-rank { width: 24px; height: 24px; background: #6366f1; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
+    /* Top Products */
+    .product-list { display: flex; flex-direction: column; gap: 12px; }
+    .product-item { display: flex; align-items: center; gap: 14px; padding: 12px; background: #f9fafb; border-radius: 12px; transition: all 0.2s; }
+    .product-item:hover { background: #f3f4f6; transform: translateX(4px); }
+    .product-rank { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; color: #fff; }
     .product-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
     .product-rank.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); }
     .product-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); }
-    .product-img { width: 40px; height: 40px; border-radius: 6px; background: #e5e7eb; object-fit: cover; }
-    .product-info { flex: 1; }
-    .product-name { font-size: 13px; font-weight: 500; color: #333; }
-    .product-category { font-size: 11px; color: #666; }
+    .product-rank.default { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .product-img { width: 48px; height: 48px; border-radius: 10px; background: #e5e7eb; object-fit: cover; }
+    .product-info { flex: 1; min-width: 0; }
+    .product-name { font-size: 14px; font-weight: 600; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .product-category { font-size: 12px; color: #6b7280; }
     .product-stats { text-align: right; }
-    .product-sold { font-size: 14px; font-weight: 600; color: #10b981; }
-    .product-revenue { font-size: 11px; color: #666; }
+    .product-sold { font-size: 15px; font-weight: 700; color: #10b981; }
+    .product-revenue { font-size: 12px; color: #6b7280; }
     
     /* Categories */
-    .category-list { display: flex; flex-direction: column; gap: 8px; }
-    .category-item { display: flex; align-items: center; gap: 10px; }
-    .category-name { flex: 1; font-size: 13px; }
-    .category-bar { height: 20px; background: #e5e7eb; border-radius: 10px; overflow: hidden; width: 100px; }
-    .category-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #ec4899); border-radius: 10px; }
-    .category-count { font-size: 13px; font-weight: 500; color: #333; min-width: 40px; text-align: right; }
-    
-    /* Grid layouts */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .category-list { display: flex; flex-direction: column; gap: 14px; }
+    .category-item { display: flex; align-items: center; gap: 12px; }
+    .category-name { width: 100px; font-size: 13px; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .category-bar { flex: 1; height: 24px; background: #f3f4f6; border-radius: 12px; overflow: hidden; }
+    .category-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #ec4899); border-radius: 12px; transition: width 0.5s ease; }
+    .category-count { font-size: 14px; font-weight: 600; color: #1f2937; min-width: 50px; text-align: right; }
     
     /* Recent Orders */
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-    th { background: #f9fafb; font-weight: 600; color: #333; }
-    .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+    .orders-table { width: 100%; border-collapse: collapse; }
+    .orders-table th { background: #f9fafb; padding: 14px 12px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+    .orders-table td { padding: 14px 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151; }
+    .orders-table tr:hover { background: #f9fafb; }
+    .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: capitalize; }
     .status-pending { background: #fef3c7; color: #92400e; }
     .status-completed { background: #d1fae5; color: #065f46; }
     .status-cancelled { background: #fee2e2; color: #991b1b; }
     .status-processing { background: #dbeafe; color: #1e40af; }
+    .status-shipped { background: #e0e7ff; color: #3730a3; }
+    
+    /* Loading */
+    .loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: #9ca3af; }
     
     /* Responsive */
-    @media (max-width: 768px) {
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { 
+      .kpi-grid { grid-template-columns: 1fr; }
+      .main { padding: 15px; }
     }
   </style>
 </head>
@@ -97,203 +107,377 @@
   <div class="main">
     <h1>📊 數據分析</h1>
     
-    <!-- Dashboard Stats -->
-    <div class="stats" id="dashboard-stats">
-      <div class="stat"><div class="stat-label">今日訂單</div><div class="stat-value" id="today-orders">...</div><div class="stat-change" id="today-orders-change"></div></div>
-      <div class="stat"><div class="stat-label">今日營收</div><div class="stat-value" id="today-revenue">...</div><div class="stat-change" id="today-revenue-change"></div></div>
-      <div class="stat"><div class="stat-label">本月訂單</div><div class="stat-value" id="month-orders">...</div><div class="stat-change" id="month-orders-change"></div></div>
-      <div class="stat"><div class="stat-label">本月營收</div><div class="stat-value" id="month-revenue">...</div><div class="stat-change" id="month-revenue-change"></div></div>
-    </div>
-    
-    <!-- Sales Trend Chart -->
-    <div class="card">
-      <div class="card-title">
-        📈 銷售趨勢
-        <div class="chart-tabs">
-          <button class="chart-tab active" onclick="loadSalesTrend(7)">7日</button>
-          <button class="chart-tab" onclick="loadSalesTrend(30)">30日</button>
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon orders">🛒</div>
+          <div class="kpi-change positive" id="orders-change">+0%</div>
         </div>
+        <div class="kpi-label">今日訂單</div>
+        <div class="kpi-value" id="today-orders">-</div>
       </div>
-      <div class="bar-chart" id="sales-chart">
-        <div style="width:100%;text-align:center;color:#999;">載入中...</div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon revenue">💰</div>
+          <div class="kpi-change positive" id="revenue-change">+0%</div>
+        </div>
+        <div class="kpi-label">今日營收</div>
+        <div class="kpi-value" id="today-revenue">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon customers">👥</div>
+          <div class="kpi-change positive" id="customers-change">+0%</div>
+        </div>
+        <div class="kpi-label">本月訂單</div>
+        <div class="kpi-value" id="month-orders">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon products">📦</div>
+          <div class="kpi-change positive" id="products-change">+0%</div>
+        </div>
+        <div class="kpi-label">本月營收</div>
+        <div class="kpi-value" id="month-revenue">-</div>
       </div>
     </div>
     
-    <div class="grid-2">
-      <!-- Hot Products -->
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <!-- Sales Chart -->
       <div class="card">
-        <div class="card-title">🔥 熱銷產品排行</div>
-        <div class="product-list" id="top-products">
-          <div style="text-align:center;color:#999;padding:20px;">載入中...</div>
+        <div class="card-header">
+          <div class="card-title">📈 銷售趨勢</div>
+          <div class="chart-tabs">
+            <button class="chart-tab active" onclick="loadSalesTrend(7)">7日</button>
+            <button class="chart-tab" onclick="loadSalesTrend(30)">30日</button>
+          </div>
+        </div>
+        <div style="height: 280px;">
+          <canvas id="salesChart"></canvas>
         </div>
       </div>
       
-      <!-- Top Categories -->
+      <!-- Top Products -->
       <div class="card">
-        <div class="card-title">🏷️ 暢銷類別</div>
-        <div class="category-list" id="top-categories">
-          <div style="text-align:center;color:#999;padding:20px;">載入中...</div>
+        <div class="card-header">
+          <div class="card-title">🔥 熱銷產品</div>
+        </div>
+        <div class="product-list" id="top-products">
+          <div class="loading">載入中...</div>
         </div>
       </div>
     </div>
     
-    <!-- Customer Growth -->
-    <div class="card">
-      <div class="card-title">👥 客戶增長</div>
-      <div class="stats" style="grid-template-columns: repeat(3, 1fr);">
-        <div class="stat"><div class="stat-label">總客戶數</div><div class="stat-value" id="total-customers">...</div></div>
-        <div class="stat"><div class="stat-label">本月新增</div><div class="stat-value" id="new-customers">...</div></div>
-        <div class="stat"><div class="stat-label">上月新增</div><div class="stat-value" id="last-month-customers">...</div></div>
+    <!-- Bottom Row -->
+    <div class="charts-row">
+      <!-- Top Categories -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏷️ 暢銷類別</div>
+        </div>
+        <div class="category-list" id="top-categories">
+          <div class="loading">載入中...</div>
+        </div>
+      </div>
+      
+      <!-- Customer Stats -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 客戶增長</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="padding: 16px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 12px; color: #fff;">
+            <div style="font-size: 12px; opacity: 0.9;">總客戶數</div>
+            <div style="font-size: 28px; font-weight: 700;" id="total-customers">-</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="padding: 16px; background: #f9fafb; border-radius: 12px;">
+              <div style="font-size: 12px; color: #6b7280;">本月新增</div>
+              <div style="font-size: 20px; font-weight: 700; color: #10b981;" id="new-customers">-</div>
+            </div>
+            <div style="padding: 16px; background: #f9fafb; border-radius: 12px;">
+              <div style="font-size: 12px; color: #6b7280;">上月新增</div>
+              <div style="font-size: 20px; font-weight: 700; color: #6b7280;" id="last-month-customers">-</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
     <!-- Recent Orders -->
     <div class="card">
-      <div class="card-title">🛒 最近訂單</div>
-      <table id="orders-table">
-        <tr><td>載入中...</td></tr>
+      <div class="card-header">
+        <div class="card-title">🛒 最近訂單</div>
+        <a href="orders.html" style="color: #6366f1; text-decoration: none; font-size: 13px;">查看全部 →</a>
+      </div>
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>客戶</th>
+            <th>產品</th>
+            <th>總額</th>
+            <th>狀態</th>
+            <th>日期</th>
+          </tr>
+        </thead>
+        <tbody id="orders-table">
+          <tr><td colspan="6"><div class="loading">載入中...</div></td></tr>
+        </tbody>
       </table>
     </div>
   </div>
   
   <script>
-    // Load dashboard stats
-    fetch('/api/analytics/dashboard').then(function(r){return r.json();}).then(function(d){
-      // Today
-      document.getElementById('today-orders').innerText = d.today.orders;
-      document.getElementById('today-revenue').innerText = '$' + (d.today.revenue || 0);
-      
-      // Yesterday comparison
-      var ordersChange = d.yesterday.orders > 0 ? ((d.today.orders - d.yesterday.orders) / d.yesterday.orders * 100).toFixed(1) : 0;
-      var revenueChange = d.yesterday.revenue > 0 ? ((d.today.revenue - d.yesterday.revenue) / d.yesterday.revenue * 100).toFixed(1) : 0;
-      
-      var ordersChangeEl = document.getElementById('today-orders-change');
-      ordersChangeEl.innerText = (ordersChange >= 0 ? '↑' : '↓') + Math.abs(ordersChange) + '% 較昨日';
-      ordersChangeEl.className = 'stat-change ' + (ordersChange >= 0 ? 'positive' : 'negative');
-      
-      var revenueChangeEl = document.getElementById('today-revenue-change');
-      revenueChangeEl.innerText = (revenueChange >= 0 ? '↑' : '↓') + Math.abs(revenueChange) + '% 較昨日';
-      revenueChangeEl.className = 'stat-change ' + (revenueChange >= 0 ? 'positive' : 'negative');
-      
-      // Month
-      document.getElementById('month-orders').innerText = d.thisMonth.orders;
-      document.getElementById('month-revenue').innerText = '$' + (d.thisMonth.revenue || 0);
-      
-      // Last month comparison
-      var monthOrdersChange = d.lastMonth.orders > 0 ? ((d.thisMonth.orders - d.lastMonth.orders) / d.lastMonth.orders * 100).toFixed(1) : 0;
-      var monthRevenueChange = d.lastMonth.revenue > 0 ? ((d.thisMonth.revenue - d.lastMonth.revenue) / d.lastMonth.revenue * 100).toFixed(1) : 0;
-      
-      var monthOrdersChangeEl = document.getElementById('month-orders-change');
-      monthOrdersChangeEl.innerText = (monthOrdersChange >= 0 ? '↑' : '↓') + Math.abs(monthOrdersChange) + '% 較上月';
-      monthOrdersChangeEl.className = 'stat-change ' + (monthOrdersChange >= 0 ? 'positive' : 'negative');
-      
-      var monthRevenueChangeEl = document.getElementById('month-revenue-change');
-      monthRevenueChangeEl.innerText = (monthRevenueChange >= 0 ? '↑' : '↓') + Math.abs(monthRevenueChange) + '% 較上月';
-      monthRevenueChangeEl.className = 'stat-change ' + (monthRevenueChange >= 0 ? 'positive' : 'negative');
-      
-      // Top categories
-      if (d.topCategories && d.topCategories.length > 0) {
-        var maxCat = d.topCategories[0].total_sold;
-        var catHtml = '';
-        d.topCategories.forEach(function(c) {
-          var pct = (c.total_sold / maxCat * 100).toFixed(0);
-          catHtml += '<div class="category-item">' +
-            '<span class="category-name">' + (c.category || '未分類') + '</span>' +
-            '<div class="category-bar"><div class="category-bar-fill" style="width:' + pct + '%"></div></div>' +
-            '<span class="category-count">' + c.total_sold + '</span>' +
-          '</div>';
-        });
-        document.getElementById('top-categories').innerHTML = catHtml;
-      }
-      
-      // Customer growth
-      document.getElementById('total-customers').innerText = d.customerGrowth.total;
-      document.getElementById('new-customers').innerText = d.customerGrowth.thisMonth;
-      document.getElementById('last-month-customers').innerText = d.customerGrowth.lastMonth;
+    let salesChart = null;
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      loadDashboardStats();
+      loadSalesTrend(7);
+      loadTopProducts();
+      loadRecentOrders();
     });
+    
+    // Load dashboard stats
+    function loadDashboardStats() {
+      fetch('/api/analytics/dashboard')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          // Today stats
+          document.getElementById('today-orders').innerText = d.today.orders;
+          document.getElementById('today-revenue').innerText = '$' + (d.today.revenue || 0).toLocaleString();
+          
+          // Yesterday comparison
+          var ordersChange = d.yesterday.orders > 0 ? ((d.today.orders - d.yesterday.orders) / d.yesterday.orders * 100).toFixed(1) : 0;
+          var revenueChange = d.yesterday.revenue > 0 ? ((d.today.revenue - d.yesterday.revenue) / d.yesterday.revenue * 100).toFixed(1) : 0;
+          
+          updateKpiChange('orders-change', ordersChange);
+          updateKpiChange('revenue-change', revenueChange);
+          
+          // Month stats
+          document.getElementById('month-orders').innerText = d.thisMonth.orders;
+          document.getElementById('month-revenue').innerText = '$' + (d.thisMonth.revenue || 0).toLocaleString();
+          
+          // Last month comparison
+          var monthOrdersChange = d.lastMonth.orders > 0 ? ((d.thisMonth.orders - d.lastMonth.orders) / d.lastMonth.orders * 100).toFixed(1) : 0;
+          var monthRevenueChange = d.lastMonth.revenue > 0 ? ((d.thisMonth.revenue - d.lastMonth.revenue) / d.lastMonth.revenue * 100).toFixed(1) : 0;
+          
+          updateKpiChange('customers-change', monthOrdersChange);
+          updateKpiChange('products-change', monthRevenueChange);
+          
+          // Categories
+          if (d.topCategories && d.topCategories.length > 0) {
+            renderCategories(d.topCategories);
+          }
+          
+          // Customer growth
+          document.getElementById('total-customers').innerText = d.customerGrowth.total;
+          document.getElementById('new-customers').innerText = d.customerGrowth.thisMonth;
+          document.getElementById('last-month-customers').innerText = d.customerGrowth.lastMonth;
+        })
+        .catch(function(e) {
+          console.error('Error loading dashboard:', e);
+        });
+    }
+    
+    function updateKpiChange(id, value) {
+      var el = document.getElementById(id);
+      var num = parseFloat(value);
+      el.innerText = (num >= 0 ? '↑' : '↓') + Math.abs(num) + '%';
+      el.className = 'kpi-change ' + (num >= 0 ? 'positive' : 'negative');
+    }
     
     // Load sales trend chart
     function loadSalesTrend(days) {
-      document.querySelectorAll('.chart-tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.chart-tab').forEach(function(t) { 
+        t.classList.remove('active'); 
+      });
       event.target.classList.add('active');
       
-      fetch('/api/analytics/sales-trend?days=' + days).then(function(r){return r.json();}).then(function(data){
-        if (!data || data.length === 0) {
-          document.getElementById('sales-chart').innerHTML = '<div style="width:100%;text-align:center;color:#999;padding:40px;">暫無銷售數據</div>';
-          return;
-        }
-        
-        var maxRevenue = Math.max.apply(null, data.map(function(d){ return parseInt(d.revenue) || 0; }));
-        if (maxRevenue === 0) maxRevenue = 100;
-        
-        var html = '';
-        data.forEach(function(d) {
-          var height = (d.revenue / maxRevenue * 160);
-          var date = new Date(d.date);
-          var label = (date.getMonth() + 1) + '/' + date.getDate();
-          html += '<div class="bar-item">' +
-            '<div class="bar" style="height:' + height + 'px">' +
-              '<span class="bar-value">$' + (d.revenue || 0) + '</span>' +
-            '</div>' +
-            '<div class="bar-label">' + label + '</div>' +
-          '</div>';
+      fetch('/api/analytics/sales-trend?days=' + days)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data || data.length === 0) {
+            return;
+          }
+          
+          var labels = data.map(function(d) {
+            var date = new Date(d.date);
+            return (date.getMonth() + 1) + '/' + date.getDate();
+          });
+          
+          var revenues = data.map(function(d) { return d.revenue || 0; });
+          var orders = data.map(function(d) { return d.orders || 0; });
+          
+          var ctx = document.getElementById('salesChart').getContext('2d');
+          
+          if (salesChart) {
+            salesChart.destroy();
+          }
+          
+          salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: '營收 (HK$)',
+                  data: revenues,
+                  borderColor: '#6366f1',
+                  backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                  fill: true,
+                  tension: 0.4,
+                  yAxisID: 'y'
+                },
+                {
+                  label: '訂單數',
+                  data: orders,
+                  borderColor: '#ec4899',
+                  backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                  fill: true,
+                  tension: 0.4,
+                  yAxisID: 'y1'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: {
+                mode: 'index',
+                intersect: false
+              },
+              plugins: {
+                legend: {
+                  position: 'top',
+                  labels: {
+                    usePointStyle: true,
+                    padding: 20
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  type: 'linear',
+                  display: true,
+                  position: 'left',
+                  title: {
+                    display: true,
+                    text: '營收 (HK$)'
+                  },
+                  grid: {
+                    color: '#f3f4f6'
+                  }
+                },
+                y1: {
+                  type: 'linear',
+                  display: true,
+                  position: 'right',
+                  title: {
+                    display: true,
+                    text: '訂單數'
+                  },
+                  grid: {
+                    drawOnChartArea: false
+                  }
+                },
+                x: {
+                  grid: {
+                    display: false
+                  }
+                }
+              }
+            }
+          });
         });
-        document.getElementById('sales-chart').innerHTML = html;
-      });
     }
     
-    // Initial load
-    loadSalesTrend(7);
-    
     // Load top products
-    fetch('/api/analytics/top-products').then(function(r){return r.json();}).then(function(products){
-      if (!products || products.length === 0) {
-        document.getElementById('top-products').innerHTML = '<div style="text-align:center;color:#999;padding:20px;">暫無數據</div>';
+    function loadTopProducts() {
+      fetch('/api/analytics/top-products')
+        .then(function(r) { return r.json(); })
+        .then(function(products) {
+          if (!products || products.length === 0) {
+            document.getElementById('top-products').innerHTML = '<div class="loading">暫無數據</div>';
+            return;
+          }
+          
+          var html = '';
+          products.slice(0, 5).forEach(function(p, i) {
+            var rankClass = 'product-rank default';
+            if (i === 0) rankClass = 'product-rank gold';
+            else if (i === 1) rankClass = 'product-rank silver';
+            else if (i === 2) rankClass = 'product-rank bronze';
+            
+            var imgHtml = p.image_url ? '<img class="product-img" src="' + p.image_url + '">' : '<div class="product-img">📦</div>';
+            
+            html += '<div class="product-item">' +
+              '<div class="' + rankClass + '">' + (i + 1) + '</div>' +
+              imgHtml +
+              '<div class="product-info">' +
+                '<div class="product-name">' + (p.name || 'Unknown') + '</div>' +
+                '<div class="product-category">' + (p.category || '未分類') + '</div>' +
+              '</div>' +
+              '<div class="product-stats">' +
+                '<div class="product-sold">' + p.total_sold + ' 件</div>' +
+                '<div class="product-revenue">$' + (p.revenue || 0).toLocaleString() + '</div>' +
+              '</div>' +
+            '</div>';
+          });
+          document.getElementById('top-products').innerHTML = html;
+        });
+    }
+    
+    // Render categories
+    function renderCategories(categories) {
+      if (!categories || categories.length === 0) {
+        document.getElementById('top-categories').innerHTML = '<div class="loading">暫無數據</div>';
         return;
       }
       
+      var max = categories[0].total_sold;
       var html = '';
-      products.slice(0, 10).forEach(function(p, i) {
-        var rankClass = 'product-rank';
-        if (i === 0) rankClass += ' gold';
-        else if (i === 1) rankClass += ' silver';
-        else if (i === 2) rankClass += ' bronze';
-        
-        var imgHtml = p.image_url ? '<img class="product-img" src="' + p.image_url + '">' : '<div class="product-img"></div>';
-        
-        html += '<div class="product-item">' +
-          '<div class="' + rankClass + '">' + (i + 1) + '</div>' +
-          imgHtml +
-          '<div class="product-info">' +
-            '<div class="product-name">' + (p.name || 'Unknown') + '</div>' +
-            '<div class="product-category">' + (p.category || '未分類') + '</div>' +
-          '</div>' +
-          '<div class="product-stats">' +
-            '<div class="product-sold">' + p.total_sold + ' 件</div>' +
-            '<div class="product-revenue">$' + (p.revenue || 0) + '</div>' +
-          '</div>' +
+      categories.forEach(function(c) {
+        var pct = (c.total_sold / max * 100).toFixed(0);
+        html += '<div class="category-item">' +
+          '<span class="category-name">' + (c.category || '未分類') + '</span>' +
+          '<div class="category-bar"><div class="category-bar-fill" style="width:' + pct + '%"></div></div>' +
+          '<span class="category-count">' + c.total_sold + '</span>' +
         '</div>';
       });
-      document.getElementById('top-products').innerHTML = html;
-    });
+      document.getElementById('top-categories').innerHTML = html;
+    }
     
     // Load recent orders
-    fetch('/api/orders').then(function(r){return r.json();}).then(function(d){
-      var html = '<tr><th>ID</th><th>客戶</th><th>總額</th><th>狀態</th><th>日期</th></tr>';
-      d.slice(0, 10).forEach(function(o){
-        var statusClass = 'status-' + (o.status || 'pending');
-        var date = new Date(o.created_at);
-        var dateStr = (date.getMonth() + 1) + '/' + date.getDate() + ' ' + date.getHours() + ':' + String(date.getMinutes()).padStart(2,'0');
-        html += '<tr>' +
-          '<td>#' + o.id + '</td>' +
-          '<td>' + (o.customer_name || 'Guest') + '</td>' +
-          '<td>$' + (o.total || 0) + '</td>' +
-          '<td><span class="status-badge ' + statusClass + '">' + (o.status || 'pending') + '</span></td>' +
-          '<td>' + dateStr + '</td>' +
-        '</tr>';
-      });
-      document.getElementById('orders-table').innerHTML = html;
-    });
+    function loadRecentOrders() {
+      fetch('/api/orders')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var html = '';
+          d.slice(0, 8).forEach(function(o) {
+            var items = o.items || [];
+            var productsText = items.slice(0, 2).map(function(i) { return i.product_name || 'Product'; }).join(', ');
+            if (items.length > 2) productsText += ' +' + (items.length - 2);
+            
+            var statusClass = 'status-' + (o.status || 'pending');
+            var date = new Date(o.created_at);
+            var dateStr = (date.getMonth() + 1) + '/' + date.getDate() + ' ' + date.getHours() + ':' + String(date.getMinutes()).padStart(2, '0');
+            
+            html += '<tr>' +
+              '<td>#' + o.id + '</td>' +
+              '<td>' + (o.customer_name || 'Guest') + '</td>' +
+              '<td>' + (productsText || '-') + '</td>' +
+              '<td><strong>$' + (o.total || 0).toLocaleString() + '</strong></td>' +
+              '<td><span class="status-badge ' + statusClass + '">' + (o.status || 'pending') + '</span></td>' +
+              '<td>' + dateStr + '</td>' +
+            '</tr>';
+          });
+          document.getElementById('orders-table').innerHTML = html || '<tr><td colspan="6"><div class="loading">暫無訂單</div></td></tr>';
+        });
+    }
   </script>
 </body>
 </html>

@@ -5,54 +5,123 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>客戶 - OHYA2.0 Admin</title>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
-    .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
-    .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
-    .nav a.active { background: #ec4899; border-radius: 5px; }
-    .main { padding: 15px; }
-    h2 { margin: 0 0 10px 0; font-size: 18px; }
-    .btn { padding: 8px 16px; background: #6366f1; color: #fff; border: none; border-radius: 5px; font-size: 13px; cursor: pointer; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f0f2f5; }
+    .nav { background: #1a1a2e; padding: 12px; overflow-x: auto; white-space: nowrap; }
+    .nav a { color: #fff; text-decoration: none; padding: 10px 16px; display: inline-block; font-size: 14px; border-radius: 8px; }
+    .nav a.active { background: #ec4899; }
+    .main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+    
+    h2 { margin: 0 0 20px 0; font-size: 22px; font-weight: 600; color: #1f2937; }
+    
+    /* Toolbar */
+    .toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .search-box { flex: 1; min-width: 200px; position: relative; }
+    .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+    .search-box::before { content: "🔍"; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
+    
+    .btn { padding: 10px 18px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
     .btn:hover { background: #4f46e5; }
-    .btn-sm { padding: 5px 10px; font-size: 12px; }
-    .btn-secondary { background: #9ca3af; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-secondary { background: #6b7280; }
     .btn-danger { background: #ef4444; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 8px; overflow: hidden; }
-    th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-    th { background: #f8f9fa; font-weight: 600; }
+    .btn-success { background: #10b981; }
+    
+    /* Filter Pills */
+    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-pill { padding: 6px 14px; background: #fff; border: 1px solid #d1d5db; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .filter-pill:hover { border-color: #6366f1; }
+    .filter-pill.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+    
+    /* Stats Cards */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    .stat-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .stat-label { font-size: 13px; color: #6b7280; margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #1f2937; }
+    .stat-change { font-size: 12px; margin-top: 4px; }
+    .stat-change.positive { color: #10b981; }
+    .stat-change.negative { color: #ef4444; }
+    
+    /* Table */
+    .table-container { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f9fafb; padding: 14px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 14px 16px; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: #374151; }
     tr:hover { background: #f9fafb; cursor: pointer; }
     
-    /* Badge styles */
-    .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
-    .badge-bronze { background: #cd7f32; color: #fff; }
-    .badge-silver { background: #c0c0c0; color: #333; }
-    .badge-gold { background: #ffd700; color: #333; }
-    .badge-platinum { background: #e5e4e2; color: #333; }
-    .badge-diamond { background: #b9f2ff; color: #333; }
+    /* Customer Cell */
+    .customer-cell { display: flex; align-items: center; gap: 12px; }
+    .customer-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+    .customer-info { display: flex; flex-direction: column; }
+    .customer-name { font-weight: 600; color: #1f2937; }
+    .customer-email { font-size: 12px; color: #6b7280; }
+    
+    /* VIP Badge */
+    .vip-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .vip-diamond { background: linear-gradient(135deg, #a5f3fc, #22d3ee); color: #0e7490; }
+    .vip-platinum { background: linear-gradient(135deg, #e5e7eb, #9ca3af); color: #374151; }
+    .vip-gold { background: linear-gradient(135deg, #fef3c7, #fbbf24); color: #92400e; }
+    .vip-silver { background: linear-gradient(135deg, #f3f4f6, #d1d5db); color: #4b5563; }
+    .vip-bronze { background: linear-gradient(135deg, #fed7aa, #f97316); color: #c2410c; }
+    
+    /* Tags */
+    .tag { display: inline-block; padding: 3px 8px; background: #e0e7ff; color: #3730a3; border-radius: 12px; font-size: 11px; margin-right: 4px; }
+    .tag-more { background: #f3f4f6; color: #6b7280; }
     
     /* Modal */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal-overlay.active { display: flex; }
-    .modal { background: #fff; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 20px; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; }
+    .modal { background: #fff; width: 95%; max-width: 900px; max-height: 90vh; overflow-y: auto; border-radius: 16px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #f3f4f6; }
+    .modal-header h3 { margin: 0; font-size: 18px; }
+    .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: #9ca3af; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid #f3f4f6; display: flex; gap: 12px; justify-content: flex-end; }
     
-    /* Card */
-    .card { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-    .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #333; }
+    /* Customer Detail Layout */
+    .detail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+    .detail-main { min-width: 0; }
+    .detail-sidebar { background: #f9fafb; padding: 20px; border-radius: 12px; }
     
-    /* Tags */
-    .tag { display: inline-block; padding: 4px 10px; background: #e0e7ff; color: #3730a3; border-radius: 15px; font-size: 12px; margin-right: 5px; margin-bottom: 5px; }
-    .tag-remove { margin-left: 5px; cursor: pointer; color: #666; }
-    .tag-input { padding: 6px 10px; border: 1px solid #ddd; border-radius: 15px; font-size: 12px; width: 100px; }
+    .section { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #f3f4f6; }
+    .section-title { font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
     
     /* Form */
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; }
-    .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #6366f1; }
     
-    /* Upgrade prompt */
-    .upgrade-prompt { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
-    .upgrade-prompt strong { color: #92400e; }
+    /* Tags in modal */
+    .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .tag-item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #e0e7ff; color: #3730a3; border-radius: 16px; font-size: 12px; }
+    .tag-item .remove { cursor: pointer; color: #6366f1; }
+    .tag-input { padding: 6px 12px; border: 1px dashed #d1d5db; border-radius: 16px; font-size: 12px; width: 100px; }
+    
+    /* Order History */
+    .order-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; }
+    .order-info { display: flex; flex-direction: column; }
+    .order-id { font-weight: 600; color: #1f2937; }
+    .order-date { font-size: 12px; color: #6b7280; }
+    .order-total { font-weight: 600; color: #10b981; }
+    .order-status { padding: 4px 8px; border-radius: 12px; font-size: 11px; }
+    
+    /* Membership Progress */
+    .membership-card { text-align: center; padding: 20px; }
+    .membership-badge { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+    .membership-name { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .membership-total { font-size: 24px; font-weight: 700; color: #10b981; margin-bottom: 12px; }
+    .progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #ec4899); border-radius: 4px; }
+    .progress-text { font-size: 12px; color: #6b7280; }
+    
+    /* Quick Actions */
+    .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+    .quick-action { display: flex; align-items: center; gap: 10px; padding: 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .quick-action:hover { border-color: #6366f1; background: #f5f3ff; }
+    
+    @media (max-width: 1024px) { .detail-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body>
@@ -69,318 +138,402 @@
   
   <div class="main">
     <h2>👥 客戶管理</h2>
-    <div style="margin-bottom: 15px;">
+    
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">總客戶數</div>
+        <div class="stat-value" id="stat-total">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">本月新增</div>
+        <div class="stat-value" id="stat-new">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">VIP 客戶</div>
+        <div class="stat-value" id="stat-vip">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">總消費額</div>
+        <div class="stat-value" id="stat-revenue">-</div>
+      </div>
+    </div>
+    
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="search" placeholder="搜尋客戶名稱、Email、電話..." onkeyup="filterCustomers()">
+      </div>
       <button class="btn" onclick="showAddCustomer()">➕ 新增客戶</button>
     </div>
-    <table id="customers-table"><tr><td>載入中...</td></tr></table>
+    
+    <!-- Filter Pills -->
+    <div class="filter-group" style="margin-bottom: 16px;">
+      <button class="filter-pill active" onclick="setFilter('all')">全部</button>
+      <button class="filter-pill" onclick="setFilter('vip')">VIP (Gold+)</button>
+      <button class="filter-pill" onclick="setFilter('new')">本月新增</button>
+      <button class="filter-pill" onclick="setFilter('inactive')">未購買</button>
+    </div>
+    
+    <!-- Table -->
+    <div class="table-container">
+      <table id="customers-table">
+        <thead>
+          <tr>
+            <th>客戶</th>
+            <th>電話</th>
+            <th>訂單數</th>
+            <th>消費總額</th>
+            <th>會員等級</th>
+            <th>標籤</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="customers-body"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Customer Detail Modal -->
   <div class="modal-overlay" id="customer-modal">
     <div class="modal">
       <div class="modal-header">
-        <h2 id="modal-title">客戶詳情</h2>
+        <h3 id="modal-title">👤 客戶詳情</h3>
         <button class="modal-close" onclick="closeModal()">&times;</button>
       </div>
       
-      <!-- 客戶資料 -->
-      <div class="card">
-        <div class="card-title">📋 客戶資料</div>
-        <div class="form-group">
-          <input type="hidden" id="cust-id">
-          <label>名稱</label>
-          <input type="text" id="cust-name">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="cust-email" style="background:#fff;">
-        </div>
-        <div class="form-group">
-          <label>密碼 (新增時必填)</label>
-          <input type="text" id="cust-password" placeholder="留空則使用預設密碼">
-        </div>
-        <div class="form-group">
-          <label>電話</label>
-          <input type="text" id="cust-phone">
-        </div>
-        <div class="form-group">
-          <label>地址</label>
-          <textarea id="cust-address" rows="2"></textarea>
-        </div>
-        <button class="btn" onclick="saveCustomer()">💾 儲存資料</button>
-      </div>
-      
-      <!-- 會員等級 -->
-      <div class="card">
-        <div class="card-title">⭐ 會員等級</div>
-        <div style="display:flex;align-items:center;gap:15px;">
-          <span id="membership-badge" class="badge badge-bronze" style="font-size:14px;padding:6px 12px;">Bronze</span>
-          <div>
-            <div>累積消費: <strong>$<span id="total-spent">0</span></strong></div>
-            <div id="upgrade-prompt"></div>
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div class="detail-main">
+            <!-- Customer Info -->
+            <div class="section">
+              <div class="section-title">📋 客戶資料</div>
+              <input type="hidden" id="cust-id">
+              <div class="form-group">
+                <label>名稱</label>
+                <input type="text" id="cust-name">
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="cust-email">
+              </div>
+              <div class="form-group">
+                <label>電話</label>
+                <input type="text" id="cust-phone">
+              </div>
+              <div class="form-group">
+                <label>地址</label>
+                <textarea id="cust-address" rows="2"></textarea>
+              </div>
+              <div class="form-group">
+                <label>備註</label>
+                <textarea id="cust-notes" rows="2" placeholder="客戶備註..."></textarea>
+              </div>
+              <button class="btn" onclick="saveCustomer()">💾 儲存資料</button>
+            </div>
+            
+            <!-- Order History -->
+            <div class="section">
+              <div class="section-title">🛒 購買歷史 <span id="order-count" style="font-weight:400;font-size:12px;color:#6b7280;"></span></div>
+              <div id="order-history"></div>
+            </div>
+          </div>
+          
+          <!-- Sidebar -->
+          <div class="detail-sidebar">
+            <!-- Membership -->
+            <div class="section">
+              <div class="membership-card">
+                <div class="membership-badge" id="membership-badge">🥉</div>
+                <div class="membership-name" id="membership-name">Bronze</div>
+                <div class="membership-total">$<span id="total-spent">0</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+                <div class="progress-text" id="progress-text">距離 Silver 還需 $5,000</div>
+              </div>
+            </div>
+            
+            <!-- Tags -->
+            <div class="section">
+              <div class="section-title">🏷️ 標籤</div>
+              <div class="tags-container" id="cust-tags"></div>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="new-tag" class="tag-input" placeholder="新增標籤">
+                <button class="btn btn-sm" onclick="addTag()">➕</button>
+              </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="section">
+              <div class="section-title">⚡ 快速操作</div>
+              <div class="quick-actions">
+                <div class="quick-action" onclick="sendEmail()">
+                  <span>📧</span> <span>發送 Email</span>
+                </div>
+                <div class="quick-action" onclick="createOrder()">
+                  <span>🛒</span> <span>建立訂單</span>
+                </div>
+                <div class="quick-action" onclick="applyCoupon()">
+                  <span>🎟️</span> <span>發放優惠碼</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
-      <!-- 標籤 -->
-      <div class="card">
-        <div class="card-title">🏷️ 標籤</div>
-        <div id="cust-tags" style="margin-bottom:10px;"></div>
-        <div style="display:flex;gap:10px;align-items:center;">
-          <input type="text" id="new-tag" class="tag-input" placeholder="新增標籤">
-          <button class="btn btn-sm" onclick="addTag()">➕ 添加</button>
-        </div>
-      </div>
-      
-      <!-- 購買歷史 -->
-      <div class="card">
-        <div class="card-title">🛒 購買歷史</div>
-        <div id="order-history">
-          <div style="color:#999;text-align:center;padding:20px;">暫無訂單</div>
-        </div>
-      </div>
-      
-      <div style="margin-top:20px;">
+      <div class="modal-footer">
         <button class="btn btn-danger" onclick="deleteCustomer()">🗑️ 刪除客戶</button>
       </div>
     </div>
   </div>
 
   <script>
+    let allCustomers = [];
+    let currentFilter = 'all';
     let currentCustomerId = null;
-    let currentCustomerData = null;
     
     // Load customers
-    fetch('/api/customers').then(function(r){return r.json();}).then(function(d){
-      var html = '<tr><th>ID</th><th>名稱</th><th>Email</th><th>電話</th><th>訂單數</th><th>消費總額</th><th>操作</th></tr>';
-      d.forEach(function(c){
-        var levelClass = getLevelClass(c.total);
-        var levelName = getLevelName(c.total);
-        html += '<tr onclick="viewCustomer('+c.id+')">';
-        html += '<td>'+c.id+'</td>';
-        html += '<td>'+(c.name||'-')+'</td>';
-        html += '<td>'+(c.email||'-')+'</td>';
-        html += '<td>'+(c.phone||'-')+'</td>';
-        html += '<td>'+(c.orders||0)+'</td>';
-        html += '<td>$'+(c.total||0)+' <span class="badge '+levelClass+'">'+levelName+'</span></td>';
-        html += '<td><button class="btn btn-sm" onclick="event.stopPropagation();viewCustomer('+c.id+')">👁️ 檢視</button></td>';
-        html += '</tr>';
-      });
-      document.getElementById('customers-table').innerHTML = html;
-    });
+    loadCustomers();
     
-    function getLevelClass(total) {
-      if (total >= 50000) return 'badge-diamond';
-      if (total >= 30000) return 'badge-platinum';
-      if (total >= 15000) return 'badge-gold';
-      if (total >= 5000) return 'badge-silver';
-      return 'badge-bronze';
+    function loadCustomers() {
+      fetch('/api/customers')
+        .then(r => r.json())
+        .then(d => {
+          allCustomers = d;
+          updateStats(d);
+          renderCustomers(d);
+        });
     }
     
-    function getLevelName(total) {
-      if (total >= 50000) return 'Diamond';
-      if (total >= 30000) return 'Platinum';
-      if (total >= 15000) return 'Gold';
-      if (total >= 5000) return 'Silver';
-      return 'Bronze';
+    function updateStats(customers) {
+      document.getElementById('stat-total').innerText = customers.length;
+      document.getElementById('stat-new').innerText = customers.filter(c => c.is_new).length;
+      document.getElementById('stat-vip').innerText = customers.filter(c => (c.total || 0) >= 5000).length;
+      var totalRevenue = customers.reduce((sum, c) => sum + (c.total || 0), 0);
+      document.getElementById('stat-revenue').innerText = '$' + totalRevenue.toLocaleString();
+    }
+    
+    function renderCustomers(customers) {
+      var html = '';
+      customers.forEach(c => {
+        var level = getLevelInfo(c.total || 0);
+        var initials = (c.name || 'U').substring(0, 2).toUpperCase();
+        var tags = (c.tags || []).slice(0, 3);
+        var moreTags = (c.tags || []).length - 3;
+        
+        html += `<tr onclick="viewCustomer(${c.id})">`;
+        html += `<td><div class="customer-cell"><div class="customer-avatar">${initials}</div><div class="customer-info"><span class="customer-name">${c.name || '-'}</span><span class="customer-email">${c.email || '-'}</span></div></div></td>`;
+        html += `<td>${c.phone || '-'}</td>`;
+        html += `<td>${c.orders || 0}</td>`;
+        html += `<td><strong>$${(c.total || 0).toLocaleString()}</strong></td>`;
+        html += `<td><span class="vip-badge vip-${level.class}">${level.icon} ${level.name}</span></td>`;
+        html += `<td>${tags.map(t => `<span class="tag">${t}</span>`).join('')}${moreTags > 0 ? `<span class="tag tag-more">+${moreTags}</span>` : ''}</td>`;
+        html += `<td><button class="btn btn-sm" onclick="event.stopPropagation();viewCustomer(${c.id})">👁️</button></td>`;
+        html += `</tr>`;
+      });
+      document.getElementById('customers-body').innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:40px;color:#999;">暫無客戶</td></tr>';
+    }
+    
+    function getLevelInfo(total) {
+      if (total >= 50000) return { name: 'Diamond', class: 'diamond', icon: '💎', next: null };
+      if (total >= 30000) return { name: 'Platinum', class: 'platinum', icon: '💠', next: 'Diamond', nextAmount: 50000 };
+      if (total >= 15000) return { name: 'Gold', class: 'gold', icon: '🥇', next: 'Platinum', nextAmount: 30000 };
+      if (total >= 5000) return { name: 'Silver', class: 'silver', icon: '🥈', next: 'Gold', nextAmount: 15000 };
+      return { name: 'Bronze', class: 'bronze', icon: '🥉', next: 'Silver', nextAmount: 5000 };
+    }
+    
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      filterCustomers();
+    }
+    
+    function filterCustomers() {
+      var search = document.getElementById('search').value.toLowerCase();
+      var filtered = allCustomers.filter(c => {
+        var matchSearch = !search || 
+          (c.name || '').toLowerCase().includes(search) || 
+          (c.email || '').toLowerCase().includes(search) || 
+          (c.phone || '').includes(search);
+        
+        if (!matchSearch) return false;
+        
+        if (currentFilter === 'vip') return (c.total || 0) >= 5000;
+        if (currentFilter === 'new') return c.is_new;
+        if (currentFilter === 'inactive') return (c.orders || 0) === 0;
+        
+        return true;
+      });
+      renderCustomers(filtered);
     }
     
     function viewCustomer(id) {
       currentCustomerId = id;
-      fetch('/api/customers/'+id).then(function(r){return r.json();}).then(function(d){
-        currentCustomerData = d;
-        
-        // Fill customer info
-        document.getElementById('modal-title').textContent = '客戶 #' + id;
-        document.getElementById('cust-id').value = id;
-        document.getElementById('cust-name').value = d.name || '';
-        document.getElementById('cust-email').value = d.email || '';
-        document.getElementById('cust-phone').value = d.phone || '';
-        document.getElementById('cust-address').value = d.address || '';
-        
-        // Membership
-        var level = d.membership_level || 'Bronze';
-        var levelClass = getLevelClass(d.total_spent || 0);
-        document.getElementById('membership-badge').textContent = level;
-        document.getElementById('membership-badge').className = 'badge ' + levelClass;
-        document.getElementById('total-spent').textContent = d.total_spent || 0;
-        
-        // Upgrade prompt
-        if (d.next_level) {
-          document.getElementById('upgrade-prompt').innerHTML = '<div class="upgrade-prompt">再消費 $'+d.amount_to_next+' 即可升級為 <strong>'+d.next_level+'</strong>！</div>';
-        } else {
-          document.getElement('upgrade-prompt').innerHTML = '<div style="color:#059669;font-weight:600;">🎉 已達最高會員等級！</div>';
-        }
-        
-        // Tags
-        renderTags(d.tags || []);
-        
-        // Orders
-        renderOrders(d.orders || []);
-        
-        // Show modal
-        document.getElementById('customer-modal').classList.add('active');
-      });
+      fetch('/api/customers/' + id)
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById('modal-title').textContent = '👤 ' + (d.name || '客戶 #' + id);
+          document.getElementById('cust-id').value = id;
+          document.getElementById('cust-name').value = d.name || '';
+          document.getElementById('cust-email').value = d.email || '';
+          document.getElementById('cust-phone').value = d.phone || '';
+          document.getElementById('cust-address').value = d.address || '';
+          document.getElementById('cust-notes').value = d.notes || '';
+          
+          // Membership
+          var level = getLevelInfo(d.total_spent || 0);
+          document.getElementById('membership-badge').className = 'membership-badge vip-badge vip-' + level.class;
+          document.getElementById('membership-badge').innerText = level.icon;
+          document.getElementById('membership-name').innerText = level.name;
+          document.getElementById('total-spent').innerText = (d.total_spent || 0).toLocaleString();
+          
+          if (level.next) {
+            var progress = ((d.total_spent || 0) / level.nextAmount * 100).toFixed(0);
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('progress-text').innerText = `距離 ${level.next} 還需 $${(level.nextAmount - (d.total_spent || 0)).toLocaleString()}`;
+          } else {
+            document.getElementById('progress-fill').style.width = '100%';
+            document.getElementById('progress-text').innerText = '🎉 已達最高會員等級！';
+          }
+          
+          // Tags
+          renderTags(d.tags || []);
+          
+          // Orders
+          document.getElementById('order-count').innerText = `(${d.orders ? d.orders.length : 0} 筆)`;
+          renderOrders(d.orders || []);
+          
+          document.getElementById('customer-modal').classList.add('active');
+        });
     }
     
     function renderTags(tags) {
-      var html = '';
-      tags.forEach(function(tag) {
-        html += '<span class="tag">'+tag+'<span class="tag-remove" onclick="removeTag(\''+tag+'\')">&times;</span></span>';
-      });
-      if (tags.length === 0) html = '<span style="color:#999;">無標籤</span>';
-      document.getElementById('cust-tags').innerHTML = html;
+      var html = tags.map(t => `<span class="tag-item">${t}<span class="remove" onclick="removeTag('${t}')">&times;</span></span>`).join('');
+      document.getElementById('cust-tags').innerHTML = html || '<span style="color:#9ca3af;font-size:12px;">無標籤</span>';
     }
     
     function renderOrders(orders) {
-      if (orders.length === 0) {
-        document.getElementById('order-history').innerHTML = '<div style="color:#999;text-align:center;padding:20px;">暫無訂單</div>';
+      if (!orders || orders.length === 0) {
+        document.getElementById('order-history').innerHTML = '<div style="text-align:center;padding:20px;color:#999;">暫無訂單</div>';
         return;
       }
-      var html = '<table style="font-size:12px;"><tr><th>訂單ID</th><th>日期</th><th>金額</th><th>狀態</th></tr>';
-      orders.forEach(function(o) {
-        var statusClass = getStatusClass(o.status);
+      
+      var statusMap = {
+        pending: { text: '待處理', class: '#fef3c7' },
+        processing: { text: '處理中', class: '#dbeafe' },
+        shipped: { text: '已發貨', class: '#e0e7ff' },
+        completed: { text: '已完成', class: '#d1fae5' },
+        cancelled: { text: '已取消', class: '#f3f4f6' }
+      };
+      
+      var html = orders.slice(0, 10).map(o => {
+        var s = statusMap[o.status] || statusMap.pending;
         var date = new Date(o.created_at).toLocaleDateString('zh-HK');
-        html += '<tr>';
-        html += '<td>#'+o.id+'</td>';
-        html += '<td>'+date+'</td>';
-        html += '<td>$'+o.total+'</td>';
-        html += '<td><span class="badge '+statusClass+'">'+getStatusText(o.status)+'</span></td>';
-        html += '</tr>';
-      });
-      html += '</table>';
+        return `<div class="order-item">
+          <div class="order-info">
+            <span class="order-id">#${o.id}</span>
+            <span class="order-date">${date}</span>
+          </div>
+          <span class="order-total">$${(o.total || 0).toLocaleString()}</span>
+          <span class="order-status" style="background:${s.class}">${s.text}</span>
+        </div>`;
+      }).join('');
+      
       document.getElementById('order-history').innerHTML = html;
-    }
-    
-    function getStatusClass(status) {
-      var map = {
-        'pending': 'badge-pending',
-        'processing': 'badge-processing', 
-        'shipped': 'badge-shipped',
-        'completed': 'badge-completed',
-        'refunded': 'badge-refunded',
-        'cancelled': 'badge-cancelled'
-      };
-      return map[status] || '';
-    }
-    
-    function getStatusText(status) {
-      var map = {
-        'pending': '待處理',
-        'processing': '處理中',
-        'shipped': '已發貨',
-        'completed': '已完成',
-        'refunded': '已退款',
-        'cancelled': '已取消'
-      };
-      return map[status] || status;
     }
     
     function closeModal() {
       document.getElementById('customer-modal').classList.remove('active');
     }
     
+    function showAddCustomer() {
+      document.getElementById('modal-title').textContent = '➕ 新增客戶';
+      document.getElementById('cust-id').value = '';
+      document.getElementById('cust-name').value = '';
+      document.getElementById('cust-email').value = '';
+      document.getElementById('cust-phone').value = '';
+      document.getElementById('cust-address').value = '';
+      document.getElementById('cust-notes').value = '';
+      document.getElementById('customer-modal').classList.add('active');
+    }
+    
     function saveCustomer() {
+      var id = document.getElementById('cust-id').value;
       var data = {
         name: document.getElementById('cust-name').value,
+        email: document.getElementById('cust-email').value,
         phone: document.getElementById('cust-phone').value,
-        address: document.getElementById('cust-address').value
+        address: document.getElementById('cust-address').value,
+        notes: document.getElementById('cust-notes').value
       };
-      fetch('/api/customers/'+currentCustomerId, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
+      
+      var url = '/api/customers' + (id ? '/' + id : '');
+      var method = id ? 'PUT' : 'POST';
+      
+      fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      }).then(function(r){return r.json();}).then(function(d){
-        if (d.success) {
-          alert('✅ 儲存成功！');
-          location.reload();
+      }).then(r => r.json()).then(d => {
+        if (d.success || d.id) {
+          alert(id ? '✅ 客戶已更新！' : '✅ 客戶已新增！');
+          loadCustomers();
+          if (!id) closeModal();
         } else {
-          alert('❌ 錯誤: '+d.error);
+          alert('❌ 錯誤: ' + d.error);
         }
       });
     }
     
     function addTag() {
       var tag = document.getElementById('new-tag').value.trim();
-      if (!tag) return;
-      fetch('/api/customers/'+currentCustomerId+'/tags', {
+      if (!tag || !currentCustomerId) return;
+      
+      fetch('/api/customers/' + currentCustomerId + '/tags', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({tag: tag})
-      }).then(function(r){return r.json();}).then(function(d){
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag: tag })
+      }).then(r => r.json()).then(d => {
         if (d.success) {
           document.getElementById('new-tag').value = '';
-          viewCustomer(currentCustomerId); // Refresh
+          viewCustomer(currentCustomerId);
         }
       });
     }
     
     function removeTag(tag) {
-      if (!confirm('確定要刪除標籤「'+tag+'」嗎？')) return;
-      fetch('/api/customers/'+currentCustomerId+'/tags/'+encodeURIComponent(tag), {
+      if (!confirm('確定要刪除標籤「' + tag + '」嗎？')) return;
+      fetch('/api/customers/' + currentCustomerId + '/tags/' + encodeURIComponent(tag), {
         method: 'DELETE'
-      }).then(function(r){return r.json();}).then(function(d){
-        if (d.success) {
-          viewCustomer(currentCustomerId); // Refresh
-        }
+      }).then(r => r.json()).then(d => {
+        if (d.success) viewCustomer(currentCustomerId);
       });
     }
     
     function deleteCustomer() {
       if (!confirm('⚠️ 確定要刪除此客戶嗎？此操作無法復原！')) return;
-      alert('刪除功能待完成');
+      fetch('/api/customers/' + currentCustomerId, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) {
+            alert('✅ 客戶已刪除');
+            closeModal();
+            loadCustomers();
+          }
+        });
     }
     
-    function showAddCustomer() {
-      // Show the modal with empty form
-      document.getElementById('modal-title').textContent = '新增客戶';
-      document.getElementById('cust-id').value = '';
-      document.getElementById('cust-name').value = '';
-      document.getElementById('cust-email').value = '';
-      document.getElementById('cust-phone').value = '';
-      document.getElementById('cust-address').value = '';
-      document.getElementById('customer-modal').style.display = 'flex';
+    function sendEmail() {
+      alert('📧 發送 Email 功能 (整合Email服務)');
     }
     
-    function saveCustomer() {
-      var id = document.getElementById('cust-id').value;
-      var name = document.getElementById('cust-name').value;
-      var email = document.getElementById('cust-email').value;
-      var phone = document.getElementById('cust-phone').value;
-      var address = document.getElementById('cust-address').value;
-      var password = document.getElementById('cust-password').value;
-      
-      if (!name || !email) {
-        alert('請輸入名稱和Email');
-        return;
-      }
-      
-      var data = { name: name, email: email, phone: phone, address: address };
-      if (password) data.password = password;
-      
-      var url = '/api/customers';
-      var method = 'POST';
-      
-      if (id) {
-        url = '/api/customers/' + id;
-        method = 'PUT';
-      }
-      
-      fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      }).then(function(r) { return r.json(); }).then(function(d) {
-        if (d.error) {
-          alert('❌ 錯誤: ' + d.error);
-        } else {
-          alert(id ? '✅ 客戶已更新！' : '✅ 客戶已新增！');
-          closeModal();
-          loadCustomers();
-        }
-      }).catch(function(e) {
-        alert('❌ 網絡錯誤: ' + e.message);
-      });
+    function createOrder() {
+      window.location.href = 'order-new.html?customer=' + currentCustomerId;
+    }
+    
+    function applyCoupon() {
+      alert('🎟️ 發放優惠碼功能');
     }
     
     // Close modal on overlay click
@@ -388,14 +541,5 @@
       if (e.target === this) closeModal();
     });
   </script>
-  
-  <style>
-    .badge-pending { background: #fef3c7; color: #92400e; }
-    .badge-processing { background: #dbeafe; color: #1e40af; }
-    .badge-shipped { background: #e0e7ff; color: #3730a3; }
-    .badge-completed { background: #d1fae5; color: #065f46; }
-    .badge-refunded { background: #fee2e2; color: #991b1b; }
-    .badge-cancelled { background: #f3f4f6; color: #6b7280; }
-  </style>
 </body>
 </html>
