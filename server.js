@@ -65,6 +65,10 @@ app.get('/api/products', async (req, res) => {
       category: p.category,
       description: p.description,
       image_url: p.image_url,
+      image_urls: p.image_urls ? JSON.parse(p.image_urls) : [],
+      seo_title: p.seo_title || '',
+      seo_description: p.seo_description || '',
+      seo_keywords: p.seo_keywords || '',
       active: p.active
     })));
   } catch (e) {
@@ -81,6 +85,10 @@ app.get('/api/products/:id', async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
     const p = products[0];
+    
+    // Get variants
+    const variants = await sql`SELECT * FROM product_variants WHERE product_id = ${req.params.id} AND active = 1`;
+    
     res.json({
       id: p.id,
       product_code: p.product_code,
@@ -89,11 +97,17 @@ app.get('/api/products/:id', async (req, res) => {
       price: p.price_retail || p.price,
       price_retail: p.price_retail || p.price,
       price_cost: p.price_cost || 0,
+      price_wholesale: p.price_wholesale || 0,
       price_jpy: p.price_cost || p.price,
       stock: p.stock,
       category: p.category,
       description: p.description,
       image_url: p.image_url,
+      image_urls: p.image_urls ? JSON.parse(p.image_urls) : [],
+      seo_title: p.seo_title || '',
+      seo_description: p.seo_description || '',
+      seo_keywords: p.seo_keywords || '',
+      variants: variants,
       active: p.active
     });
   } catch (e) {
@@ -104,10 +118,11 @@ app.get('/api/products/:id', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
   try {
-    const { product_code, name, price, stock, category, description, image_url } = req.body;
+    const { product_code, name, price, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords } = req.body;
+    const imageUrlsJson = JSON.stringify(image_urls || []);
     await sql`
-      INSERT INTO products (product_code, name, price, stock, category, description, image_url)
-      VALUES (${product_code}, ${name}, ${price}, ${stock}, ${category}, ${description}, ${image_url})
+      INSERT INTO products (product_code, name, price, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords)
+      VALUES (${product_code}, ${name}, ${price}, ${stock}, ${category}, ${description}, ${image_url}, ${imageUrlsJson}, ${seo_title || ''}, ${seo_description || ''}, ${seo_keywords || ''})
     `;
     res.json({ success: true });
   } catch (e) {
@@ -118,7 +133,8 @@ app.post('/api/products', async (req, res) => {
 
 app.put('/api/products/:id', async (req, res) => {
   try {
-    const { product_code, jan_code, name, price, price_retail, price_cost, stock, category, description, image_url } = req.body;
+    const { product_code, jan_code, name, price, price_retail, price_cost, price_wholesale, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords, variants } = req.body;
+    const imageUrlsJson = JSON.stringify(image_urls || []);
     await sql`
       UPDATE products 
       SET product_code = ${product_code}, 
@@ -131,9 +147,29 @@ app.put('/api/products/:id', async (req, res) => {
           stock = ${stock}, 
           category = ${category}, 
           description = ${description}, 
-          image_url = ${image_url}
+          image_url = ${image_url},
+          image_urls = ${imageUrlsJson},
+          seo_title = ${seo_title || ''},
+          seo_description = ${seo_description || ''},
+          seo_keywords = ${seo_keywords || ''}
       WHERE id = ${req.params.id}
     `;
+    
+    // Handle variants
+    if (variants && Array.isArray(variants)) {
+      // Delete existing variants
+      await sql`DELETE FROM product_variants WHERE product_id = ${req.params.id}`;
+      // Insert new variants
+      for (const v of variants) {
+        if (v.variant_name && v.variant_value) {
+          await sql`
+            INSERT INTO product_variants (product_id, variant_name, variant_value, price_modifier, stock, sku, active)
+            VALUES (${req.params.id}, ${v.variant_name}, ${v.variant_value}, ${v.price_modifier || 0}, ${v.stock || 0}, ${v.sku || ''}, ${v.active !== false ? 1 : 0})
+          `;
+        }
+      }
+    }
+    
     res.json({ success: true });
   } catch (e) {
     console.error('Error updating product:', e);
@@ -148,6 +184,41 @@ app.delete('/api/products/:id', async (req, res) => {
     res.json({ success: true });
   } catch (e) {
     console.error('Error deleting product:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Product Variants API
+app.get('/api/products/:id/variants', async (req, res) => {
+  try {
+    const variants = await sql`SELECT * FROM product_variants WHERE product_id = ${req.params.id} AND active = 1`;
+    res.json(variants);
+  } catch (e) {
+    console.error('Error fetching variants:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/products/:id/variants', async (req, res) => {
+  try {
+    const { variant_name, variant_value, price_modifier, stock, sku } = req.body;
+    await sql`
+      INSERT INTO product_variants (product_id, variant_name, variant_value, price_modifier, stock, sku)
+      VALUES (${req.params.id}, ${variant_name}, ${variant_value}, ${price_modifier || 0}, ${stock || 0}, ${sku || ''})
+    `;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error creating variant:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/variants/:id', async (req, res) => {
+  try {
+    await sql`UPDATE product_variants SET active = 0 WHERE id = ${req.params.id}`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error deleting variant:', e);
     res.status(500).json({ error: e.message });
   }
 });

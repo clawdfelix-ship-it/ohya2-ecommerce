@@ -45,18 +45,19 @@
     <table id="products-table">
       <thead>
         <tr>
+          <th>圖片</th>
           <th>JAN</th>
           <th>編碼</th>
           <th>名稱</th>
           <th>零售</th>
-          <th>批發</th>
           <th>庫存</th>
           <th>分類</th>
+          <th>變體</th>
           <th>操作</th>
         </tr>
       </thead>
       <tbody id="products-body">
-        <tr><td colspan="8">載入中...</td></tr>
+        <tr><td colspan="9">載入中...</td></tr>
       </tbody>
     </table>
   </div>
@@ -86,18 +87,21 @@
     function renderProducts(list) {
       var html = '';
       list.slice(0,50).forEach(function(p){
+        var img = p.image_url || (p.image_urls && p.image_urls.length > 0 ? p.image_urls[0] : '');
+        var hasVariants = p.variants && p.variants.length > 0;
         html += '<tr>' +
+          '<td>'+(img ? '<img src="'+img+'" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">' : '-')+'</td>' +
           '<td>'+(p.jan_code||'-')+'</td>' +
           '<td>'+(p.product_code||'')+'</td>' +
-          '<td>'+(p.name||'').substring(0,20)+'</td>' +
+          '<td>'+(p.name||'').substring(0,25)+'</td>' +
           '<td><b>$'+(p.price_retail||p.price||0)+'</b></td>' +
-          '<td>$'+(p.price_wholesale||0)+'</td>' +
           '<td style="color:'+((p.stock||0)<5?'red':'')+'">'+(p.stock||0)+'</td>' +
           '<td>'+(p.category||'-')+'</td>' +
+          '<td>'+(hasVariants ? '<span style="background:#22c55e;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px;">' + p.variants.length + '</span>' : '-')+'</td>' +
           '<td><a href="product-edit.html?id='+p.id+'" class="btn btn-sm">編輯</a></td>' +
         '</tr>';
       });
-      document.getElementById('products-body').innerHTML = html || '<tr><td colspan="8">暫無產品</td></tr>';
+      document.getElementById('products-body').innerHTML = html || '<tr><td colspan="9">暫無產品</td></tr>';
     }
     
     function filterProducts() {

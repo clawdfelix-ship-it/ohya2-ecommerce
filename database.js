@@ -59,6 +59,25 @@ async function initDatabase() {
         stock INTEGER DEFAULT 0,
         active INTEGER DEFAULT 1,
         image_url TEXT,
+        image_urls TEXT DEFAULT '[]',
+        seo_title TEXT,
+        seo_description TEXT,
+        seo_keywords TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Product variants table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS product_variants (
+        id SERIAL PRIMARY KEY,
+        product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+        variant_name TEXT,
+        variant_value TEXT,
+        price_modifier INTEGER DEFAULT 0,
+        stock INTEGER DEFAULT 0,
+        sku TEXT,
+        active INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
