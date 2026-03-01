@@ -160,7 +160,33 @@ async function initDatabase() {
       )
     `);
 
-    // Create admin user if not exists
+    // Admin Users table (Phase 6)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admin_users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'staff',
+        active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP
+      )
+    `);
+
+    // Create default admin if not exists
+    try {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await pool.query(`
+        INSERT INTO admin_users (username, email, password, role, active)
+        VALUES ('admin', 'admin@ohya2.com', $1, 'admin', 1)
+        ON CONFLICT (username) DO NOTHING
+      `, [hashedPassword]);
+    } catch (e) {
+      console.log('Admin user might already exist');
+    }
+
+    // Create admin user in users table if not exists (for backward compatibility)
     try {
       const hashedPassword = await bcrypt.hash('admin123', 10);
       await pool.query(`

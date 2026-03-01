@@ -5,17 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>設定 - OHYA2.0 Admin</title>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f5f5f5; }
     .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
     .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
     .nav a.active { background: #ec4899; border-radius: 5px; }
-    .main { padding: 15px; }
-    h2 { margin: 0 0 10px 0; font-size: 16px; }
-    .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .main { padding: 15px; max-width: 1200px; margin: 0 auto; }
+    h2 { margin: 0 0 10px 0; font-size: 18px; }
+    .card { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .card h3 { margin: 0 0 15px 0; font-size: 16px; color: #333; display: flex; align-items: center; gap: 8px; }
     .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 12px; margin-bottom: 5px; }
-    .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
-    .btn { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 5px; }
+    .form-group label { display: block; font-size: 13px; margin-bottom: 5px; color: #555; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .btn { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .btn:hover { background: #4f46e5; }
+    .btn-secondary { background: #6b7280; }
+    .btn-success { background: #10b981; }
+    .btn-danger { background: #ef4444; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    
+    /* Grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+    th { background: #f9fafb; font-weight: 600; color: #333; }
+    .role-badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+    .role-admin { background: #fef3c7; color: #92400e; }
+    .role-staff { background: #dbeafe; color: #1e40af; }
+    .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+    .status-active { background: #d1fae5; color: #065f46; }
+    .status-inactive { background: #fee2e2; color: #991b1b; }
+    
+    /* System Info */
+    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .info-item { background: #f9fafb; padding: 12px; border-radius: 8px; }
+    .info-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+    .info-value { font-size: 14px; font-weight: 600; color: #333; }
+    .status-connected { color: #10b981; }
+    .status-disconnected { color: #ef4444; }
+    
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+    .modal.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%; }
+    .modal h3 { margin: 0 0 15px 0; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; }
+    
+    /* Tabs */
+    .tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #eee; }
+    .tab { padding: 10px 20px; border: none; background: none; cursor: pointer; font-size: 14px; color: #666; border-bottom: 2px solid transparent; }
+    .tab.active { color: #6366f1; border-bottom-color: #6366f1; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* Alert */
+    .alert { padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; }
+    .alert-success { background: #d1fae5; color: #065f46; }
+    .alert-error { background: #fee2e2; color: #991b1b; }
+    
+    textarea { min-height: 150px; font-family: monospace; }
   </style>
 </head>
 <body>
@@ -29,50 +82,430 @@
     <a href="coupons.html">🎟️ 優惠碼</a>
     <a href="settings.html" class="active">⚙️ 設定</a>
   </div>
+  
   <div class="main">
-    <h2>System 設定</h2>
+    <h2>⚙️ 系統設定</h2>
     
-    <div class="card">
-      <h3>💳 Payment 設定</h3>
-      <div class="form-group">
-        <label>Bank 名稱</label>
-        <input type="text" value="恆生銀行">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('store')">🏪 商店設定</button>
+      <button class="tab" onclick="switchTab('csv')">📁 CSV 匯入/匯出</button>
+      <button class="tab" onclick="switchTab('admin')">👥 管理員</button>
+      <button class="tab" onclick="switchTab('system')">💾 系統資訊</button>
+    </div>
+    
+    <!-- Tab: Store Settings -->
+    <div id="tab-store" class="tab-content active">
+      <div class="card">
+        <h3>💳 付款設定</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>銀行名稱</label>
+            <input type="text" id="bankName" value="恆生銀行">
+          </div>
+          <div class="form-group">
+            <label>帳戶號碼</label>
+            <input type="text" id="accountNumber" value="123-456789-001">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>FPS ID</label>
+          <input type="text" id="fpsId" value="0123456">
+        </div>
       </div>
-      <div class="form-group">
-        <label>Account Number</label>
-        <input type="text" value="123-456789-001">
+      
+      <div class="card">
+        <h3>🚚 運費設定</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>免運費金額 (HK$)</label>
+            <input type="number" id="freeShipping" value="300">
+          </div>
+          <div class="form-group">
+            <label>運費 (HK$)</label>
+            <input type="number" id="shippingFee" value="30">
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>FPS ID</label>
-        <input type="text" value="0123456">
+      
+      <div class="card">
+        <h3>🏪 商店資訊</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>商店名稱</label>
+            <input type="text" id="storeName" value="OHYA2.0">
+          </div>
+          <div class="form-group">
+            <label>聯絡電郵</label>
+            <input type="email" id="storeEmail" value="admin@ohya2.com">
+          </div>
+        </div>
+      </div>
+      
+      <button class="btn" onclick="saveStoreSettings()">💾 儲存設定</button>
+    </div>
+    
+    <!-- Tab: CSV Import/Export -->
+    <div id="tab-csv" class="tab-content">
+      <div class="card">
+        <h3>📤 匯出數據</h3>
+        <p style="color: #666; margin-bottom: 15px;">匯出產品或訂單資料為 CSV 檔案</p>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="exportProducts()">📦 匯出產品列表</button>
+          <button class="btn btn-success" onclick="exportOrders()">🛒 匯出訂單列表</button>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3>📥 匯入產品</h3>
+        <p style="color: #666; margin-bottom: 15px;">從 CSV 檔案匯入產品資料 ( Basic 版)</p>
+        <div id="importAlert"></div>
+        <div class="form-group">
+          <label>CSV 內容 (直接貼上)</label>
+          <textarea id="csvData" placeholder="product_code,name,price,stock,category&#10;P001,產品A,100,10,分類1&#10;P002,產品B,200,5,分類2"></textarea>
+        </div>
+        <button class="btn" onclick="importProducts()">📥 匯入產品</button>
       </div>
     </div>
     
-    <div class="card">
-      <h3>🚚 Shipping 設定</h3>
-      <div class="form-group">
-        <label>Free Shipping Threshold (HK$)</label>
-        <input type="number" value="300">
-      </div>
-      <div class="form-group">
-        <label>Shipping Fee (HK$)</label>
-        <input type="number" value="30">
+    <!-- Tab: Admin Users -->
+    <div id="tab-admin" class="tab-content">
+      <div class="card">
+        <h3>👥 管理員帳戶</h3>
+        <div id="adminAlert"></div>
+        <div style="margin-bottom: 15px;">
+          <button class="btn" onclick="showAddAdminModal()">➕ 新增管理員</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>用戶名</th>
+              <th>電郵</th>
+              <th>權限</th>
+              <th>狀態</th>
+              <th>建立日期</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsersList">
+            <tr><td colspan="6">載入中...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
     
-    <div class="card">
-      <h3>🏪 Store Info</h3>
-      <div class="form-group">
-        <label>Store 名稱</label>
-        <input type="text" value="OHYA2.0">
+    <!-- Tab: System Info -->
+    <div id="tab-system" class="tab-content">
+      <div class="card">
+        <h3>💾 系統資訊</h3>
+        <div id="systemInfoAlert"></div>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">系統版本</div>
+            <div class="info-value" id="sysVersion">載入中...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">資料庫狀態</div>
+            <div class="info-value status-connected" id="sysDbStatus">載入中...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">資料庫主機</div>
+            <div class="info-value" id="sysDbHost">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Node.js 版本</div>
+            <div class="info-value" id="sysNodeVersion">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">執行平台</div>
+            <div class="info-value" id="sysPlatform">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">運行時間</div>
+            <div class="info-value" id="sysUptime">-</div>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Contact Email</label>
-        <input type="email" value="admin@ohya2.com">
+      
+      <div class="card">
+        <h3>📊 數據統計</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">產品數量</div>
+            <div class="info-value" id="countProducts">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">訂單數量</div>
+            <div class="info-value" id="countOrders">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">客戶數量</div>
+            <div class="info-value" id="countUsers">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">分類數量</div>
+            <div class="info-value" id="countCategories">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">優惠碼數量</div>
+            <div class="info-value" id="countCoupons">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">近7日訂單</div>
+            <div class="info-value" id="recentOrders">-</div>
+          </div>
+        </div>
       </div>
+      
+      <button class="btn" onclick="loadSystemInfo()">🔄 重新整理</button>
     </div>
-    
-    <button class="btn" onclick="alert('設定 saved!')">儲存 設定</button>
   </div>
+  
+  <!-- Add Admin Modal -->
+  <div id="adminModal" class="modal">
+    <div class="modal-content">
+      <h3>➕ 新增管理員</h3>
+      <div class="form-group">
+        <label>用戶名</label>
+        <input type="text" id="newAdminUsername" placeholder="admin">
+      </div>
+      <div class="form-group">
+        <label>電郵</label>
+        <input type="email" id="newAdminEmail" placeholder="admin@example.com">
+      </div>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="newAdminPassword" placeholder="密碼">
+      </div>
+      <div class="form-group">
+        <label>權限</label>
+        <select id="newAdminRole">
+          <option value="staff">Staff (員工)</option>
+          <option value="admin">Admin (管理員)</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAdminModal()">取消</button>
+        <button class="btn" onclick="addAdminUser()">新增</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Tab switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+      
+      if (tabId === 'admin') loadAdminUsers();
+      if (tabId === 'system') loadSystemInfo();
+    }
+    
+    // Store Settings
+    function saveStoreSettings() {
+      alert('✅ 設定已儲存！');
+    }
+    
+    // CSV Export
+    async function exportProducts() {
+      try {
+        const response = await fetch('/api/admin/export/products');
+        if (!response.ok) throw new Error('匯出失敗');
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'products.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showAlert('importAlert', '✅ 產品列表已匯出！', 'success');
+      } catch (e) {
+        showAlert('importAlert', '❌ 匯出失敗: ' + e.message, 'error');
+      }
+    }
+    
+    async function exportOrders() {
+      try {
+        const response = await fetch('/api/admin/export/orders');
+        if (!response.ok) throw new Error('匯出失敗');
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'orders.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showAlert('importAlert', '✅ 訂單列表已匯出！', 'success');
+      } catch (e) {
+        showAlert('importAlert', '❌ 匯出失敗: ' + e.message, 'error');
+      }
+    }
+    
+    // CSV Import
+    async function importProducts() {
+      const csvData = document.getElementById('csvData').value.trim();
+      if (!csvData) {
+        showAlert('importAlert', '❌ 請輸入 CSV 數據', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/admin/import/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ csvData })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          showAlert('importAlert', `✅ 匯入成功！新增/更新: ${result.imported}, 跳過: ${result.skipped}`, 'success');
+          document.getElementById('csvData').value = '';
+        } else {
+          showAlert('importAlert', '❌ ' + result.error, 'error');
+        }
+      } catch (e) {
+        showAlert('importAlert', '❌ 匯入失敗: ' + e.message, 'error');
+      }
+    }
+    
+    // Admin Users
+    async function loadAdminUsers() {
+      try {
+        const response = await fetch('/api/admin/users');
+        const users = await response.json();
+        
+        const tbody = document.getElementById('adminUsersList');
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6">暫無管理員帳戶</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td>${u.username}</td>
+            <td>${u.email}</td>
+            <td><span class="role-badge ${u.role === 'admin' ? 'role-admin' : 'role-staff'}">${u.role === 'admin' ? '管理員' : '員工'}</span></td>
+            <td><span class="status-badge ${u.active ? 'status-active' : 'status-inactive'}">${u.active ? '啟用' : '停用'}</span></td>
+            <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('zh-HK') : '-'}</td>
+            <td>
+              ${u.role !== 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteAdminUser(${u.id})">刪除</button>` : '-'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        showAlert('adminAlert', '❌ 載入失敗: ' + e.message, 'error');
+      }
+    }
+    
+    function showAddAdminModal() {
+      document.getElementById('adminModal').classList.add('show');
+    }
+    
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.remove('show');
+    }
+    
+    async function addAdminUser() {
+      const username = document.getElementById('newAdminUsername').value.trim();
+      const email = document.getElementById('newAdminEmail').value.trim();
+      const password = document.getElementById('newAdminPassword').value;
+      const role = document.getElementById('newAdminRole').value;
+      
+      if (!username || !email || !password) {
+        alert('請填寫所有欄位');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password, role })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          closeAdminModal();
+          loadAdminUsers();
+          showAlert('adminAlert', '✅ 管理員已新增！', 'success');
+          document.getElementById('newAdminUsername').value = '';
+          document.getElementById('newAdminEmail').value = '';
+          document.getElementById('newAdminPassword').value = '';
+        } else {
+          alert('❌ ' + result.error);
+        }
+      } catch (e) {
+        alert('❌ 新增失敗: ' + e.message);
+      }
+    }
+    
+    async function deleteAdminUser(id) {
+      if (!confirm('確定要刪除此管理員嗎？')) return;
+      
+      try {
+        const response = await fetch('/api/admin/users/' + id, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.success) {
+          loadAdminUsers();
+          showAlert('adminAlert', '✅ 管理員已刪除', 'success');
+        } else {
+          alert('❌ ' + result.error);
+        }
+      } catch (e) {
+        alert('❌ 刪除失敗: ' + e.message);
+      }
+    }
+    
+    // System Info
+    async function loadSystemInfo() {
+      try {
+        const response = await fetch('/api/admin/system-info');
+        const data = await response.json();
+        
+        if (data.error) {
+          showAlert('systemInfoAlert', '❌ ' + data.error, 'error');
+          return;
+        }
+        
+        document.getElementById('sysVersion').textContent = data.version;
+        document.getElementById('sysDbStatus').textContent = data.database.status;
+        document.getElementById('sysDbStatus').className = 'info-value ' + (data.database.status === 'connected' ? 'status-connected' : 'status-disconnected');
+        document.getElementById('sysDbHost').textContent = data.database.host;
+        document.getElementById('sysNodeVersion').textContent = data.nodeVersion;
+        document.getElementById('sysPlatform').textContent = data.platform;
+        document.getElementById('sysUptime').textContent = formatUptime(data.uptime);
+        
+        document.getElementById('countProducts').textContent = data.tables.products || 0;
+        document.getElementById('countOrders').textContent = data.tables.orders || 0;
+        document.getElementById('countUsers').textContent = data.tables.users || 0;
+        document.getElementById('countCategories').textContent = data.tables.categories || 0;
+        document.getElementById('countCoupons').textContent = data.tables.coupons || 0;
+        document.getElementById('recentOrders').textContent = data.recentOrders7days || 0;
+        
+      } catch (e) {
+        showAlert('systemInfoAlert', '❌ 載入失敗: ' + e.message, 'error');
+      }
+    }
+    
+    function formatUptime(seconds) {
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      if (days > 0) return `${days}天 ${hours}小時`;
+      if (hours > 0) return `${hours}小時 ${mins}分`;
+      return `${mins}分`;
+    }
+    
+    // Helper
+    function showAlert(id, message, type) {
+      const el = document.getElementById(id);
+      el.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+      setTimeout(() => { el.innerHTML = ''; }, 5000);
+    }
+  </script>
 </body>
 </html>

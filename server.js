@@ -1028,6 +1028,317 @@ app.post('/api/admin/import-products', async (req, res) => {
   }
 });
 
+// ==================== PHASE 6: CSV Import/Export ====================
+
+// CSV Export - Products
+app.get('/api/admin/export/products', async (req, res) => {
+  try {
+    const products = await sql`SELECT * FROM products ORDER BY id DESC`;
+    
+    // Create CSV header
+    const headers = ['id', 'product_code', 'jan_code', 'name', 'price', 'price_retail', 'price_cost', 'stock', 'category', 'description', 'active'];
+    const csvRows = [headers.join(',')];
+    
+    // Add data rows
+    for (const p of products) {
+      const row = [
+        p.id,
+        `"${(p.product_code || '').replace(/"/g, '""')}"`,
+        `"${(p.jan_code || '').replace(/"/g, '""')}"`,
+        `"${(p.name || '').replace(/"/g, '""')}"`,
+        p.price || 0,
+        p.price_retail || 0,
+        p.price_cost || 0,
+        p.stock || 0,
+        `"${(p.category || '').replace(/"/g, '""')}"`,
+        `"${(p.description || '').replace(/"/g, '""')}"`,
+        p.active || 1
+      ];
+      csvRows.push(row.join(','));
+    }
+    
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=products.csv');
+    res.send('\uFEFF' + csvRows.join('\n')); // UTF-8 BOM for Excel
+  } catch (e) {
+    console.error('Export products error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// CSV Export - Orders
+app.get('/api/admin/export/orders', async (req, res) => {
+  try {
+    const orders = await sql`
+      SELECT o.*, u.name as customer_name, u.email as customer_email 
+      FROM orders o 
+      LEFT JOIN users u ON o.user_id = u.id 
+      ORDER BY o.id DESC
+    `;
+    
+    const headers = ['id', 'customer_name', 'customer_email', 'total', 'status', 'tracking_number', 'internal_notes', 'created_at'];
+    const csvRows = [headers.join(',')];
+    
+    for (const o of orders) {
+      const row = [
+        o.id,
+        `"${(o.customer_name || '').replace(/"/g, '""')}"`,
+        `"${(o.customer_email || '').replace(/"/g, '""')}"`,
+        o.total || 0,
+        `"${(o.status || '').replace(/"/g, '""')}"`,
+        `"${(o.tracking_number || '').replace(/"/g, '""')}"`,
+        `"${(o.internal_notes || '').replace(/"/g, '""')}"`,
+        o.created_at ? new Date(o.created_at).toLocaleString('zh-HK') : ''
+      ];
+      csvRows.push(row.join(','));
+    }
+    
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=orders.csv');
+    res.send('\uFEFF' + csvRows.join('\n'));
+  } catch (e) {
+    console.error('Export orders error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// CSV Import - Products (Basic)
+app.post('/api/admin/import/products', async (req, res) => {
+  try {
+    const { csvData } = req.body;
+    
+    if (!csvData || typeof csvData !== 'string') {
+      return res.status(400).json({ error: '請提供 CSV 數據' });
+    }
+    
+    const lines = csvData.split('\n').filter(line => line.trim());
+    if (lines.length < 2) {
+      return res.status(400).json({ error: 'CSV 格式錯誤或沒有數據' });
+    }
+    
+    // Parse CSV (simple parser)
+    const parseCSVLine = (line) => {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    };
+    
+    const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
+    let imported = 0;
+    let skipped = 0;
+    let errors = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      try {
+        const values = parseCSVLine(lines[i]);
+        if (values.length < 2) continue;
+        
+        // Map CSV columns to database fields
+        const row = {};
+        headers.forEach((h, idx) => {
+          row[h] = values[idx] || '';
+        });
+        
+        // Validate required fields
+        if (!row.name) {
+          skipped++;
+          continue;
+        }
+        
+        // Check if product exists
+        const existing = row.product_code ? 
+          await sql`SELECT id FROM products WHERE product_code = ${row.product_code}` : [];
+        
+        if (existing.length > 0) {
+          // Update existing
+          await sql`
+            UPDATE products SET 
+              name = ${row.name},
+              price = ${parseInt(row.price) || 0},
+              price_retail = ${parseInt(row.price_retail) || parseInt(row.price) || 0},
+              price_cost = ${parseInt(row.price_cost) || 0},
+              stock = ${parseInt(row.stock) || 0},
+              category = ${row.category || ''},
+              description = ${row.description || ''},
+              jan_code = ${row.jan_code || ''}
+            WHERE id = ${existing[0].id}
+          `;
+        } else {
+          // Insert new
+          await sql`
+            INSERT INTO products (product_code, jan_code, name, price, price_retail, price_cost, stock, category, description, active)
+            VALUES (${row.product_code || null}, ${row.jan_code || null}, ${row.name}, ${parseInt(row.price) || 0}, ${parseInt(row.price_retail) || parseInt(row.price) || 0}, ${parseInt(row.price_cost) || 0}, ${parseInt(row.stock) || 0}, ${row.category || ''}, ${row.description || ''}, ${parseInt(row.active) || 1})
+          `;
+        }
+        imported++;
+      } catch (e) {
+        errors.push(`第 ${i + 1} 行: ${e.message}`);
+      }
+    }
+    
+    res.json({ success: true, imported, skipped, errors: errors.slice(0, 5) });
+  } catch (e) {
+    console.error('Import products error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ==================== PHASE 6: Admin Users & Permissions ====================
+
+// Get admin users list
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const users = await sql`
+      SELECT id, username, email, role, created_at, last_login, active
+      FROM admin_users 
+      ORDER BY id DESC
+    `;
+    res.json(users);
+  } catch (e) {
+    console.error('Get admin users error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Add admin user
+app.post('/api/admin/users', async (req, res) => {
+  try {
+    const { username, email, password, role } = req.body;
+    
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: '請填寫所有必填欄位' });
+    }
+    
+    // Check if email exists
+    const existing = await sql`SELECT id FROM admin_users WHERE email = ${email}`;
+    if (existing.length > 0) {
+      return res.status(400).json({ error: '此電郵已被使用' });
+    }
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userRole = role || 'staff';
+    
+    await sql`
+      INSERT INTO admin_users (username, email, password, role, active)
+      VALUES (${username}, ${email}, ${hashedPassword}, ${userRole}, 1)
+    `;
+    
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Add admin user error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Update admin user
+app.put('/api/admin/users/:id', async (req, res) => {
+  try {
+    const { username, email, role, active, password } = req.body;
+    const userId = parseInt(req.params.id);
+    
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await sql`
+        UPDATE admin_users SET 
+          username = ${username},
+          email = ${email},
+          role = ${role},
+          active = ${active},
+          password = ${hashedPassword}
+        WHERE id = ${userId}
+      `;
+    } else {
+      await sql`
+        UPDATE admin_users SET 
+          username = ${username},
+          email = ${email},
+          role = ${role},
+          active = ${active}
+        WHERE id = ${userId}
+      `;
+    }
+    
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Update admin user error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Delete admin user
+app.delete('/api/admin/users/:id', async (req, res) => {
+  try {
+    await sql`DELETE FROM admin_users WHERE id = ${req.params.id} AND role != 'admin'`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Delete admin user error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ==================== PHASE 6: System Info ====================
+
+// Get system info
+app.get('/api/admin/system-info', async (req, res) => {
+  try {
+    // Get database info
+    const dbInfo = await pool.query('SELECT current_database(), current_user, version()');
+    
+    // Get table counts
+    const tables = ['products', 'orders', 'users', 'categories', 'coupons'];
+    const counts = {};
+    
+    for (const table of tables) {
+      try {
+        const result = await pool.query(`SELECT COUNT(*) as count FROM ${table}`);
+        counts[table] = parseInt(result.rows[0].count);
+      } catch (e) {
+        counts[table] = 0;
+      }
+    }
+    
+    // Get recent orders count
+    const recentOrders = await sql`
+      SELECT COUNT(*) as count FROM orders 
+      WHERE created_at > NOW() - INTERVAL '7 days'
+    `;
+    
+    res.json({
+      version: 'OHYA2.0 v1.0.0',
+      database: {
+        host: dbInfo.rows[0].current_user + '@' + (process.env.POSTGRES_HOST || 'localhost'),
+        name: dbInfo.rows[0].current_database,
+        status: 'connected',
+        version: dbInfo.rows[0].version.substring(0, 50)
+      },
+      tables: counts,
+      recentOrders7days: recentOrders[0]?.count || 0,
+      uptime: process.uptime(),
+      nodeVersion: process.version,
+      platform: process.platform
+    });
+  } catch (e) {
+    console.error('Get system info error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ==================== END PHASE 6 ====================
+
 // Root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
