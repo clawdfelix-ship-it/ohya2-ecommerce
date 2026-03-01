@@ -3,17 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>優惠碼 - OHYA2.0 Admin</title>
+  <title>優惠碼管理 - OHYA2.0 Admin</title>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #f5f5f5; }
     .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
     .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
     .nav a.active { background: #ec4899; border-radius: 5px; }
-    .main { padding: 15px; }
-    h2 { margin: 0 0 10px 0; font-size: 16px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; }
-    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-    .btn { padding: 8px 12px; background: #6366f1; color: #fff; border: none; border-radius: 5px; }
+    .main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    h2 { margin: 0 0 15px 0; font-size: 20px; color: #333; }
+    
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { padding: 10px 20px; background: #ddd; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+    .tab.active { background: #6366f1; color: #fff; }
+    
+    .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .card-title { font-size: 16px; font-weight: 600; }
+    
+    .btn { padding: 8px 16px; background: #6366f1; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+    .btn:hover { background: #4f46e5; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-success { background: #22c55e; }
+    .btn-success:hover { background: #16a34a; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 500; color: #555; }
+    .form-group input, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+    th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+    th { background: #f9fafb; font-weight: 600; color: #555; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size; font-weight: 500; }
+    .badge-per: 11pxcentage { background: #dbeafe; color: #1d4ed8; }
+    .badge-fixed { background: #dcfce7; color: #16a34a; }
+    .badge-shipping { background: #fef3c7; color: #d97706; }
+    .badge-active { background: #dcfce7; color: #16a34a; }
+    .badge-inactive { background: #f3f4f6; color: #9ca3af; }
+    .badge-expired { background: #fee2e2; color: #dc2626; }
+    
+    .empty { text-align: center; padding: 40px; color: #999; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+    .modal.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; border-radius: 8px; padding: 25px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; }
+    .checkbox-item { display: flex; align-items: center; gap: 5px; }
+    .checkbox-item input { width: auto; }
+    
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #666; font-size: 13px; }
+    .info-value { font-weight: 500; }
   </style>
 </head>
 <body>
@@ -27,12 +76,525 @@
     <a href="coupons.html" class="active">🎟️ 優惠碼</a>
     <a href="settings.html">⚙️ 設定</a>
   </div>
+
   <div class="main">
-    <h2>Coupon Management</h2>
-    <p><button class="btn" onclick="alert('Coupon API coming soon')">+ 新增 Coupon</button></p>
-    <table id="coupons-table">
-      <tr><td>No coupons yet</td></tr>
-    </table>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('coupons')">🎟️ 優惠碼</button>
+      <button class="tab" onclick="showTab('flash-sales')">⚡ 閃購特價</button>
+    </div>
+    
+    <!-- Coupons Tab -->
+    <div id="tab-coupons">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">優惠碼列表</span>
+          <button class="btn" onclick="openCouponModal()">+ 新增優惠碼</button>
+        </div>
+        <table id="coupons-table">
+          <thead>
+            <tr>
+              <th>優惠碼</th>
+              <th>類型</th>
+              <th>折扣</th>
+              <th>最低消費</th>
+              <th>使用次數</th>
+              <th>到期日</th>
+              <th>狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="coupons-tbody"></tbody>
+        </table>
+        <div id="coupons-empty" class="empty">暫無優惠碼</div>
+      </div>
+    </div>
+    
+    <!-- Flash Sales Tab -->
+    <div id="tab-flash-sales" style="display:none;">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">閃購特價列表</span>
+          <button class="btn" onclick="openFlashSaleModal()">+ 新增特價</button>
+        </div>
+        <table id="flash-sales-table">
+          <thead>
+            <tr>
+              <th>產品</th>
+              <th>原價</th>
+              <th>特價</th>
+              <th>折扣</th>
+              <th>結束時間</th>
+              <th>狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="flash-sales-tbody"></tbody>
+        </table>
+        <div id="flash-sales-empty" class="empty">暫無特價產品</div>
+      </div>
+    </div>
   </div>
+
+  <!-- Coupon Modal -->
+  <div id="coupon-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title" id="coupon-modal-title">新增優惠碼</span>
+        <button class="modal-close" onclick="closeCouponModal()">&times;</button>
+      </div>
+      <form id="coupon-form">
+        <input type="hidden" id="coupon-id">
+        <div class="form-group">
+          <label>優惠碼 *</label>
+          <input type="text" id="coupon-code" placeholder="例如: SAVE20" required style="text-transform: uppercase;">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>優惠類型 *</label>
+            <select id="coupon-type" required>
+              <option value="percentage">百分比折扣 (%)</option>
+              <option value="fixed">固定金額折扣 ($)</option>
+              <option value="free_shipping">免運費</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>折扣值 *</label>
+            <input type="number" id="coupon-value" placeholder="例如: 20" required min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>最低消費 (HK$)</label>
+            <input type="number" id="coupon-min-spend" placeholder="0" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label>使用次數限制</label>
+            <input type="number" id="coupon-max-uses" placeholder="1" min="1" value="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>開始日期</label>
+            <input type="datetime-local" id="coupon-starts">
+          </div>
+          <div class="form-group">
+            <label>到期日期</label>
+            <input type="datetime-local" id="coupon-expires">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>適用範圍</label>
+          <select id="coupon-applicable-type">
+            <option value="all">全部產品</option>
+            <option value="category">指定分類</option>
+            <option value="product">指定產品</option>
+          </select>
+        </div>
+        <div id="applicable-ids-group" class="form-group" style="display:none;">
+          <label>選擇適用產品/分類</label>
+          <div id="applicable-ids-container"></div>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="coupon-active" checked> 啟用
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" style="background:#999" onclick="closeCouponModal()">取消</button>
+          <button type="submit" class="btn">儲存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Flash Sale Modal -->
+  <div id="flash-sale-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title" id="flash-sale-modal-title">新增特價產品</span>
+        <button class="modal-close" onclick="closeFlashSaleModal()">&times;</button>
+      </div>
+      <form id="flash-sale-form">
+        <input type="hidden" id="flash-sale-id">
+        <div class="form-group">
+          <label>選擇產品 *</label>
+          <select id="flash-product-id" required>
+            <option value="">請選擇產品</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>原價 (HK$) *</label>
+            <input type="number" id="flash-original-price" required min="0">
+          </div>
+          <div class="form-group">
+            <label>特價 (HK$) *</label>
+            <input type="number" id="flash-special-price" required min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>開始時間</label>
+            <input type="datetime-local" id="flash-starts">
+          </div>
+          <div class="form-group">
+            <label>結束時間</label>
+            <input type="datetime-local" id="flash-ends">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="flash-sale-active" checked> 啟用
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" style="background:#999" onclick="closeFlashSaleModal()">取消</button>
+          <button type="submit" class="btn">儲存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'coupons';
+    let coupons = [];
+    let flashSales = [];
+    let products = [];
+
+    // Tab switching
+    function showTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-coupons').style.display = tab === 'coupons' ? 'block' : 'none';
+      document.getElementById('tab-flash-sales').style.display = tab === 'flash-sales' ? 'block' : 'none';
+      if (tab === 'coupons') loadCoupons();
+      else loadFlashSales();
+    }
+
+    // Load coupons
+    async function loadCoupons() {
+      try {
+        const res = await fetch('/api/coupons');
+        coupons = await res.json();
+        renderCoupons();
+      } catch (e) {
+        console.error('Error loading coupons:', e);
+      }
+    }
+
+    function renderCoupons() {
+      const tbody = document.getElementById('coupons-tbody');
+      const empty = document.getElementById('coupons-empty');
+      
+      if (coupons.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      
+      empty.style.display = 'none';
+      tbody.innerHTML = coupons.map(c => {
+        const typeLabels = { percentage: '百分比', fixed: '固定金額', free_shipping: '免運費' };
+        const typeBadges = { percentage: 'badge-percentage', fixed: 'badge-fixed', free_shipping: 'badge-shipping' };
+        let discount = '';
+        if (c.type === 'percentage') discount = c.value + '%';
+        else if (c.type === 'fixed') discount = 'HK$ ' + c.value;
+        else discount = '免運';
+        
+        const now = new Date();
+        let status = 'badge-active';
+        let statusText = '啟用';
+        if (!c.active) { status = 'badge-inactive'; statusText = '停用'; }
+        if (c.expires_at && new Date(c.expires_at) < now) { status = 'badge-expired'; statusText = '已過期'; }
+        
+        const expires = c.expires_at ? new Date(c.expires_at).toLocaleString('zh-HK') : '無限期';
+        
+        return `
+          <tr>
+            <td><strong>${c.code}</strong></td>
+            <td><span class="badge ${typeBadges[c.type]}">${typeLabels[c.type]}</span></td>
+            <td>${discount}</td>
+            <td>HK$ ${c.min_spend || 0}</td>
+            <td>${c.used_count || 0} / ${c.max_uses || 1}</td>
+            <td>${expires}</td>
+            <td><span class="badge ${status}">${statusText}</span></td>
+            <td>
+              <button class="btn btn-sm" onclick="editCoupon(${c.id})">編輯</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteCoupon(${c.id})">刪除</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Coupon Modal
+    function openCouponModal(coupon = null) {
+      document.getElementById('coupon-modal').classList.add('show');
+      document.getElementById('coupon-modal-title').textContent = coupon ? '編輯優惠碼' : '新增優惠碼';
+      document.getElementById('coupon-form').reset();
+      document.getElementById('coupon-id').value = '';
+      document.getElementById('coupon-active').checked = true;
+      
+      if (coupon) {
+        document.getElementById('coupon-id').value = coupon.id;
+        document.getElementById('coupon-code').value = coupon.code;
+        document.getElementById('coupon-type').value = coupon.type;
+        document.getElementById('coupon-value').value = coupon.value;
+        document.getElementById('coupon-min-spend').value = coupon.min_spend || 0;
+        document.getElementById('coupon-max-uses').value = coupon.max_uses || 1;
+        document.getElementById('coupon-starts').value = coupon.starts_at ? formatDateTimeLocal(coupon.starts_at) : '';
+        document.getElementById('coupon-expires').value = coupon.expires_at ? formatDateTimeLocal(coupon.expires_at) : '';
+        document.getElementById('coupon-applicable-type').value = coupon.applicable_type || 'all';
+        document.getElementById('coupon-active').checked = coupon.active !== 0;
+        updateApplicableIds(coupon.applicable_ids);
+      }
+      
+      updateApplicableIdsVisibility();
+    }
+
+    function closeCouponModal() {
+      document.getElementById('coupon-modal').classList.remove('show');
+    }
+
+    function formatDateTimeLocal(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      return d.toISOString().slice(0, 16);
+    }
+
+    function updateApplicableIdsVisibility() {
+      const type = document.getElementById('coupon-applicable-type').value;
+      document.getElementById('applicable-ids-group').style.display = (type === 'category' || type === 'product') ? 'block' : 'none';
+    }
+
+    async function updateApplicableIds(selectedIds = []) {
+      const type = document.getElementById('coupon-applicable-type').value;
+      const container = document.getElementById('applicable-ids-container');
+      
+      if (type === 'all') {
+        container.innerHTML = '';
+        return;
+      }
+      
+      if (products.length === 0) {
+        const res = await fetch('/api/products');
+        products = await res.json();
+      }
+      
+      if (type === 'category') {
+        const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+        container.innerHTML = categories.map(cat => `
+          <label class="checkbox-item">
+            <input type="checkbox" name="applicable_ids" value="${cat}" ${selectedIds.includes(cat) ? 'checked' : ''}> ${cat}
+          </label>
+        `).join('');
+      } else {
+        container.innerHTML = products.map(p => `
+          <label class="checkbox-item">
+            <input type="checkbox" name="applicable_ids" value="${p.id}" ${selectedIds.includes(String(p.id)) ? 'checked' : ''}> ${p.name}
+          </label>
+        `).join('');
+      }
+    }
+
+    document.getElementById('coupon-applicable-type').addEventListener('change', updateApplicableIdsVisibility);
+
+    // Save coupon
+    document.getElementById('coupon-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id = document.getElementById('coupon-id').value;
+      const applicableIds = Array.from(document.querySelectorAll('input[name="applicable_ids"]:checked')).map(cb => cb.value);
+      
+      const data = {
+        code: document.getElementById('coupon-code').value,
+        type: document.getElementById('coupon-type').value,
+        value: parseInt(document.getElementById('coupon-value').value),
+        min_spend: parseInt(document.getElementById('coupon-min-spend').value) || 0,
+        max_uses: parseInt(document.getElementById('coupon-max-uses').value) || 1,
+        starts_at: document.getElementById('coupon-starts').value || null,
+        expires_at: document.getElementById('coupon-expires').value || null,
+        applicable_type: document.getElementById('coupon-applicable-type').value,
+        applicable_ids: applicableIds,
+        active: document.getElementById('coupon-active').checked ? 1 : 0
+      };
+      
+      try {
+        const url = id ? `/api/coupons/${id}` : '/api/coupons';
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (!res.ok) throw new Error('Failed to save');
+        
+        closeCouponModal();
+        loadCoupons();
+      } catch (e) {
+        alert('儲存失敗: ' + e.message);
+      }
+    });
+
+    function editCoupon(id) {
+      const coupon = coupons.find(c => c.id === id);
+      if (coupon) openCouponModal(coupon);
+    }
+
+    async function deleteCoupon(id) {
+      if (!confirm('確定要刪除這個優惠碼嗎？')) return;
+      
+      try {
+        await fetch(`/api/coupons/${id}`, { method: 'DELETE' });
+        loadCoupons();
+      } catch (e) {
+        alert('刪除失敗: ' + e.message);
+      }
+    }
+
+    // Load Flash Sales
+    async function loadFlashSales() {
+      try {
+        const res = await fetch('/api/flash-sales');
+        flashSales = await res.json();
+        renderFlashSales();
+      } catch (e) {
+        console.error('Error loading flash sales:', e);
+      }
+    }
+
+    function renderFlashSales() {
+      const tbody = document.getElementById('flash-sales-tbody');
+      const empty = document.getElementById('flash-sales-empty');
+      
+      if (flashSales.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      
+      empty.style.display = 'none';
+      tbody.innerHTML = flashSales.map(s => {
+        const discount = s.original_price > 0 ? Math.round((1 - s.special_price / s.original_price) * 100) + '%' : '-';
+        const now = new Date();
+        let status = 'badge-active';
+        let statusText = '啟用';
+        if (!s.active) { status = 'badge-inactive'; statusText = '停用'; }
+        else if (s.ends_at && new Date(s.ends_at) < now) { status = 'badge-expired'; statusText = '已結束'; }
+        
+        const ends = s.ends_at ? new Date(s.ends_at).toLocaleString('zh-HK') : '無限期';
+        
+        return `
+          <tr>
+            <td>${s.product_name || 'Unknown'}</td>
+            <td><del>HK$ ${s.original_price}</del></td>
+            <td><strong style="color:#ef4444">HK$ ${s.special_price}</strong></td>
+            <td><span class="badge badge-percentage">-${discount}</span></td>
+            <td>${ends}</td>
+            <td><span class="badge ${status}">${statusText}</span></td>
+            <td>
+              <button class="btn btn-sm" onclick="editFlashSale(${s.id})">編輯</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteFlashSale(${s.id})">刪除</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Flash Sale Modal
+    async function openFlashSaleModal(sale = null) {
+      document.getElementById('flash-sale-modal').classList.add('show');
+      document.getElementById('flash-sale-modal-title').textContent = sale ? '編輯特價' : '新增特價產品';
+      document.getElementById('flash-sale-form').reset();
+      document.getElementById('flash-sale-id').value = '';
+      document.getElementById('flash-sale-active').checked = true;
+      
+      // Load products
+      if (products.length === 0) {
+        const res = await fetch('/api/products');
+        products = await res.json();
+      }
+      
+      const select = document.getElementById('flash-product-id');
+      select.innerHTML = '<option value="">請選擇產品</option>' + 
+        products.map(p => `<option value="${p.id}">${p.name} (HK$ ${p.price})</option>`).join('');
+      
+      if (sale) {
+        document.getElementById('flash-sale-id').value = sale.id;
+        document.getElementById('flash-product-id').value = sale.product_id;
+        document.getElementById('flash-original-price').value = sale.original_price;
+        document.getElementById('flash-special-price').value = sale.special_price;
+        document.getElementById('flash-starts').value = sale.starts_at ? formatDateTimeLocal(sale.starts_at) : '';
+        document.getElementById('flash-ends').value = sale.ends_at ? formatDateTimeLocal(sale.ends_at) : '';
+        document.getElementById('flash-sale-active').checked = sale.active !== 0;
+      }
+    }
+
+    function closeFlashSaleModal() {
+      document.getElementById('flash-sale-modal').classList.remove('show');
+    }
+
+    // Product selection updates original price
+    document.getElementById('flash-product-id').addEventListener('change', function() {
+      const product = products.find(p => p.id == this.value);
+      if (product && !document.getElementById('flash-original-price').value) {
+        document.getElementById('flash-original-price').value = product.price;
+      }
+    });
+
+    // Save flash sale
+    document.getElementById('flash-sale-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id = document.getElementById('flash-sale-id').value;
+      
+      const data = {
+        product_id: parseInt(document.getElementById('flash-product-id').value),
+        original_price: parseInt(document.getElementById('flash-original-price').value) || 0,
+        special_price: parseInt(document.getElementById('flash-special-price').value),
+        starts_at: document.getElementById('flash-starts').value || null,
+        ends_at: document.getElementById('flash-ends').value || null,
+        active: document.getElementById('flash-sale-active').checked ? 1 : 0
+      };
+      
+      try {
+        const url = id ? `/api/flash-sales/${id}` : '/api/flash-sales';
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (!res.ok) throw new Error('Failed to save');
+        
+        closeFlashSaleModal();
+        loadFlashSales();
+      } catch (e) {
+        alert('儲存失敗: ' + e.message);
+      }
+    });
+
+    function editFlashSale(id) {
+      const sale = flashSales.find(s => s.id === id);
+      if (sale) openFlashSaleModal(sale);
+    }
+
+    async function deleteFlashSale(id) {
+      if (!confirm('確定要刪除這個特價嗎？')) return;
+      
+      try {
+        await fetch(`/api/flash-sales/${id}`, { method: 'DELETE' });
+        loadFlashSales();
+      } catch (e) {
+        alert('刪除失敗: ' + e.message);
+      }
+    }
+
+    // Initial load
+    loadCoupons();
+  </script>
 </body>
 </html>

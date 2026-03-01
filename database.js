@@ -127,6 +127,39 @@ async function initDatabase() {
       )
     `);
 
+    // Coupons table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS coupons (
+        id SERIAL PRIMARY KEY,
+        code TEXT UNIQUE NOT NULL,
+        type TEXT NOT NULL DEFAULT 'percentage',
+        value INTEGER NOT NULL DEFAULT 0,
+        min_spend INTEGER DEFAULT 0,
+        max_uses INTEGER DEFAULT 1,
+        used_count INTEGER DEFAULT 0,
+        starts_at TIMESTAMP,
+        expires_at TIMESTAMP,
+        applicable_type TEXT DEFAULT 'all',
+        applicable_ids TEXT DEFAULT '[]',
+        active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Flash sales / special prices table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS flash_sales (
+        id SERIAL PRIMARY KEY,
+        product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+        special_price INTEGER NOT NULL,
+        original_price INTEGER NOT NULL,
+        starts_at TIMESTAMP,
+        ends_at TIMESTAMP,
+        active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Create admin user if not exists
     try {
       const hashedPassword = await bcrypt.hash('admin123', 10);

@@ -552,13 +552,216 @@ app.delete('/api/categories/:id', async (req, res) => {
 // --- Coupons API ---
 
 app.get('/api/coupons', async (req, res) => {
-  // For now, return empty array (coupons stored locally in admin)
-  res.json([]);
+  try {
+    const coupons = await sql`SELECT * FROM coupons ORDER BY id DESC`;
+    res.json(coupons);
+  } catch (e) {
+    console.error('Error fetching coupons:', e);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.post('/api/coupons', async (req, res) => {
-  // Coupons stored locally
-  res.json({ success: true, message: 'Coupon stored locally' });
+  try {
+    const { code, type, value, min_spend, max_uses, starts_at, expires_at, applicable_type, applicable_ids } = req.body;
+    
+    // Validate required fields
+    if (!code || !type || value === undefined) {
+      return res.status(400).json({ error: '缺少必要欄位' });
+    }
+    
+    const codeUpper = code.toUpperCase();
+    const applicableIdsJson = JSON.stringify(applicable_ids || []);
+    
+    await sql`
+      INSERT INTO coupons (code, type, value, min_spend, max_uses, starts_at, expires_at, applicable_type, applicable_ids)
+      VALUES (${codeUpper}, ${type}, ${value}, ${min_spend || 0}, ${max_uses || 1}, ${starts_at || null}, ${expires_at || null}, ${applicable_type || 'all'}, ${applicableIdsJson})
+    `;
+    
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error creating coupon:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/coupons/:id', async (req, res) => {
+  try {
+    const { code, type, value, min_spend, max_uses, starts_at, expires_at, applicable_type, applicable_ids, active } = req.body;
+    const applicableIdsJson = JSON.stringify(applicable_ids || []);
+    
+    await sql`
+      UPDATE coupons 
+      SET code = ${code.toUpperCase()}, 
+          type = ${type}, 
+          value = ${value},
+          min_spend = ${min_spend || 0},
+          max_uses = ${max_uses || 1},
+          starts_at = ${starts_at || null},
+          expires_at = ${expires_at || null},
+          applicable_type = ${applicable_type || 'all'},
+          applicable_ids = ${applicableIdsJson},
+          active = ${active !== false ? 1 : 0}
+      WHERE id = ${req.params.id}
+    `;
+    
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error updating coupon:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/coupons/:id', async (req, res) => {
+  try {
+    await sql`DELETE FROM coupons WHERE id = ${req.params.id}`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error deleting coupon:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Validate coupon for checkout
+app.post('/api/coupons/validate', async (req, res) => {
+  try {
+    const { code, cartTotal } = req.body;
+    const codeUpper = code.toUpperCase();
+    
+    const coupons = await sql`
+      SELECT * FROM coupons WHERE code = ${codeUpper} AND active = 1
+    `;
+    
+    if (coupons.length === 0) {
+      return res.json({ valid: false, error: '優惠碼不存在' });
+    }
+    
+    const coupon = coupons[0];
+    
+    // Check if expired
+    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+      return res.json({ valid: false, error: '優惠碼已過期' });
+    }
+    
+    // Check if not started yet
+    if (coupon.starts_at && new Date(coupon.starts_at) > new Date()) {
+      return res.json({ valid: false, error: '優惠碼尚未生效' });
+    }
+    
+    // Check usage limit
+    if (coupon.used_count >= coupon.max_uses) {
+      return res.json({ valid: false, error: '優惠碼已使用完畢' });
+    }
+    
+    // Check minimum spend
+    if (cartTotal < coupon.min_spend) {
+      return res.json({ valid: false, error: `最低消費 HK$ ${coupon.min_spend} 才能使用此優惠碼` });
+    }
+    
+    // Calculate discount
+    let discount = 0;
+    if (coupon.type === 'percentage') {
+      discount = Math.round(cartTotal * coupon.value / 100);
+    } else if (coupon.type === 'fixed') {
+      discount = coupon.value;
+    } else if (coupon.type === 'free_shipping') {
+      discount = 'free_shipping';
+    }
+    
+    res.json({ 
+      valid: true, 
+      coupon: coupon,
+      discount: discount,
+      type: coupon.type
+    });
+  } catch (e) {
+    console.error('Error validating coupon:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Use coupon (increment usage count)
+app.post('/api/coupons/:code/use', async (req, res) => {
+  try {
+    const codeUpper = req.params.code.toUpperCase();
+    await sql`
+      UPDATE coupons SET used_count = used_count + 1 WHERE code = ${codeUpper}
+    `;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error using coupon:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- Flash Sales API ---
+
+app.get('/api/flash-sales', async (req, res) => {
+  try {
+    const sales = await sql`
+      SELECT fs.*, p.name as product_name, p.product_code, p.image_url
+      FROM flash_sales fs
+      LEFT JOIN products p ON fs.product_id = p.id
+      WHERE fs.active = 1 AND (fs.ends_at IS NULL OR fs.ends_at > NOW())
+      ORDER BY fs.id DESC
+    `;
+    res.json(sales);
+  } catch (e) {
+    console.error('Error fetching flash sales:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/flash-sales', async (req, res) => {
+  try {
+    const { product_id, special_price, original_price, starts_at, ends_at } = req.body;
+    
+    if (!product_id || !special_price) {
+      return res.status(400).json({ error: '缺少必要欄位' });
+    }
+    
+    await sql`
+      INSERT INTO flash_sales (product_id, special_price, original_price, starts_at, ends_at)
+      VALUES (${product_id}, ${special_price}, ${original_price || 0}, ${starts_at || null}, ${ends_at || null})
+    `;
+    
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error creating flash sale:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/flash-sales/:id', async (req, res) => {
+  try {
+    const { product_id, special_price, original_price, starts_at, ends_at, active } = req.body;
+    
+    await sql`
+      UPDATE flash_sales 
+      SET product_id = ${product_id}, 
+          special_price = ${special_price},
+          original_price = ${original_price || 0},
+          starts_at = ${starts_at || null},
+          ends_at = ${ends_at || null},
+          active = ${active !== false ? 1 : 0}
+      WHERE id = ${req.params.id}
+    `;
+    
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error updating flash sale:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/flash-sales/:id', async (req, res) => {
+  try {
+    await sql`DELETE FROM flash_sales WHERE id = ${req.params.id}`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error deleting flash sale:', e);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // --- Analytics API ---
