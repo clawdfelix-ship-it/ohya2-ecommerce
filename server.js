@@ -178,10 +178,12 @@ app.post('/api/orders', async (req, res) => {
       VALUES (${user_id}, ${total}, 'pending')
       RETURNING id
     `;
-    const orderId = result[0]?.id || result?.id;
+    const orderId = result[0]?.id;
+    
+    console.log('Created order:', orderId, 'items:', items?.length);
     
     if (!orderId) {
-      throw new Error('Failed to get order ID');
+      throw new Error('Failed to get order ID: ' + JSON.stringify(result));
     }
     
     // Insert order items
