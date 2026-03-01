@@ -45,7 +45,6 @@
           <th>編碼</th>
           <th>名稱</th>
           <th>零售</th>
-          <th>成本</th>
           <th>批發</th>
           <th>庫存</th>
           <th>分類</th>
@@ -73,15 +72,14 @@
           '<td>'+(p.jan_code||'-')+'</td>' +
           '<td>'+(p.product_code||'')+'</td>' +
           '<td>'+(p.name||'').substring(0,20)+'</td>' +
-          '<td>$'+(p.price_retail||p.price||0)+'</td>' +
-          '<td>$'+(p.price_cost||0)+'</td>' +
+          '<td><b>$'+(p.price_retail||p.price||0)+'</b></td>' +
           '<td>$'+(p.price_wholesale||0)+'</td>' +
           '<td style="color:'+((p.stock||0)<5?'red':'')+'">'+(p.stock||0)+'</td>' +
           '<td>'+(p.category||'-')+'</td>' +
           '<td><a href="product-edit.html?id='+p.id+'" class="btn btn-sm">編輯</a></td>' +
         '</tr>';
       });
-      document.getElementById('products-body').innerHTML = html || '<tr><td colspan="9">暫無產品</td></tr>';
+      document.getElementById('products-body').innerHTML = html || '<tr><td colspan="8">暫無產品</td></tr>';
     }
     
     function filterProducts() {
