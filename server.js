@@ -121,7 +121,19 @@ app.get('/api/orders', async (req, res) => {
       LEFT JOIN users u ON o.user_id = u.id 
       ORDER BY o.id DESC
     `;
-    res.json(orders);
+    
+    // Get items for each order
+    const ordersWithItems = await Promise.all(orders.map(async (order) => {
+      const items = await sql`
+        SELECT oi.*, p.name as product_name, p.product_code
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ${order.id}
+      `;
+      return { ...order, items };
+    }));
+    
+    res.json(ordersWithItems);
   } catch (e) {
     console.error('Error fetching orders:', e);
     res.status(500).json({ error: e.message });
