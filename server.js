@@ -214,6 +214,19 @@ app.put('/api/orders/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/orders/:id', async (req, res) => {
+  try {
+    // Delete order items first
+    await sql`DELETE FROM order_items WHERE order_id = ${req.params.id}`;
+    // Then delete order
+    await sql`DELETE FROM orders WHERE id = ${req.params.id}`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error deleting order:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Customers API ---
 
 app.get('/api/customers', async (req, res) => {
