@@ -22,15 +22,9 @@ const sql = async (strings, ...values) => {
     }
   }
   
-  // Handle SELECT queries
-  if (query.trim().toUpperCase().startsWith('SELECT')) {
-    const result = await pool.query(query, params);
-    return result.rows;
-  }
-  
-  // Handle INSERT/UPDATE/DELETE
-  await pool.query(query, params);
-  return [];
+  // Handle all queries
+  const result = await pool.query(query, params);
+  return result.rows;
 };
 
 async function initDatabase() {
