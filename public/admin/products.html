@@ -33,9 +33,9 @@
   </div>
   <script>
     fetch('/api/products').then(function(r){return r.json();}).then(function(d){
-      var html = '<tr><th>Code</th><th>名稱</th><th>價格</th><th>庫存</th><th>Category</th></tr>';
+      var html = '<tr><th>編碼</th><th>名稱</th><th>售價</th><th>成本(日元)</th><th>庫存</th><th>分類</th></tr>';
       d.slice(0,50).forEach(function(p){
-        html += '<tr><td>'+(p.product_code||'')+'</td><td>'+(p.name||'').substring(0,25)+'</td><td>$'+(p.price||0)+'</td><td>'+(p.stock||0)+'</td><td>'+(p.category||'-')+'</td></tr>';
+        html += '<tr><td>'+(p.product_code||'')+'</td><td>'+(p.name||'').substring(0,25)+'</td><td>$'+(p.price||0)+' HKD</td><td>¥'+(p.price_jpy||p.price||0)+' JPY</td><td>'+(p.stock||0)+'</td><td>'+(p.category||'-')+'</td></tr>';
       });
       document.getElementById('products-table').innerHTML = html;
     });
