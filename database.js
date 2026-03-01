@@ -47,6 +47,7 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
         product_code TEXT UNIQUE,
+        jan_code TEXT,
         name TEXT NOT NULL,
         price INTEGER NOT NULL DEFAULT 0,
         price_retail INTEGER DEFAULT 0,

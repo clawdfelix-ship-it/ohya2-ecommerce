@@ -55,6 +55,7 @@ app.get('/api/products', async (req, res) => {
     res.json(products.map(p => ({
       id: p.id,
       product_code: p.product_code,
+      jan_code: p.jan_code,
       name: p.name,
       price: Math.round((p.price_retail || p.price) * exchangeRate),
       price_retail: Math.round((p.price_retail || p.price) * exchangeRate),
@@ -83,6 +84,7 @@ app.get('/api/products/:id', async (req, res) => {
     res.json({
       id: p.id,
       product_code: p.product_code,
+      jan_code: p.jan_code,
       name: p.name,
       price: p.price_retail || p.price,
       price_retail: p.price_retail || p.price,
@@ -116,10 +118,11 @@ app.post('/api/products', async (req, res) => {
 
 app.put('/api/products/:id', async (req, res) => {
   try {
-    const { product_code, name, price, price_retail, price_cost, stock, category, description, image_url } = req.body;
+    const { product_code, jan_code, name, price, price_retail, price_cost, stock, category, description, image_url } = req.body;
     await sql`
       UPDATE products 
       SET product_code = ${product_code}, 
+          jan_code = ${jan_code},
           name = ${name}, 
           price = ${price_retail || price || 0},
           price_retail = ${price_retail || price || 0},

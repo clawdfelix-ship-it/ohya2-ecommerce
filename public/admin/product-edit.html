@@ -48,8 +48,11 @@
         </div>
         <div class="col">
           <div class="form-group">
-            <label>分類</label>
-            <select id="p-category">
+            <label>JAN Code (條碼)</label>
+            <input type="text" id="p-jan" placeholder="1234567890123">
+          </div>
+        </div>
+      </div>
               <option value="オナホール">オナホール</option>
               <option value="ダッチワイフ">ダッチワイフ</option>
               <option value="おっぱいグッズ">おっぱいグッズ</option>
@@ -62,6 +65,16 @@
       <div class="form-group">
         <label>產品名稱</label>
         <input type="text" id="p-name">
+      </div>
+
+      <div class="form-group">
+        <label>分類</label>
+        <select id="p-category">
+          <option value="オナホール">オナホール</option>
+          <option value="ダッチワイフ">ダッチワイフ</option>
+          <option value="おっぱいグッズ">おっぱいグッズ</option>
+          <option value="性感クッション">性感クッション</option>
+        </select>
       </div>
       
       <!-- 3層價格 -->
@@ -134,6 +147,7 @@
     // Load product
     fetch('/api/products/' + productId).then(function(r){return r.json();}).then(function(p){
       document.getElementById('p-code').value = p.product_code || '';
+      document.getElementById('p-jan').value = p.jan_code || '';
       document.getElementById('p-name').value = p.name || '';
       document.getElementById('p-category').value = p.category || 'オナホール';
       document.getElementById('p-price-cost').value = p.price_cost || 0;
@@ -148,6 +162,7 @@
     function saveProduct() {
       var data = {
         product_code: document.getElementById('p-code').value,
+        jan_code: document.getElementById('p-jan').value,
         name: document.getElementById('p-name').value,
         category: document.getElementById('p-category').value,
         price_cost: parseInt(document.getElementById('p-price-cost').value) || 0,
