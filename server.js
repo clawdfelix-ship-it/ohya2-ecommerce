@@ -56,12 +56,14 @@ app.get('/api/products', async (req, res) => {
       id: p.id,
       product_code: p.product_code,
       name: p.name,
-      price: Math.round(p.price * exchangeRate), // Convert JPY to HKD
+      price: Math.round((p.price_retail || p.price) * exchangeRate),
+      price_retail: Math.round((p.price_retail || p.price) * exchangeRate),
+      price_cost: Math.round((p.price_cost || 0) * exchangeRate),
+      price_jpy: p.price_cost || p.price,
       stock: p.stock,
       category: p.category,
       description: p.description,
       image_url: p.image_url,
-      price_jpy: p.price, // Keep original JPY price for reference
       active: p.active
     })));
   } catch (e) {
@@ -82,8 +84,10 @@ app.get('/api/products/:id', async (req, res) => {
       id: p.id,
       product_code: p.product_code,
       name: p.name,
-      price: p.price,
-      price_jpy: p.price,
+      price: p.price_retail || p.price,
+      price_retail: p.price_retail || p.price,
+      price_cost: p.price_cost || 0,
+      price_jpy: p.price_cost || p.price,
       stock: p.stock,
       category: p.category,
       description: p.description,
@@ -112,11 +116,18 @@ app.post('/api/products', async (req, res) => {
 
 app.put('/api/products/:id', async (req, res) => {
   try {
-    const { product_code, name, price, stock, category, description, image_url } = req.body;
+    const { product_code, name, price, price_retail, price_cost, stock, category, description, image_url } = req.body;
     await sql`
       UPDATE products 
-      SET product_code = ${product_code}, name = ${name}, price = ${price}, 
-          stock = ${stock}, category = ${category}, description = ${description}, 
+      SET product_code = ${product_code}, 
+          name = ${name}, 
+          price = ${price_retail || price || 0},
+          price_retail = ${price_retail || price || 0},
+          price_cost = ${price_cost || 0},
+          price_wholesale = ${price_wholesale || 0},
+          stock = ${stock}, 
+          category = ${category}, 
+          description = ${description}, 
           image_url = ${image_url}
       WHERE id = ${req.params.id}
     `;

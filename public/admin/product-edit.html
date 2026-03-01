@@ -14,13 +14,17 @@
     h3 { margin: 0 0 10px 0; font-size: 14px; color: #333; }
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; }
-    .formform-group select,-group input, . .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
     .btn { padding: 12px 24px; background: #6366f1; color: #fff; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; }
     .btn-danger { background: #ef4444; }
-    .btn-secondary { background: #9ca3af; }
     .row { display: flex; gap: 15px; }
     .col { flex: 1; }
-    .info { background: #f0f7ff; padding: 10px; border-radius: 5px; font-size: 13px; color: #333; }
+    .price-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .price-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .price-field { flex: 1; }
+    .price-field label { font-size: 11px; }
+    .price-field input { padding: 8px; }
+    .info { background: #e8f5e9; padding: 10px; border-radius: 5px; font-size: 13px; color: #333; }
   </style>
 </head>
 <body>
@@ -60,18 +64,25 @@
         <input type="text" id="p-name">
       </div>
       
-      <div class="row">
-        <div class="col">
-          <div class="form-group">
-            <label>成本 (日元 JPY)</label>
-            <input type="number" id="p-price-jpy">
+      <!-- 3層價格 -->
+      <div class="price-box">
+        <h3>💰 價格設定 (日元 JPY)</h3>
+        <div class="price-row">
+          <div class="price-field">
+            <label>成本價 (Cost)</label>
+            <input type="number" id="p-price-cost" placeholder="0">
+          </div>
+          <div class="price-field">
+            <label>零售價 (Retail)</label>
+            <input type="number" id="p-price-retail" placeholder="0">
+          </div>
+          <div class="price-field">
+            <label>批發價 (Wholesale)</label>
+            <input type="number" id="p-price-wholesale" placeholder="0">
           </div>
         </div>
-        <div class="col">
-          <div class="form-group">
-            <label>售價 (港幣 HKD)</label>
-            <input type="number" id="p-price-hkd" readonly style="background:#f9f9f9">
-          </div>
+        <div class="info">
+          💡 系統會自動將日元轉換為港元顯示 (1 HKD ≈ 19 JPY)
         </div>
       </div>
       
@@ -102,10 +113,6 @@
         <label>描述</label>
         <textarea id="p-desc" rows="3"></textarea>
       </div>
-      
-      <div class="info">
-        💡 售價會根據匯率自動由日元轉換
-      </div>
     </div>
     
     <div style="display:flex;gap:10px;">
@@ -116,7 +123,6 @@
   
   <script>
     var productId = new URLSearchParams(window.location.search).get('id');
-    var product = {};
     
     if(!productId) {
       alert('沒有產品ID');
@@ -127,35 +133,26 @@
     
     // Load product
     fetch('/api/products/' + productId).then(function(r){return r.json();}).then(function(p){
-      product = p;
       document.getElementById('p-code').value = p.product_code || '';
       document.getElementById('p-name').value = p.name || '';
       document.getElementById('p-category').value = p.category || 'オナホール';
-      document.getElementById('p-price-jpy').value = p.price_jpy || p.price || 0;
-      document.getElementById('p-price-hkd').value = p.price || 0;
+      document.getElementById('p-price-cost').value = p.price_cost || 0;
+      document.getElementById('p-price-retail').value = p.price_retail || 0;
+      document.getElementById('p-price-wholesale').value = p.price_wholesale || 0;
       document.getElementById('p-stock').value = p.stock || 0;
       document.getElementById('p-active').value = p.active === 0 ? '0' : '1';
       document.getElementById('p-image').value = p.image_url || '';
       document.getElementById('p-desc').value = p.description || '';
     });
     
-    // Calculate HKD when JPY changes
-    document.getElementById('p-price-jpy').addEventListener('input', function(){
-      var jpy = parseInt(this.value) || 0;
-      var hkd = Math.round(jpy * 0.053); // 1 JPY ≈ 0.053 HKD
-      document.getElementById('p-price-hkd').value = hkd;
-    });
-    
     function saveProduct() {
-      var jpy = parseInt(document.getElementById('p-price-jpy').value) || 0;
-      var hkd = Math.round(jpy * 0.053);
-      
       var data = {
         product_code: document.getElementById('p-code').value,
         name: document.getElementById('p-name').value,
         category: document.getElementById('p-category').value,
-        price: hkd, // Store in HKD
-        price_jpy: jpy, // Also store original JPY
+        price_cost: parseInt(document.getElementById('p-price-cost').value) || 0,
+        price_retail: parseInt(document.getElementById('p-price-retail').value) || 0,
+        price_wholesale: parseInt(document.getElementById('p-price-wholesale').value) || 0,
         stock: parseInt(document.getElementById('p-stock').value) || 0,
         active: parseInt(document.getElementById('p-active').value),
         image_url: document.getElementById('p-image').value,
