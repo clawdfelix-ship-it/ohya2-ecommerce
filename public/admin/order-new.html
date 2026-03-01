@@ -3,81 +3,169 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Order - OHYA2.0 Admin</title>
+  <title>新增訂單 - OHYA2.0 Admin</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
-    .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
+    .nav { background: #1a1a2e; padding: 10px; }
     .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
     .main { padding: 15px; }
     .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-    h2 { margin: 0 0 10px 0; font-size: 16px; }
+    h2 { margin: 0 0 15px 0; font-size: 18px; }
+    h3 { margin: 0 0 10px 0; font-size: 14px; color: #333; }
     .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 12px; margin-bottom: 5px; }
-    .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-    .btn { padding: 12px 24px; background: #6366f1; color: #fff; border: none; border-radius: 5px; font-size: 14px; }
-    .total { font-size: 20px; font-weight: bold; text-align: right; padding: 10px; }
+    .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; }
+    .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+    .btn { padding: 12px 24px; background: #6366f1; color: #fff; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; }
+    .btn-secondary { background: #9ca3af; }
+    .btn-danger { background: #ef4444; }
+    .product-item { display: flex; gap: 10px; align-items: center; padding: 10px; background: #f9f9f9; border-radius: 5px; margin-bottom: 8px; }
+    .product-item select { flex: 1; }
+    .product-item input { width: 80px; }
+    .product-item button { padding: 8px 12px; }
+    .total { font-size: 24px; font-weight: bold; text-align: right; padding: 15px; background: #e8f5e9; border-radius: 8px; margin-top: 15px; }
+    .add-btn { display: inline-block; padding: 8px 16px; background: #10b981; color: #fff; border-radius: 5px; cursor: pointer; font-size: 13px; }
   </style>
 </head>
 <body>
   <div class="nav">
     <a href="index.html">📊 總覽</a>
-    <a href="orders.html">← Back to 訂單</a>
+    <a href="orders.html">← 返回訂單</a>
   </div>
   <div class="main">
-    <h2>Create New Order</h2>
+    <h2>📝 新增訂單</h2>
+    
+    <!-- 客戶選擇 -->
     <div class="card">
+      <h3>👥 選擇客戶</h3>
       <div class="form-group">
-        <label>Select Product</label>
-        <select id="product" onchange="calc()"></select>
+        <select id="customer">
+          <option value="">-- 選擇客戶 (可留空) --</option>
+        </select>
       </div>
-      <div class="form-group">
-        <label>Quantity</label>
-        <input type="number" id="qty" value="1" min="1" onchange="calc()">
-      </div>
-      <div class="form-group">
-        <label>Unit 價格</label>
-        <input type="text" id="unit" readonly>
-      </div>
-      <div class="total">總額: $<span id="total">0</span></div>
     </div>
-    <button class="btn" onclick="createOrder()">Create Order</button>
+    
+    <!-- 產品選擇 -->
+    <div class="card">
+      <h3>📦 選擇產品</h3>
+      <div id="products-list">
+        <div class="product-item">
+          <select class="product-select" onchange="calc()">
+            <option value="">-- 選擇產品 --</option>
+          </select>
+          <input type="number" class="qty" value="1" min="1" onchange="calc()" placeholder="數量">
+          <button class="btn btn-danger" onclick="this.parentElement.remove();calc()">✕</button>
+        </div>
+      </div>
+      <p><span class="add-btn" onclick="addProduct()">+ 添加產品</span></p>
+    </div>
+    
+    <!-- 費用明細 -->
+    <div class="card">
+      <h3>💰 費用明細</h3>
+      <div id="items-summary"></div>
+    </div>
+    
+    <!-- 總額 -->
+    <div class="total">訂單總額: $<span id="total">0</span></div>
+    
+    <button class="btn" onclick="createOrder()">✅ 確認建立訂單</button>
   </div>
+  
   <script>
     var products = [];
+    var customers = [];
+    
+    // Load products
     fetch('/api/products').then(function(r){return r.json();}).then(function(d){
       products = d;
-      var sel = document.getElementById('product');
-      d.forEach(function(p){
-        sel.innerHTML += '<option value="'+p.id+'" data-price="'+p.price+'">'+(p.name||p.product_code).substring(0,30)+' - $'+p.price+'</option>';
-      });
-      calc();
+      updateProductSelects();
     });
     
+    // Load customers
+    fetch('/api/customers').then(function(r){return r.json();}).then(function(d){
+      customers = d;
+      var sel = document.getElementById('customer');
+      d.forEach(function(c){
+        sel.innerHTML += '<option value="'+c.id+'">'+(c.name||c.email)+'</option>';
+      });
+    });
+    
+    function updateProductSelects() {
+      document.querySelectorAll('.product-select').forEach(function(sel){
+        if(sel.options.length <= 1) {
+          products.forEach(function(p){
+            sel.innerHTML += '<option value="'+p.id+'" data-price="'+p.price+'">'+(p.name||p.product_code).substring(0,25)+' - $'+p.price+'</option>';
+          });
+        }
+      });
+    }
+    
+    function addProduct() {
+      var div = document.createElement('div');
+      div.className = 'product-item';
+      div.innerHTML = '<select class="product-select" onchange="calc()"><option value="">-- 選擇產品 --</option></select><input type="number" class="qty" value="1" min="1" onchange="calc()" placeholder="數量"><button class="btn btn-danger" onclick="this.parentElement.remove();calc()">✕</button>';
+      document.getElementById('products-list').appendChild(div);
+      updateProductSelects();
+    }
+    
     function calc() {
-      var sel = document.getElementById('product');
-      var opt = sel.options[sel.selectedIndex];
-      var price = parseInt(opt.dataset.price) || 0;
-      var qty = parseInt(document.getElementById('qty').value) || 1;
-      document.getElementById('unit').value = price;
-      document.getElementById('total').innerText = price * qty;
+      var total = 0;
+      var summary = '';
+      
+      document.querySelectorAll('.product-item').forEach(function(item){
+        var sel = item.querySelector('.product-select');
+        var opt = sel.options[sel.selectedIndex];
+        var price = parseInt(opt.dataset.price) || 0;
+        var qty = parseInt(item.querySelector('.qty').value) || 0;
+        var subtotal = price * qty;
+        total += subtotal;
+        
+        if(opt.value) {
+          summary += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;"><span>'+opt.text+' x '+qty+'</span><span>$'+subtotal+'</span></div>';
+        }
+      });
+      
+      document.getElementById('total').innerText = total;
+      document.getElementById('items-summary').innerHTML = summary || '<p style="color:#999">請選擇產品</p>';
     }
     
     function createOrder() {
-      var pid = document.getElementById('product').value;
-      var qty = parseInt(document.getElementById('qty').value) || 1;
-      var total = parseInt(document.getElementById('total').innerText) || 0;
+      var items = [];
+      document.querySelectorAll('.product-item').forEach(function(item){
+        var sel = item.querySelector('.product-select');
+        var qty = parseInt(item.querySelector('.qty').value) || 0;
+        if(sel.value && qty > 0) {
+          var price = parseInt(sel.options[sel.selectedIndex].dataset.price) || 0;
+          items.push({
+            product_id: parseInt(sel.value),
+            quantity: qty,
+            price: price * qty
+          });
+        }
+      });
+      
+      if(items.length === 0) {
+        alert('請至少選擇一個產品');
+        return;
+      }
+      
+      var total = items.reduce(function(s,i){return s + i.price;}, 0);
+      var customerId = document.getElementById('customer').value;
       
       fetch('/api/orders', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
+          user_id: customerId ? parseInt(customerId) : null,
           total: total,
           status: 'pending',
-          items: [{product_id: parseInt(pid), quantity: qty, price: total}]
+          items: items
         })
       }).then(function(){
-        alert('Order created!');
+        alert('訂單已建立！');
         location.href = 'orders.html';
+      }).catch(function(e){
+        alert('錯誤: ' + e.message);
       });
     }
   </script>
