@@ -391,6 +391,112 @@ app.put('/api/customers/:id', async (req, res) => {
   }
 });
 
+// Get customer tags
+app.get('/api/customers/:id/tags', async (req, res) => {
+  try {
+    const tags = await sql`
+      SELECT * FROM customer_tags WHERE user_id = ${req.params.id} ORDER BY tag
+    `;
+    res.json(tags.map(t => t.tag));
+  } catch (e) {
+    console.error('Error fetching customer tags:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Add customer tag
+app.post('/api/customers/:id/tags', async (req, res) => {
+  try {
+    const { tag } = req.body;
+    if (!tag) {
+      return res.status(400).json({ error: 'Tag is required' });
+    }
+    await sql`
+      INSERT INTO customer_tags (user_id, tag) VALUES (${req.params.id}, ${tag})
+      ON CONFLICT (user_id, tag) DO NOTHING
+    `;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error adding customer tag:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Delete customer tag
+app.delete('/api/customers/:id/tags/:tag', async (req, res) => {
+  try {
+    await sql`
+      DELETE FROM customer_tags WHERE user_id = ${req.params.id} AND tag = ${req.params.tag}
+    `;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error deleting customer tag:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Get customer with orders (purchase history)
+app.get('/api/customers/:id', async (req, res) => {
+  try {
+    const users = await sql`SELECT * FROM users WHERE id = ${req.params.id} AND is_admin = 0`;
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    const customer = users[0];
+    
+    // Get orders
+    const orders = await sql`
+      SELECT o.*, u.name as customer_name
+      FROM orders o 
+      LEFT JOIN users u ON o.user_id = u.id
+      WHERE o.user_id = ${req.params.id}
+      ORDER BY o.id DESC
+    `;
+    
+    // Get order items for each order
+    const ordersWithItems = await Promise.all(orders.map(async (order) => {
+      const items = await sql`
+        SELECT oi.*, p.name as product_name, p.product_code
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ${order.id}
+      `;
+      return { ...order, items };
+    }));
+    
+    // Get tags
+    const tags = await sql`SELECT tag FROM customer_tags WHERE user_id = ${req.params.id}`;
+    
+    // Calculate membership level based on total spending
+    const totalSpent = ordersWithItems.reduce((sum, o) => sum + (o.total || 0), 0);
+    let membership_level = 'Bronze';
+    if (totalSpent >= 50000) membership_level = 'Diamond';
+    else if (totalSpent >= 30000) membership_level = 'Platinum';
+    else if (totalSpent >= 15000) membership_level = 'Gold';
+    else if (totalSpent >= 5000) membership_level = 'Silver';
+    
+    // Calculate next level
+    let next_level = null, amount_to_next = 0;
+    if (totalSpent < 5000) { next_level = 'Silver'; amount_to_next = 5000 - totalSpent; }
+    else if (totalSpent < 15000) { next_level = 'Gold'; amount_to_next = 15000 - totalSpent; }
+    else if (totalSpent < 30000) { next_level = 'Platinum'; amount_to_next = 30000 - totalSpent; }
+    else if (totalSpent < 50000) { next_level = 'Diamond'; amount_to_next = 50000 - totalSpent; }
+    
+    res.json({
+      ...customer,
+      orders: ordersWithItems,
+      tags: tags.map(t => t.tag),
+      total_spent: totalSpent,
+      membership_level: membership_level,
+      next_level: next_level,
+      amount_to_next: amount_to_next
+    });
+  } catch (e) {
+    console.error('Error fetching customer:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Categories API ---
 
 app.get('/api/categories', async (req, res) => {

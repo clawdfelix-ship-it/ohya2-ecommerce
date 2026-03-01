@@ -116,6 +116,17 @@ async function initDatabase() {
       )
     `);
 
+    // Customer tags table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS customer_tags (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        tag TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, tag)
+      )
+    `);
+
     // Create admin user if not exists
     try {
       const hashedPassword = await bcrypt.hash('admin123', 10);
