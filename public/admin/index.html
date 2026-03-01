@@ -6,117 +6,225 @@
   <title>Admin - OHYA2.0</title>
   <style>
     * { margin: 0; padding: 0; }
-    body { font-family: -apple-system, sans-serif; background: #f0f2f5; }
-    .sidebar { width: 180px; background: #1a1a2e; color: white; position: fixed; height: 100%; padding: 12px; }
-    .sidebar h2 { color: #ec4899; margin-bottom: 15px; font-size: 16px; }
+    body { font-family: -apple-system, sans-serif; background: #f5f5f5; }
+    .sidebar { width: 160px; background: #1a1a2e; color: white; position: fixed; height: 100%; padding: 10px; }
+    .sidebar h2 { color: #ec4899; margin-bottom: 12px; font-size: 14px; }
     .nav-item { display: block; padding: 10px 12px; color: #9ca3af; border-radius: 6px; cursor: pointer; margin-bottom: 2px; font-size: 13px; }
     .nav-item:hover, .nav-item.active { background: #374151; color: white; }
-    .main { margin-left: 180px; padding: 15px; }
-    h1 { font-size: 20px; margin-bottom: 15px; }
-    .btn { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; }
+    .main { margin-left: 160px; padding: 12px; }
+    h1 { font-size: 18px; margin-bottom: 12px; }
+    .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
     .btn-primary { background: #6366f1; color: white; }
-    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-    .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-sm { padding: 5px 8px; font-size: 11px; }
+    .card { background: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #eee; }
+    .badge { padding: 3px 6px; border-radius: 10px; font-size: 10px; }
     .badge-pending { background: #fef3c7; }
     .badge-completed { background: #d1fae5; }
+    .form-group { margin-bottom: 10px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; padding: 16px; border-radius: 12px; width: 90%; max-width: 400px; }
+    .modal-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
+    .row { display: flex; gap: 8px; }
+    .col { flex: 1; }
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+    .stat-card { background: white; padding: 12px; border-radius: 8px; }
+    .stat-label { font-size: 11px; color: #666; }
+    .stat-value { font-size: 20px; font-weight: bold; }
+    .search { padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 100%; margin-bottom: 10px; }
+    @media (max-width: 600px) {
+      .sidebar { width: 50px; }
+      .sidebar h2, .nav-item span { display: none; }
+      .nav-item { text-align: center; font-size: 16px; }
+      .main { margin-left: 50px; padding: 8px; }
+    }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2>🛒 OHYA2</h2>
-    <div class="nav-item active" onclick="show('dashboard')">📊 Dashboard</div>
-    <div class="nav-item" onclick="show('orders')">🛒 訂單</div>
-    <div class="nav-item" onclick="show('products')">📦 產品</div>
-    <div class="nav-item" onclick="show('customers')">👥 客戶</div>
-    <div class="nav-item" onclick="show('settings')">⚙️ 設定</div>
+    <div class="nav-item active" onclick="show('dashboard')"><span>📊</span> <span>Dashboard</span></div>
+    <div class="nav-item" onclick="show('orders')"><span>🛒</span> <span>訂單</span></div>
+    <div class="nav-item" onclick="show('products')"><span>📦</span> <span>產品</span></div>
+    <div class="nav-item" onclick="show('customers')"><span>👥</span> <span>客戶</span></div>
+    <div class="nav-item" onclick="show('settings')"><span>⚙️</span> <span>設定</span></div>
   </div>
   <div class="main">
     <h1 id="title">Dashboard</h1>
     <div id="content">Loading...</div>
   </div>
 
+  <!-- Product Modal -->
+  <div class="modal" id="product-modal">
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="p-title">產品</h2><button class="modal-close" onclick="closeModal('product-modal')">&times;</button></div>
+      <input type="hidden" id="p-id">
+      <div class="form-group"><label>編碼</label><input type="text" id="p-code"></div>
+      <div class="form-group"><label>名稱</label><input type="text" id="p-name"></div>
+      <div class="row">
+        <div class="col"><div class="form-group"><label>價格</label><input type="number" id="p-price"></div></div>
+        <div class="col"><div class="form-group"><label>庫存</label><input type="number" id="p-stock"></div></div>
+      </div>
+      <div class="form-group"><label>分類</label>
+        <select id="p-category">
+          <option value="オナホール">オナホール</option>
+          <option value="ダッチワイフ">ダッチワイフ</option>
+          <option value="おっぱいグッズ">おっぱいグッズ</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="saveProduct()">儲存</button>
+    </div>
+  </div>
+
+  <!-- Order Modal -->
+  <div class="modal" id="order-modal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>新訂單</h2><button class="modal-close" onclick="closeModal('order-modal')">&times;</button></div>
+      <div class="form-group"><label>產品</label><select id="o-product"></select></div>
+      <div class="row">
+        <div class="col"><div class="form-group"><label>數量</label><input type="number" id="o-qty" value="1" onchange="calcOrder()"></div></div>
+        <div class="col"><div class="form-group"><label>單價</label><input type="number" id="o-unit" readonly></div></div>
+      </div>
+      <div class="form-group"><label>總額</label><input type="number" id="o-total" readonly></div>
+      <div class="form-group"><label>狀態</label>
+        <select id="o-status">
+          <option value="pending">待處理</option>
+          <option value="processing">處理中</option>
+          <option value="completed">已完成</option>
+          <option value="cancelled">已取消</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="saveOrder()">建立訂單</button>
+    </div>
+  </div>
+
   <script>
     var products = [], orders = [], customers = [];
     
-    // Load just counts first
+    // Load analytics on start
     fetch('/api/analytics').then(r => r.json()).then(function(d) {
-      document.getElementById('content').innerHTML = 
-        '<div class="card"><b>總產品:</b> ' + d.totalProducts + '</div>' +
-        '<div class="card"><b>總訂單:</b> ' + d.totalOrders + '</div>' +
-        '<div class="card"><b>總客戶:</b> ' + d.totalCustomers + '</div>';
+      renderDashboard(d);
     });
     
     function show(page) {
-      document.getElementById('title').innerText = page;
-      document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+      document.getElementById('title').innerText = {dashboard:'Dashboard', orders:'訂單', products:'產品', customers:'客戶', settings:'設定'}[page];
+      document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.remove('active'); });
       event.target.classList.add('active');
-      document.getElementById('content').innerText = 'Loading...';
       
-      if (page === 'dashboard') loadDashboard();
+      if (page === 'dashboard') fetch('/api/analytics').then(r=>r.json()).then(renderDashboard);
       else if (page === 'orders') loadOrders();
       else if (page === 'products') loadProducts();
       else if (page === 'customers') loadCustomers();
-      else if (page === 'settings') loadSettings();
+      else if (page === 'settings') renderSettings();
     }
     
-    function loadDashboard() {
-      fetch('/api/analytics').then(r => r.json()).then(function(d) {
-        document.getElementById('content').innerHTML = 
-          '<div class="card"><b>總產品:</b> ' + d.totalProducts + '</div>' +
-          '<div class="card"><b>總訂單:</b> ' + d.totalOrders + '</div>' +
-          '<div class="card"><b>總客戶:</b> ' + d.totalCustomers + '</div>' +
-          '<div class="card"><b>總銷售額:</b> $' + (d.totalRevenue || 0) + '</div>';
-      });
+    function renderDashboard(d) {
+      document.getElementById('content').innerHTML = 
+        '<div class="stats">' +
+        '<div class="stat-card"><div class="stat-label">產品</div><div class="stat-value">'+d.totalProducts+'</div></div>' +
+        '<div class="stat-card"><div class="stat-label">訂單</div><div class="stat-value">'+d.totalOrders+'</div></div>' +
+        '<div class="stat-card"><div class="stat-label">客戶</div><div class="stat-value">'+d.totalCustomers+'</div></div>' +
+        '<div class="stat-card"><div class="stat-label">銷售額</div><div class="stat-value">$'+(d.totalRevenue||0)+'</div></div>' +
+        '</div>';
     }
     
     function loadOrders() {
-      fetch('/api/orders').then(r => r.json()).then(function(d) {
+      fetch('/api/orders').then(r=>r.json()).then(function(d) {
         orders = d;
-        var html = '<button class="btn btn-primary" onclick="newOrder()">+ 新增訂單</button><br><br><table><tr><th>ID</th><th>客戶</th><th>金額</th><th>狀態</th></tr>';
-        html += orders.slice(0,20).map(function(o){ return '<tr><td>#'+o.id+'</td><td>'+(o.customer_name||'Guest')+'</td><td>$'+(o.total||0)+'</td><td><span class="badge badge-'+(o.status||'pending')+'">'+(o.status||'pending')+'</span></td></tr>'; }).join('');
+        var html = '<button class="btn btn-primary" onclick="openOrder()">+ 新增訂單</button><input class="search" placeholder="搜尋..." onkeyup="filter(this.value)"><table id="tbl"><tr><th>ID</th><th>客戶</th><th>金額</th><th>狀態</th><th>操作</th></tr>';
+        html += orders.slice(0,30).map(function(o){ return '<tr><td>#'+o.id+'</td><td>'+(o.customer_name||'Guest')+'</td><td>$'+(o.total||0)+'</td><td><span class="badge badge-'+(o.status||'pending')+'">'+(o.status||'pending')+'</span></td><td><button class="btn btn-primary btn-sm" onclick="updateStatus('+o.id+')">狀態</button></td></tr>'; }).join('');
         html += '</table>';
         document.getElementById('content').innerHTML = html;
       });
     }
     
     function loadProducts() {
-      fetch('/api/products').then(r => r.json()).then(function(d) {
+      fetch('/api/products').then(r=>r.json()).then(function(d) {
         products = d;
-        var html = '<table><tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th></tr>';
-        html += products.slice(0,20).map(function(p){ return '<tr><td>'+(p.product_code||'')+'</td><td>'+(p.name||'').substring(0,20)+'</td><td>$'+(p.price||0)+'</td><td>'+(p.stock||0)+'</td></tr>'; }).join('');
+        var html = '<button class="btn btn-primary" onclick="openProduct()">+ 新增產品</button><input class="search" placeholder="搜尋..." onkeyup="filter(this.value)"><table id="tbl"><tr><th>編碼</th><th>名稱</th><th>價格</th><th>庫存</th><th>操作</th></tr>';
+        html += products.slice(0,30).map(function(p){ return '<tr><td>'+(p.product_code||'')+'</td><td>'+(p.name||'').substring(0,15)+'</td><td>$'+(p.price||0)+'</td><td style="color:'+((p.stock||0)<5?'red':'')+'">'+(p.stock||0)+'</td><td><button class="btn btn-primary btn-sm" onclick="editProduct('+p.id+')">編輯</button> <button class="btn btn-danger btn-sm" onclick="delProduct('+p.id+')">刪</button></td></tr>'; }).join('');
         html += '</table>';
         document.getElementById('content').innerHTML = html;
       });
     }
     
     function loadCustomers() {
-      fetch('/api/customers').then(r => r.json()).then(function(d) {
+      fetch('/api/customers').then(r=>r.json()).then(function(d) {
         customers = d;
-        var html = '<table><tr><th>姓名</th><th>Email</th><th>消費</th></tr>';
-        html += customers.slice(0,20).map(function(c){ return '<tr><td>'+(c.name||'-')+'</td><td>'+(c.email||'-')+'</td><td>$'+(c.total||0)+'</td></tr>'; }).join('');
+        var html = '<table id="tbl"><tr><th>姓名</th><th>Email</th><th>電話</th><th>消費</th></tr>';
+        html += customers.slice(0,30).map(function(c){ return '<tr><td>'+(c.name||'-')+'</td><td>'+(c.email||'-')+'</td><td>'+(c.phone||'-')+'</td><td>$'+(c.total||0)+'</td></tr>'; }).join('');
         html += '</table>';
         document.getElementById('content').innerHTML = html;
       });
     }
     
-    function loadSettings() {
+    function renderSettings() {
       document.getElementById('content').innerHTML = '<div class="card"><b>銀行:</b> 恆生銀行 123-456789-001</div><div class="card"><b>運費:</b> 免運$300, 其他$30</div>';
     }
     
-    function newOrder() {
-      var pid = prompt('產品ID:');
-      if (!pid) return;
-      var qty = prompt('數量:') || 1;
-      fetch('/api/products/' + pid).then(r => r.json()).then(function(p) {
-        var total = (p.price || 0) * qty;
-        fetch('/api/orders', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
-          total: total,
-          status: 'pending',
-          items: [{product_id: parseInt(pid), quantity: parseInt(qty), price: total}]
-        })}).then(function() { alert('OK'); loadOrders(); });
-      });
+    // Modal functions
+    function openProduct(id) {
+      var p = id ? products.find(function(x){return x.id===id;}) : null;
+      document.getElementById('p-title').innerText = id ? '編輯產品' : '新增產品';
+      document.getElementById('p-id').value = id||'';
+      document.getElementById('p-code').value = p?p.product_code:'';
+      document.getElementById('p-name').value = p?p.name:'';
+      document.getElementById('p-price').value = p?p.price:'';
+      document.getElementById('p-stock').value = p?p.stock:'';
+      document.getElementById('p-category').value = p?p.category:'オナホール';
+      document.getElementById('product-modal').classList.add('active');
+    }
+    
+    function openOrder() {
+      var sel = document.getElementById('o-product');
+      sel.innerHTML = '';
+      products.forEach(function(p){ sel.innerHTML += '<option value="'+p.id+'" data-price="'+p.price+'">'+(p.name||p.product_code).substring(0,20)+' $'+p.price+'</option>'; });
+      document.getElementById('order-modal').classList.add('active');
+    }
+    
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function calcOrder() {
+      var sel = document.getElementById('o-product');
+      var price = parseInt(sel.options[sel.selectedIndex]?.dataset.price) || 0;
+      var qty = parseInt(document.getElementById('o-qty').value) || 1;
+      document.getElementById('o-unit').value = price;
+      document.getElementById('o-total').value = price * qty;
+    }
+    
+    // Save functions
+    async function saveProduct() {
+      var id = document.getElementById('p-id').value;
+      var data = { product_code: document.getElementById('p-code').value, name: document.getElementById('p-name').value, price: parseInt(document.getElementById('p-price').value)||0, stock: parseInt(document.getElementById('p-stock').value)||0, category: document.getElementById('p-category').value };
+      await fetch(id?'/api/products/'+id:'/api/products', {method:id?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+      closeModal('product-modal');
+      loadProducts();
+    }
+    
+    async function saveOrder() {
+      var pid = document.getElementById('o-product').value;
+      var qty = parseInt(document.getElementById('o-qty').value)||1;
+      var total = parseInt(document.getElementById('o-total').value)||0;
+      await fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({total:total, status:document.getElementById('o-status').value, items:[{product_id:parseInt(pid), quantity:qty, price:total}]})});
+      closeModal('order-modal');
+      loadOrders();
+    }
+    
+    // Quick actions
+    function editProduct(id) { openProduct(id); }
+    async function delProduct(id) { if(confirm('確定?')){ await fetch('/api/products/'+id,{method:'DELETE'}); loadProducts(); }}
+    async function updateStatus(id) {
+      var s = prompt('狀態 (pending/processing/completed/cancelled):');
+      if(s){ await fetch('/api/orders/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s})}); loadOrders(); }
+    }
+    function filter(q) {
+      var rows = document.querySelectorAll('#tbl tr');
+      q = q.toLowerCase();
+      rows.forEach(function(r){ r.style.display = r.textContent.toLowerCase().indexOf(q)>=0?'':'none'; });
     }
   </script>
 </body>
