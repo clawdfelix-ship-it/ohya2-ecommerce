@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
-const { initDatabase, sql } = require('./database');
+const bcrypt = require('bcryptjs');
+const { initDatabase, sql, pool } = require('./database');
 
 const app = express();
 
@@ -363,7 +364,6 @@ app.get('/api/customers', async (req, res) => {
 app.post('/api/customers', async (req, res) => {
   try {
     const { email, password, name, phone, address } = req.body;
-    const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(password || 'password123', 10);
     
     await sql`
@@ -946,7 +946,6 @@ app.get('/api/analytics/dashboard', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const bcrypt = require('bcryptjs');
     const users = await sql`SELECT * FROM users WHERE email = ${email}`;
     
     if (users.length === 0) {
@@ -975,7 +974,6 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/register', async (req, res) => {
   try {
     const { email, password, name, phone } = req.body;
-    const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(password, 10);
     
     await sql`

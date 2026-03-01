@@ -174,6 +174,17 @@ async function initDatabase() {
       )
     `);
 
+    // Order History table (for tracking order status changes)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS order_history (
+        id SERIAL PRIMARY KEY,
+        order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
+        status TEXT NOT NULL,
+        note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Create default admin if not exists
     try {
       const hashedPassword = await bcrypt.hash('admin123', 10);
