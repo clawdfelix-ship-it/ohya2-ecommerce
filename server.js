@@ -178,14 +178,20 @@ app.post('/api/orders', async (req, res) => {
       VALUES (${user_id}, ${total}, 'pending')
       RETURNING id
     `;
-    const orderId = result[0].id;
+    const orderId = result[0]?.id || result?.id;
+    
+    if (!orderId) {
+      throw new Error('Failed to get order ID');
+    }
     
     // Insert order items
-    for (const item of items) {
-      await sql`
-        INSERT INTO order_items (order_id, product_id, quantity, price)
-        VALUES (${orderId}, ${item.product_id}, ${item.quantity}, ${item.price})
-      `;
+    if (items && items.length > 0) {
+      for (const item of items) {
+        await sql`
+          INSERT INTO order_items (order_id, product_id, quantity, price)
+          VALUES (${orderId}, ${item.product_id}, ${item.quantity}, ${item.price})
+        `;
+      }
     }
     
     res.json({ success: true, order_id: orderId });
