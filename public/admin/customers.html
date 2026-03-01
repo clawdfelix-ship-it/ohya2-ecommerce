@@ -87,6 +87,7 @@
       <div class="card">
         <div class="card-title">📋 客戶資料</div>
         <div class="form-group">
+          <input type="hidden" id="cust-id">
           <label>名稱</label>
           <input type="text" id="cust-name">
         </div>
@@ -187,6 +188,7 @@
         
         // Fill customer info
         document.getElementById('modal-title').textContent = '客戶 #' + id;
+        document.getElementById('cust-id').value = id;
         document.getElementById('cust-name').value = d.name || '';
         document.getElementById('cust-email').value = d.email || '';
         document.getElementById('cust-phone').value = d.phone || '';
@@ -326,7 +328,48 @@
     }
     
     function showAddCustomer() {
-      alert('新增客戶功能待完成');
+      // Show the modal with empty form
+      document.getElementById('modal-title').textContent = '新增客戶';
+      document.getElementById('cust-id').value = '';
+      document.getElementById('cust-name').value = '';
+      document.getElementById('cust-email').value = '';
+      document.getElementById('cust-phone').value = '';
+      document.getElementById('cust-address').value = '';
+      document.getElementById('customer-modal').style.display = 'flex';
+    }
+    
+    function saveCustomer() {
+      var id = document.getElementById('cust-id').value;
+      var name = document.getElementById('cust-name').value;
+      var email = document.getElementById('cust-email').value;
+      var phone = document.getElementById('cust-phone').value;
+      var address = document.getElementById('cust-address').value;
+      
+      if (!name || !email) {
+        alert('請輸入名稱和Email');
+        return;
+      }
+      
+      var data = { name: name, email: email, phone: phone, address: address };
+      var url = '/api/customers';
+      var method = 'POST';
+      
+      if (id) {
+        url = '/api/customers/' + id;
+        method = 'PUT';
+      }
+      
+      fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        alert(id ? '客戶已更新！' : '客戶已新增！');
+        closeModal();
+        loadCustomers();
+      }).catch(function(e) {
+        alert('錯誤: ' + e.message);
+      });
     }
     
     // Close modal on overlay click
