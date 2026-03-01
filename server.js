@@ -324,19 +324,50 @@ app.put('/api/customers/:id', async (req, res) => {
 
 app.get('/api/categories', async (req, res) => {
   try {
-    // Get unique categories from products
-    const products = await sql`SELECT DISTINCT category FROM products WHERE active = 1`;
-    const categories = products.map(p => ({ name: p.category, count: 0 }));
-    
-    // Get count for each category
-    for (const cat of categories) {
-      const result = await sql`SELECT COUNT(*) as count FROM products WHERE category = ${cat.name} AND active = 1`;
-      cat.count = result[0].count;
-    }
-    
+    const categories = await sql`SELECT * FROM categories WHERE active = 1 ORDER BY sort_order, name`;
     res.json(categories);
   } catch (e) {
     console.error('Error fetching categories:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/categories', async (req, res) => {
+  try {
+    const { name, parent_id, sort_order } = req.body;
+    const result = await sql`
+      INSERT INTO categories (name, parent_id, sort_order)
+      VALUES (${name}, ${parent_id || null}, ${sort_order || 0})
+      RETURNING id
+    `;
+    res.json({ success: true, id: result[0].id });
+  } catch (e) {
+    console.error('Error creating category:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/categories/:id', async (req, res) => {
+  try {
+    const { name, parent_id, sort_order, active } = req.body;
+    await sql`
+      UPDATE categories 
+      SET name = ${name}, parent_id = ${parent_id || null}, sort_order = ${sort_order || 0}, active = ${active || 1}
+      WHERE id = ${req.params.id}
+    `;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error updating category:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/categories/:id', async (req, res) => {
+  try {
+    await sql`UPDATE categories SET active = 0 WHERE id = ${req.params.id}`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Error deleting category:', e);
     res.status(500).json({ error: e.message });
   }
 });

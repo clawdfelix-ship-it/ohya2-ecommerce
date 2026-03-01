@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分類管理 - OHYA2.0 Admin</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #f5f5f5; }
+    .nav { background: #1a1a2e; padding: 10px; overflow-x: auto; white-space: nowrap; }
+    .nav a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; font-size: 14px; }
+    .nav a.active { background: #ec4899; border-radius: 5px; }
+    .main { padding: 15px; }
+    h2 { margin: 0 0 15px 0; font-size: 18px; }
+    .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+    .btn { padding: 10px 18px; background: #6366f1; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+    .btn-danger { background: #ef4444; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; }
+    .cat-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+    .cat-item:last-child { border-bottom: none; }
+    .cat-name { flex: 1; font-size: 14px; }
+    .cat-parent { font-size: 12px; color: #999; }
+    .indent-1 { padding-left: 20px; }
+    .indent-2 { padding-left: 40px; }
+    .level-badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+    .level-0 { background: #e0e7ff; color: #3730a3; }
+    .level-1 { background: #d1fae5; color: #065f46; }
+    .level-2 { background: #fef3c7; color: #92400e; }
+    .empty { text-align: center; padding: 40px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="index.html">📊 總覽</a>
+    <a href="orders.html">🛒 訂單</a>
+    <a href="products.html">📦 產品</a>
+    <a href="categories.html" class="active">🏷️ 分類</a>
+    <a href="customers.html">👥 客戶</a>
+    <a href="inventory.html">📈 庫存</a>
+    <a href="coupons.html">🎟️ 優惠碼</a>
+    <a href="settings.html">⚙️ 設定</a>
+  </div>
+  
+  <div class="main">
+    <h2>🏷️ 分類管理 (3層)</h2>
+    
+    <!-- 新增分類 -->
+    <div class="card">
+      <h3 style="margin:0 0 10px 0;font-size:14px;">➕ 新增分類</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:150px;">
+          <input type="text" id="new-name" placeholder="分類名稱">
+        </div>
+        <div style="width:150px;">
+          <select id="new-parent">
+            <option value="">-- 主分類 --</option>
+          </select>
+        </div>
+        <button class="btn" onclick="addCategory()">新增</button>
+      </div>
+    </div>
+    
+    <!-- 分類列表 -->
+    <div class="card" id="categories-list">
+      <div class="empty">載入中...</div>
+    </div>
+  </div>
+  
+  <script>
+    var categories = [];
+    
+    // Load categories
+    fetch('/api/categories').then(function(r){return r.json();}).then(function(d){
+      categories = d || [];
+      loadParentOptions();
+      renderCategories();
+    });
+    
+    function loadParentOptions() {
+      // Get only level 0 and level 1 as parent options
+      var mainCats = categories.filter(function(c){return !c.parent_id;});
+      var html = '<option value="">-- 主分類 --</option>';
+      mainCats.forEach(function(c){
+        html += '<option value="'+c.id+'">'+c.name+'</option>';
+        // Add level 1 children
+        var children = categories.filter(function(cc){return cc.parent_id === c.id;});
+        children.forEach(function(cc){
+          html += '<option value="'+cc.id+'">&nbsp;&nbsp;└ '+cc.name+'</option>';
+        });
+      });
+      document.getElementById('new-parent').innerHTML = html;
+    }
+    
+    function renderCategories() {
+      if(!categories || categories.length === 0) {
+        // Add default categories from products if no categories exist
+        renderDefaultCategories();
+        return;
+      }
+      
+      var html = '';
+      
+      // Level 0 - Main categories
+      var level0 = categories.filter(function(c){return !c.parent_id;});
+      level0.forEach(function(c){
+        var level1 = categories.filter(function(cc){return cc.parent_id === c.id;});
+        
+        html += '<div class="cat-item">' +
+          '<span class="level-badge level-0">主分類</span>' +
+          '<span class="cat-name">'+c.name+'</span>' +
+          '<button class="btn btn-sm btn-danger" onclick="deleteCategory('+c.id+')">刪</button>' +
+        '</div>';
+        
+        // Level 1
+        level1.forEach(function(l1){
+          var level2 = categories.filter(function(cc){return cc.parent_id === l1.id;});
+          
+          html += '<div class="cat-item indent-1">' +
+            '<span class="level-badge level-1">次分類</span>' +
+            '<span class="cat-name">'+l1.name+'</span>' +
+            '<button class="btn btn-sm btn-danger" onclick="deleteCategory('+l1.id+')">刪</button>' +
+          '</div>';
+          
+          // Level 2
+          level2.forEach(function(l2){
+            html += '<div class="cat-item indent-2">' +
+              '<span class="level-badge level-2">子分類</span>' +
+              '<span class="cat-name">'+l2.name+'</span>' +
+              '<button class="btn btn-sm btn-danger" onclick="deleteCategory('+l2.id+')">刪</button>' +
+            '</div>';
+          });
+        });
+      });
+      
+      if(!html) {
+        renderDefaultCategories();
+        return;
+      }
+      
+      document.getElementById('categories-list').innerHTML = html;
+    }
+    
+    function renderDefaultCategories() {
+      // Create default categories from product categories
+      fetch('/api/products').then(function(r){return r.json();}).then(function(products){
+        var uniqueCats = [...new Set(products.map(function(p){return p.category;}).filter(Boolean))];
+        
+        var html = '<div class="empty" style="padding:20px;"><p>尚無分類，請新增或由系統自動建立</p></div>';
+        
+        uniqueCats.slice(0,10).forEach(function(catName){
+          html += '<div class="cat-item">' +
+            '<span class="level-badge level-0">主分類</span>' +
+            '<span class="cat-name">'+catName+'</span>' +
+            '<span style="color:#999;font-size:12px;">(自動建立)</span>' +
+          '</div>';
+        });
+        
+        document.getElementById('categories-list').innerHTML = html;
+      });
+    }
+    
+    function addCategory() {
+      var name = document.getElementById('new-name').value.trim();
+      var parentId = document.getElementById('new-parent').value;
+      
+      if(!name) {
+        alert('請輸入分類名稱');
+        return;
+      }
+      
+      fetch('/api/categories', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          name: name,
+          parent_id: parentId ? parseInt(parentId) : null
+        })
+      }).then(function(){
+        document.getElementById('new-name').value = '';
+        location.reload();
+      });
+    }
+    
+    function deleteCategory(id) {
+      if(!confirm('確定要刪除這個分類嗎？')) return;
+      
+      fetch('/api/categories/' + id, {method: 'DELETE'}).then(function(){
+        location.reload();
+      });
+    }
+  </script>
+</body>
+</html>
