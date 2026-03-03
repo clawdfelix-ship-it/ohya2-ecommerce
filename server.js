@@ -1267,15 +1267,14 @@ app.post('/api/admin/import/products', async (req, res) => {
               price_cost = ${parseInt(row.price_cost) || 0},
               stock = ${parseInt(row.stock) || 0},
               category = ${row.category || ''},
-              description = ${row.description || ''},
-              jan_code = ${row.jan_code || ''}
+              description = ${row.description || ''}
             WHERE id = ${existing[0].id}
           `;
         } else {
           // Insert new
           await sql`
-            INSERT INTO products (product_code, jan_code, name, price, price_retail, price_cost, stock, category, description, active)
-            VALUES (${row.product_code || null}, ${row.jan_code || null}, ${row.name}, ${parseInt(row.price) || 0}, ${parseInt(row.price_retail) || parseInt(row.price) || 0}, ${parseInt(row.price_cost) || 0}, ${parseInt(row.stock) || 0}, ${row.category || ''}, ${row.description || ''}, ${parseInt(row.active) || 1})
+            INSERT INTO products (product_code, name, price, price_retail, price_cost, stock, category, description, active)
+            VALUES (${row.product_code || null}, ${row.name}, ${parseInt(row.price) || 0}, ${parseInt(row.price_retail) || parseInt(row.price) || 0}, ${parseInt(row.price_cost) || 0}, ${parseInt(row.stock) || 0}, ${row.category || ''}, ${row.description || ''}, ${parseInt(row.active) || 1})
           `;
         }
         imported++;
