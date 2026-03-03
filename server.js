@@ -1258,21 +1258,22 @@ app.post('/api/admin/import/products', async (req, res) => {
           await sql`SELECT id FROM products WHERE product_code = ${row.product_code}` : [];
         
         if (existing.length > 0) {
-          // Update existing - without price_retail (may not exist in all DBs)
+          // Update existing - with image_url support
           await sql`
             UPDATE products SET 
               name = ${row.name},
               price = ${parseInt(row.price) || 0},
               stock = ${parseInt(row.stock) || 0},
               category = ${row.category || ''},
-              description = ${row.description || ''}
+              description = ${row.description || ''},
+              image_url = ${row.image_url || ''}
             WHERE id = ${existing[0].id}
           `;
         } else {
-          // Insert new - without price_retail (may not exist in all DBs)
+          // Insert new - with image_url support
           await sql`
-            INSERT INTO products (product_code, name, price, stock, category, description, active)
-            VALUES (${row.product_code || null}, ${row.name}, ${parseInt(row.price) || 0}, ${parseInt(row.stock) || 0}, ${row.category || ''}, ${row.description || ''}, ${parseInt(row.active) || 1})
+            INSERT INTO products (product_code, name, price, stock, category, description, image_url, active)
+            VALUES (${row.product_code || null}, ${row.name}, ${parseInt(row.price) || 0}, ${parseInt(row.stock) || 0}, ${row.category || ''}, ${row.description || ''}, ${row.image_url || ''}, ${parseInt(row.active) || 1})
           `;
         }
         imported++;
