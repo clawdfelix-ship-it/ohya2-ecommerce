@@ -9,7 +9,38 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize database on startup
-initDatabase().catch(console.error);
+initDatabase().then(async () => {
+  console.log('✅ Database initialized');
+  
+  // Run migrations for new columns
+  try {
+    await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT 'sf_cod'`;
+    console.log('✅ Migration: shipping_method column added');
+  } catch (e) {
+    // Ignore if already exists (SQL.js might not support IF NOT EXISTS)
+    console.log('ℹ️ shipping_method column check done');
+  }
+  
+  // Migration: Add missing products columns
+  const productColumns = ['jan_code', 'price_jpy', 'seo_title', 'seo_description', 'seo_keywords'];
+  for (const col of productColumns) {
+    try {
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS ${sql(col)} TEXT`;
+      console.log(`✅ Migration: ${col} column added`);
+    } catch (e) {
+      console.log(`ℹ️ ${col} column check done`);
+    }
+  }
+  
+  // Initialize Telegram Bot (if token configured)
+  try {
+    const telegramBot = require('./telegram-bot');
+    telegramBot.initBot(sql);
+    console.log('🤖 Telegram Bot loaded');
+  } catch (e) {
+    console.log('⚠️ Telegram Bot not available:', e.message);
+  }
+}).catch(console.error);
 
 // --- Exchange Rate API ---
 let exchangeRate = 0.053; // Default: 1 JPY = 0.053 HKD (approx 1:19)
@@ -285,10 +316,11 @@ app.get('/api/orders/:id', async (req, res) => {
 
 app.post('/api/orders', async (req, res) => {
   try {
-    const { user_id, total, items } = req.body;
+    const { user_id, total, items, shipping_method } = req.body;
+    const shippingMethod = shipping_method || 'sf_cod';
     const result = await sql`
-      INSERT INTO orders (user_id, total, status)
-      VALUES (${user_id}, ${total}, 'pending')
+      INSERT INTO orders (user_id, total, status, shipping_method)
+      VALUES (${user_id}, ${total}, 'pending', ${shippingMethod})
       RETURNING id
     `;
     const orderId = result[0]?.id;
@@ -318,8 +350,8 @@ app.post('/api/orders', async (req, res) => {
 
 app.put('/api/orders/:id', async (req, res) => {
   try {
-    const { status, user_id, tracking_number, internal_notes } = req.body;
-    await sql`UPDATE orders SET status = ${status}, user_id = ${user_id}, tracking_number = ${tracking_number}, internal_notes = ${internal_notes} WHERE id = ${req.params.id}`;
+    const { status, user_id, shipping_method, tracking_number, internal_notes } = req.body;
+    await sql`UPDATE orders SET status = ${status}, user_id = ${user_id}, shipping_method = ${shipping_method}, tracking_number = ${tracking_number}, internal_notes = ${internal_notes} WHERE id = ${req.params.id}`;
     res.json({ success: true });
   } catch (e) {
     console.error('Error updating order:', e);
@@ -1395,6 +1427,146 @@ app.get('/api/admin/system-info', async (req, res) => {
     });
   } catch (e) {
     console.error('Get system info error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ==================== TELEGRAM BOT APIs ====================
+
+// Get telegram subscribers
+app.get('/api/admin/telegram/subscribers', async (req, res) => {
+  try {
+    const subscribers = await sql`
+      SELECT * FROM telegram_subscribers 
+      WHERE active = 1 
+      ORDER BY subscribed_at DESC
+    `;
+    res.json(subscribers);
+  } catch (e) {
+    console.error('Error fetching subscribers:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Broadcast message to all subscribers
+app.post('/api/admin/telegram/broadcast', async (req, res) => {
+  try {
+    const { message, parse_mode } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    let telegramBot;
+    try {
+      telegramBot = require('./telegram-bot');
+    } catch (e) {
+      return res.status(500).json({ error: 'Telegram Bot not available' });
+    }
+    
+    const result = await telegramBot.broadcastToSubscribers(message, { 
+      parse_mode: parse_mode || 'Markdown' 
+    });
+    
+    res.json({ 
+      success: true, 
+      delivered: result.success, 
+      failed: result.failed 
+    });
+  } catch (e) {
+    console.error('Broadcast error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Send notification to specific user (by order)
+app.post('/api/admin/telegram/notify', async (req, res) => {
+  try {
+    const { order_id, message } = req.body;
+    
+    if (!order_id || !message) {
+      return res.status(400).json({ error: 'Order ID and message required' });
+    }
+    
+    // Get order and customer info
+    const orders = await sql`
+      SELECT o.*, u.name as customer_name, u.phone
+      FROM orders o
+      LEFT JOIN users u ON o.user_id = u.id
+      WHERE o.id = ${order_id}
+    `;
+    
+    if (orders.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    const order = orders[0];
+    
+    let telegramBot;
+    try {
+      telegramBot = require('./telegram-bot');
+    } catch (e) {
+      return res.status(500).json({ error: 'Telegram Bot not available' });
+    }
+    
+    // Find subscriber
+    const subscriber = await sql`
+      SELECT telegram_id FROM telegram_subscribers 
+      WHERE name = ${order.customer_name} OR phone = ${order.phone}
+      LIMIT 1
+    `;
+    
+    if (subscriber.length === 0) {
+      return res.json({ success: false, message: 'Customer not subscribed to Telegram' });
+    }
+    
+    await telegramBot.sendMessage(subscriber[0].telegram_id, message);
+    
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Notify error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Notify about new product (webhook for admin)
+app.post('/api/admin/telegram/new-product', async (req, res) => {
+  try {
+    const product = req.body;
+    
+    let telegramBot;
+    try {
+      telegramBot = require('./telegram-bot');
+    } catch (e) {
+      return res.status(500).json({ error: 'Telegram Bot not available' });
+    }
+    
+    const result = await telegramBot.notifyNewProduct(product);
+    
+    res.json({ success: true, ...result });
+  } catch (e) {
+    console.error('New product notification error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Notify about flash sale (webhook for admin)
+app.post('/api/admin/telegram/flash-sale', async (req, res) => {
+  try {
+    const { product, discount_percent } = req.body;
+    
+    let telegramBot;
+    try {
+      telegramBot = require('./telegram-bot');
+    } catch (e) {
+      return res.status(500).json({ error: 'Telegram Bot not available' });
+    }
+    
+    const result = await telegramBot.notifyFlashSale(product, discount_percent);
+    
+    res.json({ success: true, ...result });
+  } catch (e) {
+    console.error('Flash sale notification error:', e);
     res.status(500).json({ error: e.message });
   }
 });
