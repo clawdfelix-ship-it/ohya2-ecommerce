@@ -1258,23 +1258,21 @@ app.post('/api/admin/import/products', async (req, res) => {
           await sql`SELECT id FROM products WHERE product_code = ${row.product_code}` : [];
         
         if (existing.length > 0) {
-          // Update existing
+          // Update existing - without price_retail (may not exist in all DBs)
           await sql`
             UPDATE products SET 
               name = ${row.name},
               price = ${parseInt(row.price) || 0},
-              price_retail = ${parseInt(row.price_retail) || parseInt(row.price) || 0},
-              price_cost = ${parseInt(row.price_cost) || 0},
               stock = ${parseInt(row.stock) || 0},
               category = ${row.category || ''},
               description = ${row.description || ''}
             WHERE id = ${existing[0].id}
           `;
         } else {
-          // Insert new
+          // Insert new - without price_retail (may not exist in all DBs)
           await sql`
-            INSERT INTO products (product_code, name, price, price_retail, price_cost, stock, category, description, active)
-            VALUES (${row.product_code || null}, ${row.name}, ${parseInt(row.price) || 0}, ${parseInt(row.price_retail) || parseInt(row.price) || 0}, ${parseInt(row.price_cost) || 0}, ${parseInt(row.stock) || 0}, ${row.category || ''}, ${row.description || ''}, ${parseInt(row.active) || 1})
+            INSERT INTO products (product_code, name, price, stock, category, description, active)
+            VALUES (${row.product_code || null}, ${row.name}, ${parseInt(row.price) || 0}, ${parseInt(row.stock) || 0}, ${row.category || ''}, ${row.description || ''}, ${parseInt(row.active) || 1})
           `;
         }
         imported++;
