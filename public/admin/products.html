@@ -74,24 +74,29 @@
     var currentPage = 1;
     var pageSize = 50;
     
-    // Load products first, then categories
-    fetch('/api/products').then(function(r){return r.json();}).then(function(productsData){
-      console.log('Products loaded:', productsData.length);
-      products = productsData;
-      return fetch('/api/categories');
-    }).then(function(r){return r.json();}).then(function(catsData){
-      console.log('Categories loaded:', catsData.length);
-      categories = catsData || [];
-      var catSelect = document.getElementById('filter-category');
-      var mainCats = categories.filter(function(c){return !c.parent_id;});
-      mainCats.forEach(function(c){
-        catSelect.innerHTML += '<option value="'+c.name+'">'+c.name+'</option>';
-      });
-      renderProducts(products);
-    }).catch(function(e){
-      console.error('Error:', e);
-      document.getElementById('products-body').innerHTML = '<tr><td colspan="9" style="color:red;">載入失敗: '+e.message+'</td></tr>';
-    });
+    // Load products - simple async/await
+    (async function loadData() {
+      try {
+        var prodsResp = await fetch('/api/products');
+        products = await prodsResp.json();
+        console.log('Products:', products.length);
+        
+        var catsResp = await fetch('/api/categories');
+        categories = await catsResp.json();
+        console.log('Categories:', categories.length);
+        
+        var catSelect = document.getElementById('filter-category');
+        var mainCats = categories.filter(function(c){return !c.parent_id;});
+        mainCats.forEach(function(c){
+          catSelect.innerHTML += '<option value="'+c.name+'">'+c.name+'</option>';
+        });
+        
+        renderProducts(products);
+      } catch(e) {
+        console.error('Load error:', e);
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="9" style="color:red;">載入失敗</td></tr>';
+      }
+    })();
     
     function renderProducts(list) {
       var start = (currentPage - 1) * pageSize;
