@@ -76,8 +76,8 @@
     
     // Load products and categories
     Promise.all([
-      fetch('/api/products').then(function(r){return r.json();}),
-      fetch('/api/categories').then(function(r){return r.json();}).catch(function(){return [];})
+      fetch('/api/products?_t='+Date.now()).then(function(r){return r.json();}).catch(function(e){console.error('Products error:',e);return [];}),
+      fetch('/api/categories?_t='+Date.now()).then(function(r){return r.json();}).catch(function(){return [];})
     ]).then(function(results){
       products = results[0];
       categories = results[1] || [];
