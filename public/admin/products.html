@@ -74,16 +74,18 @@
     var currentPage = 1;
     var pageSize = 50;
     
-    // Load products - simple async/await
+    // Load products - with alert
     (async function loadData() {
       try {
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="9">Fetch緊...</td></tr>';
+        
         var prodsResp = await fetch('/api/products');
         products = await prodsResp.json();
-        console.log('Products:', products.length);
+        alert('Products loaded: ' + products.length);
         
         var catsResp = await fetch('/api/categories');
         categories = await catsResp.json();
-        console.log('Categories:', categories.length);
+        alert('Categories loaded: ' + categories.length);
         
         var catSelect = document.getElementById('filter-category');
         var mainCats = categories.filter(function(c){return !c.parent_id;});
