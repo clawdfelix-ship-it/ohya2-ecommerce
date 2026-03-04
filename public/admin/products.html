@@ -75,10 +75,15 @@
     var pageSize = 50;
     
     // Load products and categories
+    var loadTimeout = setTimeout(function() {
+      document.getElementById('products-body').innerHTML = '<tr><td colspan="9" style="color:red;">載入超時，請刷新頁面</td></tr>';
+    }, 10000);
+    
     Promise.all([
       fetch('/api/products?_t='+Date.now()).then(function(r){return r.json();}).catch(function(e){console.error('Products error:',e);return [];}),
       fetch('/api/categories?_t='+Date.now()).then(function(r){return r.json();}).catch(function(){return [];})
     ]).then(function(results){
+      clearTimeout(loadTimeout);
       products = results[0];
       categories = results[1] || [];
       
