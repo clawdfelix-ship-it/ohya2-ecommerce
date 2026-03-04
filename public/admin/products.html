@@ -18,6 +18,10 @@
     .btn:hover { background: #4f46e5; }
     .btn-sm { padding: 5px 10px; font-size: 11px; }
     .search { padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; width: 200px; }
+    .pagination { display: flex; gap: 5px; margin-top: 15px; align-items: center; }
+    .pagination button { padding: 8px 12px; background: #6366f1; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+    .pagination button:disabled { background: #ccc; cursor: not-allowed; }
+    .pagination span { padding: 0 10px; }
   </style>
 </head>
 <body>
@@ -60,11 +64,15 @@
         <tr><td colspan="9">載入中...</td></tr>
       </tbody>
     </table>
+    
+    <div class="pagination" id="pagination"></div>
   </div>
   
   <script>
     var products = [];
     var categories = [];
+    var currentPage = 1;
+    var pageSize = 50;
     
     // Load products and categories
     Promise.all([
@@ -85,8 +93,12 @@
     });
     
     function renderProducts(list) {
+      var start = (currentPage - 1) * pageSize;
+      var end = start + pageSize;
+      var pageItems = list.slice(start, end);
+      
       var html = '';
-      list.slice(0,50).forEach(function(p){
+      pageItems.forEach(function(p){
         var img = p.image_url || (p.image_urls && p.image_urls.length > 0 ? p.image_urls[0] : '');
         var hasVariants = p.variants && p.variants.length > 0;
         html += '<tr>' +
@@ -102,6 +114,23 @@
         '</tr>';
       });
       document.getElementById('products-body').innerHTML = html || '<tr><td colspan="9">暫無產品</td></tr>';
+      
+      // Render pagination
+      var totalPages = Math.ceil(list.length / pageSize);
+      var pg = document.getElementById('pagination');
+      if (totalPages > 1) {
+        var pgHtml = '<button '+(currentPage===1?'disabled':' onclick="goToPage('+(currentPage-1)+')")+'">上一頁</button>';
+        pgHtml += '<span>第 ' + currentPage + ' / ' + totalPages + ' 頁 (共 ' + list.length + ' 個產品)</span>';
+        pgHtml += '<button '+(currentPage===totalPages?'disabled':' onclick="goToPage('+(currentPage+1)+')")+'">下一頁</button>';
+        pg.innerHTML = pgHtml;
+      } else {
+        pg.innerHTML = '<span>共 ' + list.length + ' 個產品</span>';
+      }
+    }
+    
+    function goToPage(page) {
+      currentPage = page;
+      filterProducts();
     }
     
     function filterProducts() {
