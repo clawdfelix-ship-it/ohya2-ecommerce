@@ -74,18 +74,17 @@
     var currentPage = 1;
     var pageSize = 50;
     
-    // Load products - with alert
+    // Load products - with status update
     (async function loadData() {
       try {
-        document.getElementById('products-body').innerHTML = '<tr><td colspan="9">Fetch緊...</td></tr>';
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="9">🔄緊...</td></tr>';
         
         var prodsResp = await fetch('/api/products');
         products = await prodsResp.json();
-        alert('Products loaded: ' + products.length);
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="9">🔄緊... ('+products.length+' 產品)</td></tr>';
         
         var catsResp = await fetch('/api/categories');
         categories = await catsResp.json();
-        alert('Categories loaded: ' + categories.length);
         
         var catSelect = document.getElementById('filter-category');
         var mainCats = categories.filter(function(c){return !c.parent_id;});
