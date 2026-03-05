@@ -77,25 +77,36 @@
     // Load products - with status update
     (async function loadData() {
       try {
-        document.getElementById('products-body').innerHTML = '<tr><td colspan="9">🔄緊...</td></tr>';
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="9">🔄 載入中...</td></tr>';
         
         var prodsResp = await fetch('/api/products');
+        if (!prodsResp.ok) throw new Error('API Error: ' + prodsResp.status);
+        
         products = await prodsResp.json();
-        document.getElementById('products-body').innerHTML = '<tr><td colspan="9">🔄緊... ('+products.length+' 產品)</td></tr>';
+        
+        // Safety check if products is array
+        if (!Array.isArray(products)) {
+           console.error('Products is not an array:', products);
+           products = [];
+        }
+        
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="9">🔄 載入中... ('+products.length+' 產品)</td></tr>';
         
         var catsResp = await fetch('/api/categories');
-        categories = await catsResp.json();
-        
-        var catSelect = document.getElementById('filter-category');
-        var mainCats = categories.filter(function(c){return !c.parent_id;});
-        mainCats.forEach(function(c){
-          catSelect.innerHTML += '<option value="'+c.name+'">'+c.name+'</option>';
-        });
+        if (catsResp.ok) {
+            categories = await catsResp.json();
+            
+            var catSelect = document.getElementById('filter-category');
+            var mainCats = categories.filter(function(c){return !c.parent_id;});
+            mainCats.forEach(function(c){
+              catSelect.innerHTML += '<option value="'+c.name+'">'+c.name+'</option>';
+            });
+        }
         
         renderProducts(products);
       } catch(e) {
         console.error('Load error:', e);
-        document.getElementById('products-body').innerHTML = '<tr><td colspan="9" style="color:red;">載入失敗</td></tr>';
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="9" style="color:red;">載入失敗: ' + e.message + '</td></tr>';
       }
     })();
     

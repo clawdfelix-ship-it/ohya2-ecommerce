@@ -29,10 +29,14 @@ initDatabase().then(async () => {
   }
   
   // Migration: Add missing products columns
-  const productColumns = ['jan_code', 'price_jpy', 'seo_title', 'seo_description', 'seo_keywords'];
+  const productColumns = ['jan_code', 'price_jpy', 'seo_title', 'seo_description', 'seo_keywords', 'image_urls'];
   for (const col of productColumns) {
     try {
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS ${sql(col)} TEXT`;
+      if (col === 'image_urls') {
+        // Set default for image_urls if newly added
+        await sql`ALTER TABLE products ALTER COLUMN image_urls SET DEFAULT '[]'`;
+      }
       console.log(`✅ Migration: ${col} column added`);
     } catch (e) {
       console.log(`ℹ️ ${col} column check done`);
@@ -95,6 +99,17 @@ app.get('/api/cron/exchange-rate', async (req, res) => {
   }
 });
 
+// Helper for safe JSON parse
+function safeJsonParse(str, fallback = []) {
+  if (!str) return fallback;
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    console.warn('JSON parse failed for:', str);
+    return fallback;
+  }
+}
+
 app.get('/api/products', async (req, res) => {
   try {
     const products = await sql`SELECT * FROM products WHERE active = 1 ORDER BY id DESC`;
@@ -113,7 +128,7 @@ app.get('/api/products', async (req, res) => {
       category: p.category,
       description: p.description,
       image_url: p.image_url,
-      image_urls: p.image_urls ? JSON.parse(p.image_urls) : [],
+      image_urls: safeJsonParse(p.image_urls, []),
       seo_title: p.seo_title || '',
       seo_description: p.seo_description || '',
       seo_keywords: p.seo_keywords || '',
@@ -151,7 +166,7 @@ app.get('/api/products/:id', async (req, res) => {
       category: p.category,
       description: p.description,
       image_url: p.image_url,
-      image_urls: p.image_urls ? JSON.parse(p.image_urls) : [],
+      image_urls: safeJsonParse(p.image_urls, []),
       seo_title: p.seo_title || '',
       seo_description: p.seo_description || '',
       seo_keywords: p.seo_keywords || '',
