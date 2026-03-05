@@ -74,6 +74,14 @@
     <div class="card">
       <h3>📮 物流資訊</h3>
       <div class="form-group">
+        <label>送貨方式</label>
+        <select id="order-shipping">
+          <option value="sf_cod">🚚 順豐速運 (到付)</option>
+          <option value="macau_cod">🚛 澳門速運 (到付)</option>
+          <option value="lalamove_cod">🛵 Lalamove (到付)</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>物流單號</label>
         <input type="text" id="order-tracking" placeholder="輸入快遞追蹤號碼">
       </div>
@@ -128,6 +136,9 @@
       
       // Set status
       document.getElementById('order-status').value = order.status || 'pending';
+      
+      // Load shipping method
+      document.getElementById('order-shipping').value = order.shipping_method || 'sf_cod';
       
       // Load tracking number
       document.getElementById('order-tracking').value = order.tracking_number || '';
@@ -199,6 +210,7 @@
     function saveOrder() {
       var status = document.getElementById('order-status').value;
       var customerId = document.getElementById('order-customer').value;
+      var shippingMethod = document.getElementById('order-shipping').value;
       var trackingNumber = document.getElementById('order-tracking').value;
       var internalNotes = document.getElementById('order-notes').value;
       
@@ -208,6 +220,7 @@
         body: JSON.stringify({
           status: status,
           user_id: customerId ? parseInt(customerId) : null,
+          shipping_method: shippingMethod,
           tracking_number: trackingNumber,
           internal_notes: internalNotes
         })

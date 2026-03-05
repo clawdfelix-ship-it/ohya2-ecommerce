@@ -88,6 +88,7 @@ async function initDatabase() {
         user_id INTEGER REFERENCES users(id),
         total INTEGER NOT NULL,
         status TEXT DEFAULT 'pending',
+        shipping_method TEXT DEFAULT 'sf_cod',
         bank_transfer_proof TEXT,
         tracking_number TEXT,
         internal_notes TEXT,
@@ -182,6 +183,24 @@ async function initDatabase() {
         status TEXT NOT NULL,
         note TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Telegram Subscribers table for CRM Bot
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS telegram_subscribers (
+        id SERIAL PRIMARY KEY,
+        telegram_id BIGINT UNIQUE NOT NULL,
+        user_id INTEGER REFERENCES users(id),
+        name TEXT,
+        username TEXT,
+        phone TEXT,
+        active INTEGER DEFAULT 1,
+        notification_new_product INTEGER DEFAULT 1,
+        notification_flash_sale INTEGER DEFAULT 1,
+        notification_order_status INTEGER DEFAULT 1,
+        subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 

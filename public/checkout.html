@@ -192,12 +192,20 @@
     
     document.getElementById('checkout-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const shippingMethod = document.getElementById('shipping-method').value;
+      if (!shippingMethod) {
+        alert('請選擇送貨方式');
+        return;
+      }
+      
       const res = await fetch('/api/cart');
       const cart = await res.json();
       
       const formData = new FormData();
       formData.append('items', JSON.stringify(cart.map(i => ({productId: i.productId, quantity: i.quantity, price: i.price}))));
       formData.append('total', window.cartTotal);
+      formData.append('shipping_method', shippingMethod);
       
       if (document.getElementById('proof').files[0]) {
         formData.append('proof', document.getElementById('proof').files[0]);

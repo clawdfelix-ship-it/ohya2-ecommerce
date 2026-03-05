@@ -79,6 +79,7 @@
           <th>客戶</th>
           <th>產品</th>
           <th>總額</th>
+          <th>送貨方式</th>
           <th>狀態</th>
           <th>物流單號</th>
           <th>日期</th>
@@ -86,7 +87,7 @@
         </tr>
       </thead>
       <tbody id="orders-body">
-        <tr><td colspan="8">載入中...</td></tr>
+        <tr><td colspan="10">載入中...</td></tr>
       </tbody>
     </table>
   </div>
@@ -110,19 +111,29 @@
         var checked = selectedIds.indexOf(o.id) >= 0 ? 'checked' : '';
         var trackingText = o.tracking_number ? '<span style="color:#10b981;font-size:11px;">' + o.tracking_number + '</span>' : '-';
         
+        // Shipping method display
+        var shippingMethod = o.shipping_method || 'sf_cod';
+        var shippingLabels = {
+          'sf_cod': '🚚 順豐到付',
+          'macau_cod': '🚛 澳門到付',
+          'lalamove_cod': '🛵 Lalamove到付'
+        };
+        var shippingDisplay = shippingLabels[shippingMethod] || shippingMethod;
+        
         html += '<tr>' +
           '<td><input type="checkbox" class="checkbox" ' + checked + ' onchange="toggleSelect(' + o.id + ')"></td>' +
           '<td>#' + o.id + '</td>' +
           '<td>' + (o.customer_name || 'Guest') + '</td>' +
           '<td>' + (productsText || '-') + '</td>' +
           '<td>$' + (o.total || 0) + '</td>' +
+          '<td><span style="font-size:12px;">' + shippingDisplay + '</span></td>' +
           '<td><span class="badge badge-' + (o.status || 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
           '<td>' + trackingText + '</td>' +
           '<td>' + (o.created_at || '-').substring(0,10) + '</td>' +
           '<td><a href="order-edit.html?id=' + o.id + '" class="btn btn-sm">編輯</a></td>' +
         '</tr>';
       });
-      document.getElementById('orders-body').innerHTML = html || '<tr><td colspan="9">暫無訂單</td></tr>';
+      document.getElementById('orders-body').innerHTML = html || '<tr><td colspan="10">暫無訂單</td></tr>';
     }
     
     function toggleSelect(id) {
