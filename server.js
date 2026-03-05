@@ -32,14 +32,16 @@ initDatabase().then(async () => {
   const productColumns = ['jan_code', 'price_jpy', 'seo_title', 'seo_description', 'seo_keywords', 'image_urls'];
   for (const col of productColumns) {
     try {
-      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS ${sql(col)} TEXT`;
+      // Use direct pool query for DDL with dynamic column name (safe because col is from hardcoded list)
+      await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS ${col} TEXT`);
+      
       if (col === 'image_urls') {
         // Set default for image_urls if newly added
-        await sql`ALTER TABLE products ALTER COLUMN image_urls SET DEFAULT '[]'`;
+        await pool.query(`ALTER TABLE products ALTER COLUMN image_urls SET DEFAULT '[]'`);
       }
       console.log(`✅ Migration: ${col} column added`);
     } catch (e) {
-      console.log(`ℹ️ ${col} column check done`);
+      console.log(`ℹ️ ${col} column check done (or error: ${e.message})`);
     }
   }
 
