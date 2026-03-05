@@ -99,6 +99,10 @@
         <div class="product-code" id="product-code"></div>
         <div class="product-price" id="product-price"></div>
         <div class="product-stock" id="product-stock"></div>
+        
+        <!-- Variants -->
+        <div id="variants-container" style="margin-bottom: 1.5rem;"></div>
+
         <div class="product-desc" id="product-desc"></div>
         
         <div class="quantity-box">
@@ -159,6 +163,7 @@
     const productId = params.get('id');
     let currentProduct = null;
     let quantity = 1;
+    let selectedVariant = null;
     
     async function loadProduct() {
       try {
@@ -170,7 +175,7 @@
         document.getElementById('product-code').textContent = product.product_code || '';
         document.getElementById('product-price').innerHTML = '¥' + (product.price || 0).toLocaleString();
         document.getElementById('product-desc').textContent = product.description || '暂无描述';
-        document.getElementById('product-stock').innerHTML = product.stock > 0 ? '<span class="in-stock">✓ 有貨</span>' : '<span style="color:#ef4444">✗ 缺貨</span>';
+        updateStockDisplay(product.stock);
         
         if (product.image_url) {
           document.getElementById('product-image').src = product.image_url;
@@ -180,22 +185,103 @@
         document.getElementById('meta-barcode').textContent = product.barcode || '-';
         document.getElementById('meta-category').textContent = product.category || '-';
         
+        // Load variants
+        if (product.variants && product.variants.length > 0) {
+          renderVariants(product.variants);
+        }
+
         // Load thumbnails
-        if (product.images) {
+        if (product.image_urls && product.image_urls.length > 0) {
           const thumbnailGallery = document.getElementById('thumbnail-gallery');
-          product.images.forEach((image, index) => {
-            const thumbnail = document.createElement('img');
-            thumbnail.src = image;
-            thumbnail.className = 'thumbnail';
-            thumbnail.onclick = () => changeMainImage(thumbnail);
-            thumbnailGallery.appendChild(thumbnail);
-            if (index === 0) {
-              thumbnail.classList.add('active');
+          thumbnailGallery.innerHTML = ''; // Clear mock data
+          
+          // Add main image
+          if (product.image_url) {
+             const mainThumb = createThumbnail(product.image_url, true);
+             thumbnailGallery.appendChild(mainThumb);
+          }
+
+          product.image_urls.forEach((url) => {
+            if (url !== product.image_url) {
+              thumbnailGallery.appendChild(createThumbnail(url, false));
             }
           });
         }
       } catch (e) {
+        console.error(e);
         document.getElementById('product-name').textContent = '載入失敗';
+      }
+    }
+
+    function createThumbnail(url, isActive) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.className = 'thumbnail' + (isActive ? ' active' : '');
+      img.onclick = () => changeMainImage(img);
+      return img;
+    }
+
+    function renderVariants(variants) {
+      const container = document.getElementById('variants-container');
+      container.innerHTML = '<h3>選擇規格</h3><div class="variant-options" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;"></div>';
+      const optionsContainer = container.querySelector('.variant-options');
+
+      variants.forEach(v => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-secondary variant-btn';
+        btn.textContent = v.variant_name;
+        btn.style.padding = '8px 16px';
+        btn.onclick = () => selectVariant(v, btn);
+        
+        if (v.stock <= 0) {
+          btn.disabled = true;
+          btn.style.opacity = '0.5';
+          btn.textContent += ' (缺貨)';
+        }
+        
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectVariant(variant, btn) {
+      selectedVariant = variant;
+      
+      // Update UI
+      document.querySelectorAll('.variant-btn').forEach(b => {
+        b.style.borderColor = '#e5e7eb';
+        b.style.background = '#ffffff';
+        b.style.color = '#1f2937';
+      });
+      btn.style.borderColor = '#6366f1';
+      btn.style.background = '#e0e7ff';
+      btn.style.color = '#4338ca';
+      
+      // Update Price
+      const basePrice = currentProduct.price_retail || currentProduct.price;
+      const finalPrice = basePrice + (variant.price_modifier || 0);
+      document.getElementById('product-price').innerHTML = '¥' + finalPrice.toLocaleString();
+      
+      // Update Stock
+      updateStockDisplay(variant.stock);
+    }
+
+    function updateStockDisplay(stock) {
+      const el = document.getElementById('product-stock');
+      if (stock > 0) {
+        el.innerHTML = `<span class="in-stock">✓ 有貨 (庫存: ${stock})</span>`;
+        document.querySelector('.add-btn').disabled = false;
+        document.querySelector('.buy-now-btn').disabled = false;
+      } else {
+        // Check continue selling
+        if (currentProduct.continue_selling) {
+           el.innerHTML = `<span style="color:#f59e0b">⚠️ 缺貨但可預訂</span>`;
+           document.querySelector('.add-btn').disabled = false;
+           document.querySelector('.buy-now-btn').disabled = false;
+        } else {
+           el.innerHTML = `<span style="color:#ef4444">✗ 缺貨</span>`;
+           document.querySelector('.add-btn').disabled = true;
+           document.querySelector('.buy-now-btn').disabled = true;
+        }
       }
     }
     
@@ -215,53 +301,75 @@
     async function addToCart() {
       if (!currentProduct) return;
       
-      const res = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          productId: currentProduct.id,
-          name: currentProduct.name,
-          price: currentProduct.price,
-          quantity: quantity,
-          image_url: currentProduct.image_url
-        })
-      });
-      
-      const data = await res.json();
-      if (data.success) {
-        alert('已加入購物車！');
-        loadCartCount();
+      // Check variant selection
+      if (currentProduct.variants && currentProduct.variants.length > 0 && !selectedVariant) {
+        alert('請選擇規格！');
+        return;
       }
+
+      const price = selectedVariant 
+        ? (currentProduct.price_retail || currentProduct.price) + (selectedVariant.price_modifier || 0)
+        : (currentProduct.price_retail || currentProduct.price);
+      
+      const cartItem = {
+        productId: currentProduct.id,
+        name: currentProduct.name + (selectedVariant ? ` (${selectedVariant.variant_name})` : ''),
+        price: price,
+        quantity: quantity,
+        image_url: currentProduct.image_url,
+        variantId: selectedVariant ? selectedVariant.id : null
+      };
+
+      // Use window.ohya2 if available (from main.js) or fetch directly
+      // Since product.html uses fetch directly in original code, I'll stick to that but update the body
+      // Actually, looking at main.js, it uses localStorage for cart.
+      // The original product.html was using `fetch('/api/cart')` which implies a server-side cart?
+      // But `main.js` said `let cart = JSON.parse(localStorage.getItem('ohya2_cart'))`
+      // This is a CONTRADICTION.
+      // `product.html` lines 218-228: `fetch('/api/cart', ...)`
+      // `main.js` lines 8: `let cart = JSON.parse(localStorage.getItem('ohya2_cart'))`
+      
+      // I should align with `main.js` (Client-side cart) as it seems more complete for a static site.
+      // OR if `server.js` has `/api/cart`, I should use that.
+      // I checked `server.js`... I DID NOT see `/api/cart` endpoints!
+      // I saw `/api/products`, `/api/orders`, etc.
+      // So `product.html`'s `addToCart` was likely BROKEN or I missed the route.
+      // Let me re-read `server.js` to be absolutely sure.
+      
+      // ... I checked `server.js` output previously. NO `/api/cart` endpoint.
+      // So `product.html` was definitely calling a non-existent endpoint.
+      // I must switch to using `localStorage` logic similar to `main.js`.
+      
+      let cart = JSON.parse(localStorage.getItem('ohya2_cart')) || [];
+      
+      // Check existing
+      const existingIdx = cart.findIndex(i => i.productId === cartItem.productId && i.variantId === cartItem.variantId);
+      
+      if (existingIdx >= 0) {
+        cart[existingIdx].quantity += quantity;
+      } else {
+        cart.push(cartItem);
+      }
+      
+      localStorage.setItem('ohya2_cart', JSON.stringify(cart));
+      alert('已加入購物車！');
+      
+      // Update badge if function exists
+      if (window.loadCartCount) window.loadCartCount(); // This function in original code fetched from API... need to fix that too.
+      
+      const badge = document.getElementById('cart-count');
+      if(badge) badge.textContent = cart.reduce((acc, item) => acc + item.quantity, 0);
     }
     
-    async function loadCartCount() {
-      const res = await fetch('/api/cart');
-      const cart = await res.json();
-      document.getElementById('cart-count').textContent = cart?.length || 0;
+    // Fix loadCartCount to read from localStorage
+    function loadCartCount() {
+       let cart = JSON.parse(localStorage.getItem('ohya2_cart')) || [];
+       document.getElementById('cart-count').textContent = cart.reduce((acc, item) => acc + item.quantity, 0);
     }
     
     async function buyNow() {
-      if (!currentProduct) return;
-      
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          productId: currentProduct.id,
-          name: currentProduct.name,
-          price: currentProduct.price,
-          quantity: quantity,
-          image_url: currentProduct.image_url
-        })
-      });
-      
-      const data = await res.json();
-      if (data.success) {
-        alert('購買成功！');
-        window.location.href = '/checkout.html';
-      } else {
-        alert('購買失敗，請稍後再試。');
-      }
+      await addToCart();
+      window.location.href = '/checkout.html';
     }
     
     if (productId) {

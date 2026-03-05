@@ -17,8 +17,15 @@ initDatabase().then(async () => {
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT 'sf_cod'`;
     console.log('✅ Migration: shipping_method column added');
   } catch (e) {
-    // Ignore if already exists (SQL.js might not support IF NOT EXISTS)
     console.log('ℹ️ shipping_method column check done');
+  }
+
+  // Migration: Add variant_id to order_items
+  try {
+    await sql`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS variant_id INTEGER REFERENCES product_variants(id)`;
+    console.log('✅ Migration: variant_id column added to order_items');
+  } catch (e) {
+    console.log('ℹ️ variant_id column check done');
   }
   
   // Migration: Add missing products columns
@@ -30,6 +37,15 @@ initDatabase().then(async () => {
     } catch (e) {
       console.log(`ℹ️ ${col} column check done`);
     }
+  }
+
+  // Migration: Add inventory management columns
+  try {
+    await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS continue_selling BOOLEAN DEFAULT false`;
+    await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS low_stock_threshold INTEGER DEFAULT 5`;
+    console.log('✅ Migration: inventory columns added');
+  } catch (e) {
+    console.log('ℹ️ inventory columns check done');
   }
   
   // Initialize Telegram Bot (if token configured)
@@ -150,11 +166,11 @@ app.get('/api/products/:id', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
   try {
-    const { product_code, name, price, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords } = req.body;
+    const { product_code, name, price, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords, continue_selling, low_stock_threshold } = req.body;
     const imageUrlsJson = JSON.stringify(image_urls || []);
     await sql`
-      INSERT INTO products (product_code, name, price, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords)
-      VALUES (${product_code}, ${name}, ${price}, ${stock}, ${category}, ${description}, ${image_url}, ${imageUrlsJson}, ${seo_title || ''}, ${seo_description || ''}, ${seo_keywords || ''})
+      INSERT INTO products (product_code, name, price, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords, continue_selling, low_stock_threshold)
+      VALUES (${product_code}, ${name}, ${price}, ${stock}, ${category}, ${description}, ${image_url}, ${imageUrlsJson}, ${seo_title || ''}, ${seo_description || ''}, ${seo_keywords || ''}, ${continue_selling || false}, ${low_stock_threshold || 5})
     `;
     res.json({ success: true });
   } catch (e) {
@@ -165,7 +181,7 @@ app.post('/api/products', async (req, res) => {
 
 app.put('/api/products/:id', async (req, res) => {
   try {
-    const { product_code, jan_code, name, price, price_retail, price_cost, price_wholesale, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords, variants } = req.body;
+    const { product_code, jan_code, name, price, price_retail, price_cost, price_wholesale, stock, category, description, image_url, image_urls, seo_title, seo_description, seo_keywords, variants, continue_selling, low_stock_threshold } = req.body;
     const imageUrlsJson = JSON.stringify(image_urls || []);
     await sql`
       UPDATE products 
@@ -183,7 +199,9 @@ app.put('/api/products/:id', async (req, res) => {
           image_urls = ${imageUrlsJson},
           seo_title = ${seo_title || ''},
           seo_description = ${seo_description || ''},
-          seo_keywords = ${seo_keywords || ''}
+          seo_keywords = ${seo_keywords || ''},
+          continue_selling = ${continue_selling || false},
+          low_stock_threshold = ${low_stock_threshold || 5}
       WHERE id = ${req.params.id}
     `;
     
@@ -316,11 +334,41 @@ app.get('/api/orders/:id', async (req, res) => {
 
 app.post('/api/orders', async (req, res) => {
   try {
-    const { user_id, total, items, shipping_method } = req.body;
+    const { user_id, total, items, shipping_method, customer_info } = req.body;
+    
+    // 1. Validate Stock first
+    if (items && items.length > 0) {
+      for (const item of items) {
+        // Check product/variant stock
+        if (item.variant_id) {
+          const variants = await sql`SELECT stock FROM product_variants WHERE id = ${item.variant_id}`;
+          if (variants.length > 0 && variants[0].stock < item.quantity) {
+             // Check if parent product allows continue selling
+             const products = await sql`SELECT continue_selling FROM products WHERE id = ${item.product_id}`;
+             if (products.length > 0 && !products[0].continue_selling) {
+               throw new Error(`Variant out of stock (ID: ${item.variant_id})`);
+             }
+          }
+        } else {
+          const products = await sql`SELECT stock, continue_selling FROM products WHERE id = ${item.product_id}`;
+          if (products.length > 0 && products[0].stock < item.quantity && !products[0].continue_selling) {
+            throw new Error(`Product out of stock (ID: ${item.product_id})`);
+          }
+        }
+      }
+    }
+
     const shippingMethod = shipping_method || 'sf_cod';
+    
+    // Format customer info for internal notes if provided
+    let internalNotes = '';
+    if (customer_info) {
+      internalNotes = `Customer Info:\nName: ${customer_info.name}\nPhone: ${customer_info.phone}\nEmail: ${customer_info.email}\nAddress: ${customer_info.address}`;
+    }
+
     const result = await sql`
-      INSERT INTO orders (user_id, total, status, shipping_method)
-      VALUES (${user_id}, ${total}, 'pending', ${shippingMethod})
+      INSERT INTO orders (user_id, total, status, shipping_method, internal_notes)
+      VALUES (${user_id}, ${total}, 'pending', ${shippingMethod}, ${internalNotes})
       RETURNING id
     `;
     const orderId = result[0]?.id;
@@ -331,13 +379,28 @@ app.post('/api/orders', async (req, res) => {
       throw new Error('Failed to get order ID: ' + JSON.stringify(result));
     }
     
-    // Insert order items
+    // Insert order items and deduct stock
     if (items && items.length > 0) {
       for (const item of items) {
         await sql`
-          INSERT INTO order_items (order_id, product_id, quantity, price)
-          VALUES (${orderId}, ${item.product_id}, ${item.quantity}, ${item.price})
+          INSERT INTO order_items (order_id, product_id, variant_id, quantity, price)
+          VALUES (${orderId}, ${item.product_id}, ${item.variant_id || null}, ${item.quantity}, ${item.price})
         `;
+
+        // Deduct Stock
+        if (item.variant_id) {
+          await sql`
+            UPDATE product_variants 
+            SET stock = stock - ${item.quantity}
+            WHERE id = ${item.variant_id}
+          `;
+        } else {
+          await sql`
+            UPDATE products 
+            SET stock = stock - ${item.quantity}
+            WHERE id = ${item.product_id}
+          `;
+        }
       }
     }
     

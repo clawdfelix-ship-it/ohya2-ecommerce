@@ -23,7 +23,7 @@ function renderCart() {
   cartContent.classList.remove('hidden');
 
   cartList.innerHTML = cartItems.map(item => `
-    <div class="cart-item" data-id="${item.id}">
+    <div class="cart-item" data-id="${item.productId}" data-variant="${item.variantId || ''}">
       <div class="cart-product-info">
         ${item.image 
           ? `<img src="${item.image}" alt="${item.name}" class="cart-product-image">`
@@ -35,15 +35,15 @@ function renderCart() {
         </div>
       </div>
       <div class="cart-quantity">
-        <button class="quantity-btn" onclick="updateQty(${item.id}, ${item.quantity - 1})">-</button>
+        <button class="quantity-btn" onclick="updateQty(${item.productId}, ${item.quantity - 1}, ${item.variantId ? `'${item.variantId}'` : 'null'})">-</button>
         <span style="margin: 0 10px;">${item.quantity}</span>
-        <button class="quantity-btn" onclick="updateQty(${item.id}, ${item.quantity + 1})">+</button>
+        <button class="quantity-btn" onclick="updateQty(${item.productId}, ${item.quantity + 1}, ${item.variantId ? `'${item.variantId}'` : 'null'})">+</button>
       </div>
       <div class="cart-subtotal">
         $${(item.price * item.quantity).toFixed(2)}
       </div>
       <div class="cart-actions">
-        <button class="btn btn-danger" onclick="removeItem(${item.id})">Remove</button>
+        <button class="btn btn-danger" onclick="removeItem(${item.productId}, ${item.variantId ? `'${item.variantId}'` : 'null'})">Remove</button>
       </div>
     </div>
   `).join('');
@@ -51,13 +51,13 @@ function renderCart() {
   cartTotal.textContent = `$${window.ohya2.getCartTotal().toFixed(2)}`;
 }
 
-function updateQty(productId, quantity) {
-  window.ohya2.updateCartQuantity(productId, quantity);
+function updateQty(productId, quantity, variantId = null) {
+  window.ohya2.updateCartQuantity(productId, quantity, variantId);
   renderCart();
 }
 
-function removeItem(productId) {
-  window.ohya2.removeFromCart(productId);
+function removeItem(productId, variantId = null) {
+  window.ohya2.removeFromCart(productId, variantId);
   renderCart();
   window.ohya2.showToast('Item removed from cart', 'success');
 }
