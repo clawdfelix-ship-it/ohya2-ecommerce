@@ -12,6 +12,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 initDatabase().then(async () => {
   console.log('✅ Database initialized');
   
+  /* 
+  // Migrations temporarily disabled to prevent startup locking/timeouts
   // Run migrations for new columns
   try {
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT 'sf_cod'`;
@@ -53,6 +55,7 @@ initDatabase().then(async () => {
   } catch (e) {
     console.log('ℹ️ inventory columns check done');
   }
+  */
   
   // Initialize Telegram Bot (if token configured)
   try {
