@@ -13,9 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 initDatabase().then(async () => {
   console.log('✅ Database initialized');
   
-  /* 
-  // Migrations temporarily disabled to prevent startup locking/timeouts
-  // Run migrations for new columns
+  // Database migrations — runs on every startup (idempotent)
   try {
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT 'sf_cod'`;
     console.log('✅ Migration: shipping_method column added');
@@ -23,32 +21,28 @@ initDatabase().then(async () => {
     console.log('ℹ️ shipping_method column check done');
   }
 
-  // Migration: Add variant_id to order_items
   try {
-    await sql`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS variant_id INTEGER REFERENCES product_variants(id)`;
+    await sql`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS variant_id INTEGER`;
     console.log('✅ Migration: variant_id column added to order_items');
   } catch (e) {
     console.log('ℹ️ variant_id column check done');
   }
   
-  // Migration: Add missing products columns
-  const productColumns = ['jan_code', 'price_jpy', 'seo_title', 'seo_description', 'seo_keywords', 'image_urls'];
+  // Add missing products columns
+  const productColumns = ['jan_code', 'price_jpy', 'seo_title', 'seo_description', 'seo_keywords', 'image_urls', 'price_cost', 'price_retail', 'price_wholesale'];
   for (const col of productColumns) {
     try {
-      // Use direct pool query for DDL with dynamic column name (safe because col is from hardcoded list)
-      await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS ${col} TEXT`);
-      
-      if (col === 'image_urls') {
-        // Set default for image_urls if newly added
-        await pool.query(`ALTER TABLE products ALTER COLUMN image_urls SET DEFAULT '[]'`);
+      if (['price_cost','price_retail','price_wholesale'].includes(col)) {
+        await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS ${col} INTEGER DEFAULT 0`);
+      } else {
+        await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS ${col} TEXT`);
       }
       console.log(`✅ Migration: ${col} column added`);
     } catch (e) {
-      console.log(`ℹ️ ${col} column check done (or error: ${e.message})`);
+      console.log(`ℹ️ ${col} column check done`);
     }
   }
 
-  // Migration: Add inventory management columns
   try {
     await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS continue_selling BOOLEAN DEFAULT false`;
     await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS low_stock_threshold INTEGER DEFAULT 5`;
@@ -56,7 +50,6 @@ initDatabase().then(async () => {
   } catch (e) {
     console.log('ℹ️ inventory columns check done');
   }
-  */
   
   // Initialize Telegram Bot (if token configured)
   try {
