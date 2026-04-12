@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 // Create connection pool from POSTGRES_URL environment variable
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: false
 });
 
 const sql = async (strings, ...values) => {
