@@ -60,7 +60,8 @@
       <div class="toolbar-left">
         <a href="order-new.html" class="btn">+ 新增訂單</a>
       </div>
-      <select id="filter-status" onchange="filterOrders()" style="padding:8px;border:1px solid #ddd;border-radius:5px;">
+      <input type="text" id="search-input" placeholder="搜尋客戶/Email/ID..." oninput="debounceSearch()" style="padding:8px;border:1px solid #ddd;border-radius:5px;width:200px;">
+      <select id="filter-status" onchange="applyFilters()" style="padding:8px;border:1px solid #ddd;border-radius:5px;">
         <option value="">全部狀態</option>
         <option value="pending">待處理</option>
         <option value="processing">處理中</option>
@@ -69,6 +70,10 @@
         <option value="refunded">已退款</option>
         <option value="cancelled">已取消</option>
       </select>
+      <input type="date" id="filter-date-from" onchange="applyFilters()" style="padding:8px;border:1px solid #ddd;border-radius:5px;">
+      <span style="color:#6b7280;padding:0 4px;">至</span>
+      <input type="date" id="filter-date-to" onchange="applyFilters()" style="padding:8px;border:1px solid #ddd;border-radius:5px;">
+      <button class="btn btn-secondary" onclick="clearFilters()">清除</button>
     </div>
     
     <table id="orders-table">
@@ -95,6 +100,7 @@
   <script>
     var orders = [];
     var selectedIds = [];
+    var searchTimeout = null;
     
     fetch('/api/orders').then(function(r){return r.json();}).then(function(d){
       orders = d;
@@ -103,6 +109,10 @@
     
     function renderOrders(list) {
       var html = '';
+      if(!list || list.length === 0) {
+        document.getElementById('orders-body').innerHTML = '<tr><td colspan="10">暫無訂單</td></tr>';
+        return;
+      }
       list.forEach(function(o){
         var items = o.items || [];
         var productsText = items.slice(0,2).map(function(i){return i.product_name || 'Product';}).join(', ');
@@ -123,9 +133,9 @@
         html += '<tr>' +
           '<td><input type="checkbox" class="checkbox" ' + checked + ' onchange="toggleSelect(' + o.id + ')"></td>' +
           '<td>#' + o.id + '</td>' +
-          '<td>' + (o.customer_name || 'Guest') + '</td>' +
+          '<td>' + (o.customer_name || 'Guest') + '<br><span style="color:#9ca3af;font-size:11px;">' + (o.customer_email || '') + '</span></td>' +
           '<td>' + (productsText || '-') + '</td>' +
-          '<td>$' + (o.total || 0) + '</td>' +
+          '<td>$' + (o.total || 0).toLocaleString() + '</td>' +
           '<td><span style="font-size:12px;">' + shippingDisplay + '</span></td>' +
           '<td><span class="badge badge-' + (o.status || 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
           '<td>' + trackingText + '</td>' +
@@ -133,7 +143,7 @@
           '<td><a href="order-edit.html?id=' + o.id + '" class="btn btn-sm">編輯</a></td>' +
         '</tr>';
       });
-      document.getElementById('orders-body').innerHTML = html || '<tr><td colspan="10">暫無訂單</td></tr>';
+      document.getElementById('orders-body').innerHTML = html;
     }
     
     function toggleSelect(id) {
@@ -170,50 +180,83 @@
     
     function clearSelection() {
       selectedIds = [];
-      renderOrders(getFilteredOrders());
       updateSelectedBar();
     }
     
     function getFilteredOrders() {
       var status = document.getElementById('filter-status').value;
-      if(!status) return orders;
-      return orders.filter(function(o){return o.status === status;});
+      var search = document.getElementById('search-input').value.trim();
+      var dateFrom = document.getElementById('filter-date-from').value;
+      var dateTo = document.getElementById('filter-date-to').value;
+      
+      return orders.filter(function(o) {
+        if(status && o.status !== status) return false;
+        if(dateFrom && o.created_at && o.created_at.substring(0,10) < dateFrom) return false;
+        if(dateTo && o.created_at && o.created_at.substring(0,10) > dateTo) return false;
+        if(search) {
+          var s = search.toLowerCase();
+          var match = (o.customer_name && o.customer_name.toLowerCase().includes(s)) ||
+                      (o.customer_email && o.customer_email.toLowerCase().includes(s)) ||
+                      String(o.id) === s;
+          if(!match) return false;
+        }
+        return true;
+      });
     }
     
-    function filterOrders() {
-      renderOrders(getFilteredOrders());
+    function applyFilters() {
+      var filtered = getFilteredOrders();
+      renderOrders(filtered);
+      // Keep selection across filter changes
+      document.querySelectorAll('tbody input[type=checkbox]').forEach(function(cb) {
+        var id = parseInt(cb.value);
+        if(selectedIds.indexOf(id) >= 0) cb.checked = true;
+      });
+    }
+    
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(applyFilters, 300);
+    }
+    
+    function clearFilters() {
+      document.getElementById('filter-status').value = '';
+      document.getElementById('search-input').value = '';
+      document.getElementById('filter-date-from').value = '';
+      document.getElementById('filter-date-to').value = '';
+      renderOrders(orders);
     }
     
     function batchUpdateStatus() {
       var status = prompt('輸入新狀態 (pending/processing/shipped/completed/refunded/cancelled):');
       if(!status) return;
       
-      var promises = selectedIds.map(function(id){
-        return fetch('/api/orders/' + id, {
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({status: status})
-        });
-      });
-      
-      Promise.all(promises).then(function(){
-        alert('已更新 ' + selectedIds.length + ' 張訂單');
+      fetch('/api/orders/batch-update', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({order_ids: selectedIds, status: status})
+      }).then(function(r){return r.json();}).then(function(d){
+        alert('已更新 ' + d.updated + ' 張訂單');
         clearSelection();
         location.reload();
+      }).catch(function(e){
+        alert('更新失敗: ' + e);
       });
     }
     
     function batchDelete() {
       if(!confirm('確定要刪除 ' + selectedIds.length + ' 張訂單嗎？')) return;
       
-      var promises = selectedIds.map(function(id){
-        return fetch('/api/orders/' + id, { method: 'DELETE' });
-      });
-      
-      Promise.all(promises).then(function(){
-        alert('已刪除 ' + selectedIds.length + ' 張訂單');
+      fetch('/api/orders/batch-delete', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({order_ids: selectedIds})
+      }).then(function(r){return r.json();}).then(function(d){
+        alert('已刪除 ' + d.deleted + ' 張訂單');
         clearSelection();
         location.reload();
+      }).catch(function(e){
+        alert('刪除失敗: ' + e);
       });
     }
   </script>

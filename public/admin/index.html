@@ -16,7 +16,7 @@
     h1 { font-size: 24px; margin: 0 0 20px 0; color: #1f2937; font-weight: 600; }
     
     /* KPI Cards */
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
     .kpi-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
     .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
     .kpi-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -84,7 +84,8 @@
     .loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: #9ca3af; }
     
     /* Responsive */
-    @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 1400px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 1024px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
     @media (max-width: 768px) { 
       .kpi-grid { grid-template-columns: 1fr; }
@@ -125,6 +126,20 @@
         </div>
         <div class="kpi-label">今日營收</div>
         <div class="kpi-value" id="today-revenue">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon" style="background:linear-gradient(135deg,#10b981,#34d399)">📈</div>
+        </div>
+        <div class="kpi-label">今日利潤</div>
+        <div class="kpi-value" id="today-profit" style="font-size:22px">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon" style="background:linear-gradient(135deg,#ef4444,#f87171)">⏳</div>
+        </div>
+        <div class="kpi-label">待處理</div>
+        <div class="kpi-value" id="pending-orders">-</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-header">
@@ -250,6 +265,8 @@
           // Today stats
           document.getElementById('today-orders').innerText = d.today.orders;
           document.getElementById('today-revenue').innerText = '$' + (d.today.revenue || 0).toLocaleString();
+          document.getElementById('today-profit').innerText = '$' + (d.today.profit || 0).toLocaleString();
+          document.getElementById('pending-orders').innerText = d.today.pending || 0;
           
           // Yesterday comparison
           var ordersChange = d.yesterday.orders > 0 ? ((d.today.orders - d.yesterday.orders) / d.yesterday.orders * 100).toFixed(1) : 0;

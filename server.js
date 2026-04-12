@@ -297,12 +297,40 @@ app.delete('/api/variants/:id', async (req, res) => {
 
 app.get('/api/orders', async (req, res) => {
   try {
-    const orders = await sql`
-      SELECT o.*, u.name as customer_name, u.email as customer_email
+    const { status, date_from, date_to, search } = req.query;
+    
+    let query = `SELECT o.*, u.name as customer_name, u.email as customer_email
       FROM orders o 
       LEFT JOIN users u ON o.user_id = u.id 
-      ORDER BY o.id DESC
-    `;
+      WHERE 1=1`;
+    const params = [];
+    let paramIndex = 1;
+    
+    if (status && status !== 'all') {
+      query += ` AND o.status = $${paramIndex++}`;
+      params.push(status);
+    }
+    
+    if (date_from) {
+      query += ` AND DATE(o.created_at) >= $${paramIndex++}`;
+      params.push(date_from);
+    }
+    
+    if (date_to) {
+      query += ` AND DATE(o.created_at) <= $${paramIndex++}`;
+      params.push(date_to);
+    }
+    
+    if (search) {
+      query += ` AND (u.name ILIKE $${paramIndex} OR u.email ILIKE $${paramIndex} OR CAST(o.id AS TEXT) = $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+    
+    query += ' ORDER BY o.id DESC';
+    
+    const result = await pool.query(query, params);
+    const orders = result.rows;
     
     // Get items for each order
     const ordersWithItems = await Promise.all(orders.map(async (order) => {
@@ -312,7 +340,6 @@ app.get('/api/orders', async (req, res) => {
         LEFT JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = ${order.id}
       `;
-      console.log('Order', order.id, 'has', items.length, 'items');
       return { ...order, items };
     }));
     
@@ -451,6 +478,50 @@ app.delete('/api/orders/:id', async (req, res) => {
     res.json({ success: true });
   } catch (e) {
     console.error('Error deleting order:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Batch update orders (status)
+app.post('/api/orders/batch-update', async (req, res) => {
+  try {
+    const { order_ids, status } = req.body;
+    if (!order_ids || !Array.isArray(order_ids) || order_ids.length === 0) {
+      return res.status(400).json({ error: 'order_ids array required' });
+    }
+    if (!status) {
+      return res.status(400).json({ error: 'status required' });
+    }
+    
+    for (const id of order_ids) {
+      await sql`UPDATE orders SET status = ${status} WHERE id = ${id}`;
+      // Record status change in history
+      await sql`INSERT INTO order_history (order_id, status, note) VALUES (${id}, ${status}, 'Batch update')`;
+    }
+    
+    res.json({ success: true, updated: order_ids.length });
+  } catch (e) {
+    console.error('Error batch updating orders:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Batch delete orders
+app.post('/api/orders/batch-delete', async (req, res) => {
+  try {
+    const { order_ids } = req.body;
+    if (!order_ids || !Array.isArray(order_ids) || order_ids.length === 0) {
+      return res.status(400).json({ error: 'order_ids array required' });
+    }
+    
+    for (const id of order_ids) {
+      await sql`DELETE FROM order_items WHERE order_id = ${id}`;
+      await sql`DELETE FROM orders WHERE id = ${id}`;
+    }
+    
+    res.json({ success: true, deleted: order_ids.length });
+  } catch (e) {
+    console.error('Error batch deleting orders:', e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -1090,10 +1161,32 @@ app.get('/api/analytics/dashboard', async (req, res) => {
     // Total customers
     const totalCustomers = await sql`SELECT COUNT(*) as count FROM users WHERE is_admin = 0`;
     
+    // Pending orders count
+    const pendingOrders = await sql`SELECT COUNT(*) as count FROM orders WHERE status IN ('pending', 'processing')`;
+    
+    // Profit calculation: sum of (order_item price - product cost) * quantity for completed orders
+    const todayProfit = await sql`
+      SELECT COALESCE(SUM(oi.quantity * (oi.price - COALESCE(p.price_cost, 0))), 0) as profit
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      JOIN products p ON oi.product_id = p.id
+      WHERE DATE(o.created_at) = ${today} AND o.status = 'completed'
+    `;
+    
+    const monthProfit = await sql`
+      SELECT COALESCE(SUM(oi.quantity * (oi.price - COALESCE(p.price_cost, 0))), 0) as profit
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      JOIN products p ON oi.product_id = p.id
+      WHERE o.created_at >= ${thisMonth.toISOString().split('T')[0]} AND o.status = 'completed'
+    `;
+    
     res.json({
       today: {
         orders: todayOrders[0].count,
-        revenue: todayOrders[0].revenue
+        revenue: todayOrders[0].revenue,
+        profit: todayProfit[0].profit,
+        pending: pendingOrders[0].count
       },
       yesterday: {
         orders: yesterdayOrders[0].count,
