@@ -1163,7 +1163,7 @@ app.get('/api/analytics/dashboard', async (req, res) => {
       SELECT COALESCE(SUM(oi.quantity * (oi.price - COALESCE(p.price_cost, 0))), 0) as profit
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.id
-      JOIN products p ON oi.product_id = p.id
+      LEFT JOIN products p ON oi.product_id = p.id
       WHERE DATE(o.created_at) = ${today} AND o.status = 'completed'
     `;
     
@@ -1171,7 +1171,7 @@ app.get('/api/analytics/dashboard', async (req, res) => {
       SELECT COALESCE(SUM(oi.quantity * (oi.price - COALESCE(p.price_cost, 0))), 0) as profit
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.id
-      JOIN products p ON oi.product_id = p.id
+      LEFT JOIN products p ON oi.product_id = p.id
       WHERE o.created_at >= ${thisMonth.toISOString().split('T')[0]} AND o.status = 'completed'
     `;
     
