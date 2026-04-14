@@ -1739,6 +1739,42 @@ app.post('/api/admin/telegram/flash-sale', async (req, res) => {
   }
 });
 
+// Low stock alert check + notify
+app.post('/api/admin/telegram/low-stock-check', async (req, res) => {
+  try {
+    // Find products with stock below threshold
+    const lowStockProducts = await sql`
+      SELECT id, name, stock, low_stock_threshold, price, category, image_url
+      FROM products 
+      WHERE stock > 0 AND stock <= COALESCE(low_stock_threshold, 5)
+      ORDER BY stock ASC
+      LIMIT 20
+    `;
+    
+    if (lowStockProducts.length === 0) {
+      return res.json({ success: true, notified: 0, products: [] });
+    }
+    
+    let notified = 0;
+    let telegramBot;
+    try {
+      telegramBot = require('./telegram-bot');
+    } catch (e) {
+      return res.status(500).json({ error: 'Telegram Bot not available' });
+    }
+    
+    for (const product of lowStockProducts) {
+      await telegramBot.notifyLowStock(product);
+      notified++;
+    }
+    
+    res.json({ success: true, notified, products: lowStockProducts });
+  } catch (e) {
+    console.error('Low stock check error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ==================== END PHASE 6 ====================
 
 // Root

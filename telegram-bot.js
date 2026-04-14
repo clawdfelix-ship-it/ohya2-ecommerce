@@ -377,6 +377,23 @@ async function notifyFlashSale(product, discountPercent) {
   });
 }
 
+// Notify about low stock
+async function notifyLowStock(product) {
+  const message = `
+⚠️ 庫存警示！
+
+📦 ${product.name}
+🔢 現有庫存：${product.stock} 件
+⚠️ 低於警戒線：${product.low_stock_threshold} 件
+
+👉 盡快補貨：${process.env.SITE_URL || 'https://ohya2.com'}/admin/products.html
+  `.trim();
+  
+  return broadcastToSubscribers(message, {
+    parse_mode: 'HTML'
+  });
+}
+
 // ==================== DATABASE FUNCTIONS ====================
 
 async function subscribeUser(telegramId, telegramUser) {
@@ -456,5 +473,6 @@ module.exports = {
   notifyOrderStatus,
   notifyNewProduct,
   notifyFlashSale,
+  notifyLowStock,
   isEnabled: () => isBotEnabled
 };
